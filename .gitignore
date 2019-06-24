@@ -1,0 +1,10 @@
+# python related stuff
+*.pyc
+
+# dnaprodb stuff
+/htdocs/data
+/htdocs/uploads
+rsync.exclude
+run_rsync.sh
+.sensitive.json
+update_cacheable.sh

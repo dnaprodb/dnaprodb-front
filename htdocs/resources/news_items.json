@@ -1,0 +1,42 @@
+[
+    {
+        "date": "June 5, 2019",
+        "title": "",
+        "body": "The beta for DNAproDB version 2.0 is live! Version 2.0 introduces many new features and improvements. DNAproDB has been generalized to work with any DNA secondary structure, and now includes single-stranded DNA as well as more exotic structures such as G-quadruplexes, Holiday junctions, and irregular secondary structures. The report page has been completely re-designed and all visualizations have been radically improved, and new ones developed. The data schema for DNAproDB has been updated, and many additional features have been added. Overall the quality of the wesbite has been improved."
+    },
+    {
+        "date": "May 21, 2017",
+        "title": "",
+        "body": "Many more customization options have been added to the visualizations available from report pages, and the overall layout of the report page has been improved slightly."
+    },
+    {
+        "date": "April 26, 2017",
+        "title": "",
+        "body": "The DNAproDB paper has been accepted and is available online! A number of bug fixes and improvements have been made to the processing pipeline and in the report pages. A Download page has been added where users can download the entire DNAproDB database for their own use."
+    },
+    {
+        "date": "March 22, 2017",
+        "title": "",
+        "body": "Updated the database to include additional processing data. The 'meta.processing_data' field in the JSON file for each entry now contains information about missing atoms, removed residues, the options used at the time of processing and more.<br><br>PDB2PQR pre-processing is now optional, with the default option being not to add missing heavy atoms. Users can upload structures and turn this option on if they would like to use this feature."
+    },
+    {
+        "date": "March 16, 2017",
+        "title": "",
+        "body": "The search form has been overhauled for greater flexibility and to make how the search logic is constructed explicit. Additionally, more features have been added such as the ability to search for structures based on CATH domains, or DNA methylation.<br><br>Several minor issues and improvements have been addressed throughout the website."
+    },
+    {
+        "date": "November 2016",
+        "title": "",
+        "body": "Many improvements and fixes on the back-end, and rebuilt the database with many more structures. Added an example to the search page, a functional contact page, and a rough documentation page."
+    },
+    {
+        "date": "September 2016",
+        "title": "",
+        "body": "Added the interactions chart to the report page, made many small improvements, and added a proper results page."
+    },
+    {
+        "date": "August 2016",
+        "title": "",
+        "body": "First version of the website is live."
+    }
+]

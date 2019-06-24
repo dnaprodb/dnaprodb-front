@@ -1,0 +1,149 @@
+#!/home/conda/bin/python
+
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import os
+from jinja2 import Environment, FileSystemLoader
+import subprocess
+import json
+
+# Stored Constants
+with open("../.sensitive.json") as FH:
+    sensitive = json.load(FH)
+
+def print_html(context, template):
+    """
+    Returns the HTML page to the client.
+    """
+    # render the HTML
+    html = template.render(context)
+    
+    # send to browser
+    print "Content-Type: text/html"
+    print
+    print html
+    exit(0)
+
+TEMPLATE_PATH = os.path.abspath("../htdocs/templates")
+TEMPLATE_NAME = "upload_template.html"
+NAV_PATH = os.path.join(TEMPLATE_PATH, "nav.html")
+FOOT_PATH = os.path.join(TEMPLATE_PATH, "foot.html")
+
+# retrieve the HTML templates
+j2Env = Environment(loader=FileSystemLoader(TEMPLATE_PATH),trim_blocks=True)
+template = j2Env.get_template(TEMPLATE_NAME)
+
+with open(NAV_PATH, "r") as NAV:
+    nav_html = NAV.read()
+
+with open(FOOT_PATH, "r") as FOOT:
+    foot_html = FOOT.read()
+
+with open(os.path.join(TEMPLATE_PATH, "upload_form.html"), "r") as UPLOAD_FORM:
+    content_html = UPLOAD_FORM.read() 
+
+javascript_html = """
+<script type="text/javascript">
+    $.validator.setDefaults({
+        errorElement: 'span',
+        errorPlacement: function (error, element) {
+            error.addClass('invalid-feedback');
+            element.closest('.form-group').append(error);
+        },
+        highlight: function (element, errorClass, validClass) {
+            $(element).addClass('is-invalid');
+        },
+        unhighlight: function (element, errorClass, validClass) {
+            $(element).removeClass('is-invalid');
+        }
+    });
+    
+    $(document).ready(function () {
+        $("#upload_form").validate({
+            ignore: ".ignore",
+            rules: {
+                email: {
+                    required: false,
+                    email: true
+                },
+                structure: {
+                    required: true,
+                    extension: "pdb|ent"
+                },
+                title: {
+                    required: false,
+                    pattern: "[A-Za-z0-9_-]+",
+                    maxlength: 20
+                },
+                'g-recaptcha-response': {
+                    required: function () {
+                        return grecaptcha.getResponse() == '';
+                    }
+                }
+            },
+            messages: {
+                title: {
+                    maxlength: "must be 20 characters or less",
+                    pattern: "Title can only contain letters, digits, underscore or dash."
+                },
+                structure: {
+                    extension: "Invalid file extension, must be .pdb or .ent.",
+                    required: "Please choose a structure file in PDB format."
+                },
+                'g-recaptcha-response': {
+                    required: "Please verify you are human."
+                }
+            },
+            submitHandler: function(form) {
+                /* Set up loading icon */
+                $("#content").empty();
+                $("#content").addClass("loader");
+                
+                /* Get the action attribute from the <form action=""> element */
+                var url = $(form).attr('action');
+                
+                /* serialize form data */
+                var postData = new FormData(form);
+                
+                $.ajax({
+                    url : url,
+                    type: "POST",
+                    data : postData,
+                    processData: false,
+                    contentType: false,
+                    cache: false,
+                    success: function(data, textStatus, jqXHR){
+                        /* Update HTML */
+                        $("#content").removeClass("loader");
+                        $("#content").html(data);
+                    },
+                    error: function(jqXHR, textStatus, errorThrown){
+                        //if fails
+                        console.log(textStatus);
+                    }
+                });
+            }
+        });
+    });
+    
+    function captcha_load_callback() {
+        grecaptcha.render('recaptcha', {
+            'sitekey' : '%s'
+        });
+    }
+</script>
+<script src="https://www.google.com/recaptcha/api.js?onload=captcha_load_callback&render=explicit" async defer></script>
+"""  % (sensitive["recaptcha_public_key"])
+print_html({'content': content_html,'nav': nav_html,'foot': foot_html,'scripts': javascript_html}, template)

@@ -1,0 +1,250 @@
+ [
+     {
+         "item": "PDB Identifier(s)",
+         "id": "pdb_id",
+         "example": "1jgg",
+         "description": "PDB identifiers are unique, four character identifiers that the Protein Data Bank assigns to every deposited structure. They always begin with a digit from 1-9 and only contain alphanumeric characters."
+    },
+     {
+         "item": "Protein Features",
+         "id": "protein_features",
+         "description": "Features which are specific to the protein in the structure.",
+         "path": "root.protein",
+         "sub-items": [
+             {
+                "item": "Chain Features",
+                "id": "chain_features",
+                "description": "Features that describe or are related to a protein chain.",
+                "path": "root.protein.chains",
+                 "sub-items": [{
+                     "item": "Sequence Similarity",
+                     "id": "seq_similarity",
+                     "description": "Matches protein chains which share a specified sequence similarity (30-100%) with a particular chain in a particular PDB structure.",
+                     "example": "The structure 1R05 contains two protein chains of the Max transcription factor homodimer with no DNA. To find structures which contain protein chains with a 90% sequence similarity to the chains in this structure, you would specify '90%' under the sequence similarity drop down, '1R05' in the PDB ID input, and 'A' in the chain ID input."
+             }, {
+                     "item": "Name/UniProt ID",
+                     "id": "protein_name",
+                     "description": "Matches proteins chains which contain sequences identifiable with a protein name or a UniProt ID for the sequence.",
+                     "example": "Max or P61244"
+             }, {
+                     "item": "CATH Identifier",
+                     "id": "cath_id",
+                     "description": "Matches protein chain which contain a specified CATH domain. This can be at the level of class, architecture, topology or homologous superfamily.",
+                     "example": "4.10.280.10, 4.10.280, 4.10, or 4 are all valid cath IDs, specifying different levels of the CATH classification hierarchy."
+                 }, {
+                     "item": "interacts with DNA",
+                     "id": "interacts_dna",
+                     "description": "Checking will ensure that any matching chains are actually interacting with the DNA in the structure."
+             }]
+         },
+             {
+                 "item": "Residue Features",
+                 "id": "residue_features",
+                 "description": "Features which describe"
+             }
+    ]
+     },
+     {
+         "item": "DNA Features",
+         "id": "dna_features",
+         "description": "Features which describe the DNA in the structure. These are features which can be calculated or obtained without any knowledge of the protein structure.",
+         "sub-items": [
+             {
+                 "item": "Sequence Features",
+                 "id": "dna_seq_features",
+                 "description": "Features derived from the DNA sequence. This excludes un-paired nucleotides.",
+                 "sub-items": [{
+                         "item": "Sequence Length",
+                         "id": "dna_seq_length",
+                         "example": "10",
+                         "description": "The number of base-pairs in the DNA sequence. Matches structures whose sequence length is within the specified range. If min or max is left unspecified, then the sequence length has no lower or upper bound respectively."
+                },
+                     {
+                         "item": "Sequence Motif",
+                         "id": "dna_seq_motif",
+                         "example": "TATAWW",
+                         "description": "Matches structures where the DNA sequence contains the specified motif. Valid characters include the <a href='http://www.bioinformatics.org/sms/iupac.html'/>IUPAC nucleic acid notation alphabet.</a> Selecting 'not' will match structures which do NOT contain the specified motif."
+                },
+                     {
+                         "item": "GC Content",
+                         "id": "dna_seq_gc_content",
+                         "example": "min: 0.75; will return GC-rich sequences.",
+                         "description": "Matches structures where the DNA sequence GC content falls within the specified range. If min(max) is left unspecified, then the lower(upper) bound is set to 0(1)."
+                }, {
+                         "item": "search within binding site",
+                         "id": "dna_binding_site",
+                         "description": "If checked, then constrain the search to the region of the sequence which is bound by the protein(s) in the structure."
+                }]
+        },
+             {
+                 "item": "Structural Features",
+                 "id": "dna_structural_features",
+                 "description": "Features derived from the DNA structure.",
+                 "sub-items": [{
+                         "item": "Helical Axis Curvature",
+                         "id": "helical_axis_curvature",
+                         "description": "Matches structures where the DNA helical axis curvature is one of the selected options."
+                },
+                     {
+                         "item": "DNA Conformation",
+                         "id": "dna_conformation",
+                         "description": "Matches structures where the DNA conformation is one of the selected options."
+                },
+                     {
+                         "item": "Base Pairing",
+                         "id": "dna_base_pairing",
+                         "description": "Matches structures where the DNA contains at least one of the specified non-Watson-Crick base pairs."
+                },
+                     {
+                         "item": "Chemical Modifications",
+                         "id": "dna_chemical_modifications",
+                         "description": "Matches structures where the DNA contains at least one of the specified chemically modified nucleotides."
+                }]
+            }]
+    },
+     {
+         "item": "DNA-Protein Interaction Features",
+         "id": "interactions",
+         "description": "Features which describe the DNA-protein interactions in the structure.",
+         "sub-items": [
+             {
+                 "item": "DNA-Protein Interface Features",
+                 "id": "interface_features",
+                 "description": "Features related to global properties of a DNA-protein interface in the structure. These are statistics over all nucleotide-residue interactions or descriptions of the protein interface surface region.",
+                 "sub-items": [{
+                         "item": "Major Groove Contacts",
+                         "id": "major_groove_contacts",
+                         "description": "Matches structures where the selected secondary structure element types contact the DNA in the major groove. Selecting 'none' specifies that there should be no major groove contacts in the structure."
+                },
+                     {
+                         "item": "Minor Groove Contacts",
+                         "id": "minor_groove_contacts",
+                         "description": "Matches structures where the selected secondary structure element types contact the DNA in the minor groove. Selecting 'none' specifies that there should be no minor groove contacts in the structure."
+                },
+                     {
+                         "item": "Backbone Contacts",
+                         "id": "backbone_contacts",
+                         "description": "Matches structures where the selected secondary structure element types contact the DNA backbone. Selecting 'none' specifies that there should be no backbone contacts in the structure. Note that this is extremely unlikely."
+                },
+                     {
+                         "item": "Secondary Structure Composition",
+                         "id": "ss_composition",
+                         "description": "Matches structures where the overall secondary structure composition of the interface matches the selected values. Secondary structure composition is calculated based on buried solvent accessible surface area (BASA)."
+                },
+                     {
+                         "item": "Residue Propensities",
+                         "id": "propensities",
+                         "description": "Matches structures where the selected residues match the selected propensity thresholds. Propensity measures how common a residue is in the DNA-protein interface relative to the rest of the solvent exposed protein surface. Enhanced residues are more common in the interface relative to the rest of the protein surface, and depleted residues are less common in the interface relative to the protein surface."
+                }]
+    },
+             {
+                 "item": "Nucleotide-Residue Interaction Features",
+                 "id": "nuc-res_interactions",
+                 "description": "Features related to individual Nucleotide-Residue interactions in the structure. Matches structures which have at least one nucleotide-residue interaction which meets the specified criteria.",
+                 "sub-items": [{
+                         "item": "Nucleotide Base(s)",
+                         "id": "nuc_name",
+                         "description": "Select the name of a nucleotide which should be involved in the pair-wise interaction. If left blank, any nucleotide will match. Multiple selections will match any of the selected values."
+                },
+                     {
+                         "item": "Protein Residue(s)",
+                         "id": "res_num",
+                         "description": "Select the name of a residue which should be involved in the pair-wise interaction. If left blank, any residue will match. Multiple selections will match any of the selected values."
+                },
+                     {
+                         "item": "Residue Secondary Structure",
+                         "id": "res_ss",
+                         "description": "The secondary structure conformation of the residue involved in the interaction."
+                },
+                     {
+                         "item": "Interaction Geometry",
+                         "id": "interaction_geometry",
+                         "description": "For residues with planar side-chains (arg, phe, tyr, trp, his, asn, asp, gln, glu), a nucleotide-residue interaction can be identified as potentially being in a stacking-orientation (pseudo-stacking) or a pair-like orientation (pseudo-stacking), otherwise the geometry is 'none'. These geometries are identified using the program  <a href='http://forum.x3dna.org/dna-protein-interactions/snap-software-for-characterizing-dna-protein-interactions/'>SNAP</a> by Xiang-Jun Lu."
+                },
+                     {
+                         "item": "Interaction Groove",
+                         "id": "interaction_groove",
+                         "description": "Which groove of the DNA the interaction takes place in, determined by BASA."
+                },
+                     {
+                         "item": "Hydrogen Bonds",
+                         "id": "interaction_hbonds",
+                         "description": "Matches interactions where there is at least one hydrogen bond between the residue and nucleotide in the specified DNA groove."
+                },
+                     {
+                         "item": "vdW Interactions",
+                         "id": "interaction_vdw",
+                         "description": "Matches interactions where there is at least one vdW interactions occurs between the residue and nucleotide in the specified DNA groove."
+                }]
+    }]
+    },
+    {
+         "item": "Model",
+         "id": "model",
+         "description": "A model is one possible structure in an ensemble of structures that are possible for a given set of residues/nucleotides. Multiple model entries usually occur for NMR structures, where as structures obtained through X-ray diffraction will usually only have a single model. Any quantity which is derived from the three dimensional coordinates of the residues/nucleotides may vary across models. This includes protein secondary structure, nucleotide base-pairing, and nucleotide-residue interactions."
+    },
+    {
+         "item": "DNA Strand",
+         "id": "dna_strand",
+         "description": "A DNA strand is any number of nucleotides which create a polymeric chain via phosphodiester bonds. Ideally, a DNA chain would correspond to exactly one strand, however often chain breaks occur and a chain may contain multiple strands. Strands are model-dependent and different models may have different strands depending on how much the nucleotide coordinates vary."
+    },
+     
+          {
+         "item": "DNA Entity",
+         "id": "dna_entities",
+        "example": "C1@D1 - a typical DNA entity identifier for an entity composed of strands C1 and D1.",
+         "description": "A DNA entity is a collection of DNA strands which are connected via base pairing or base-stacking interactions to form a connected sub-component of the structure. Often a structure will only have a single DNA entity, but some structures may have many. Multiple DNA entities may be caused by missing nucleotides, incorrect biological assembly, or may be a genuine feature of the relevant biological structure. An entity identifier is simply a concatenation of the strand identifiers which compose the entity. DNAproDB defines interfaces at the level of DNA entities and protein entities - one interface per interacting DNA entity-protein entity pair."
+    },
+               {
+         "item": "Protein Chain Segments",
+         "id": "protein_chain_segments",
+         "description": "A protein chain segment is a continuous stretch of a protein chain which does not contain any chain breaks. If a chain has multiple breaks, then each break will correspond to two chain segments. Chain breaks generally ocurr when residues are missing or are incomplete."
+    },
+               {
+         "item": "Protein Entity",
+         "id": "protein_entities",
+         "description": "A Protein entity is a collection of protein chain segments which are in contact with one another to form a connected sub-component of the structure. A protein entity may consist of multiple protein chains, and will usually form a biologically relevant complex, such as a heterodimer. DNAproDB defines interfaces at the level of DNA entities and protein entities - one interface per interacting DNA entity-protein entity pair."
+    },
+     {
+         "item": "DNA Moieties",
+         "id": "dna_moieties",
+         "description": "A DNA moiety is a structural subcomponent of a nucleotide, which depends on the secondary structure. For double-stranded helices, a nucleotide has a phosphate moiety, sugar moiety, and a major and minor groove moiety. Single-stranded DNA obviously does not have a major or minor groove, therefore the entire base is treated as a moiety. DNAproDB identifies nucleotide-residue interactions by which moieties are interacting. For example, a side-chain-minor groove interaction. When visualization these interactions, you can choose which DNA moiety interactions are displayed."
+    },
+     {
+         "item": "Secondary Structure Element (SSE) Types",
+         "id": "sse_types",
+         "description": "DNAproDB uses three classes to describe protein secondary structure. The two basic types are Helices and Strands - everything else is considered a loop. Note that distinctions between different helix types are not made. When visualizing an interface, you may filter residues by their secondary structure type using the advanced interaction options."
+    },
+     {
+         "item": "SSE Marker Size",
+         "id": "marker_represents",
+         "description": "You may choose what the size (e.g. area) of each marker that corresponds to a SSE represents. By default, the area represents the BASA of the SSE for the selected grooves, (i.e. the BASA due to contact with the DNA major groove), but you may instead wish to represent hydrogen bond count, residue count, or the number of nucleotide interactions."
+    },
+    {
+         "item": "Weak Interaction",
+         "id": "weak_interactions",
+         "description": "A nucleotide-residue interaction is considered 'weak' if it meets the threshold of an interaction (minimum distance < 4.5 angstroms), but the interactions features are weak relative to all other nucleotide-residue interactions of the same type. The features considered include the number of hydrogen bonds, the buried accessible surface area, and number of van der waals interactions. By default weak interactions are excluded from visualizations."
+    },
+     {
+         "item": "Interaction Criteria",
+         "id": "interaction_criteria",
+         "description": "You may apply custom cut-off values of various criteria to use for deciding which interactions to draw. A nucleotide-residue or nucleotide-sse interaction will be included only if it meets any of the cutoffs chosen. To ignore a criteria, set it to zero. ",
+         "sub-items": [
+             {
+                 "item": "BASA",
+                 "id": "interaction_basa",
+                 "description": "BASA stands for Buried solvent Accessible Surface Area and represents the sum of the area of the solvent accessible surface of a residue and nucleotide which is lost during an interaction. BASA can be broken down into components by DNA moiety, and these components are used to identify interactions in the DNA major groove, minor groove, base, sugar or phosphate."
+            },
+             {
+                 "item": "Hbonds",
+                 "id": "interaction_hbonds",
+                 "description": "The number of hydrogen bonds between a residue and a nucleotide for a given moiety."
+            },
+             {
+                 "item": "vdW Interactions",
+                 "id": "interaction_vdw",
+                 "description": "The number of van der Waal interactions between a residue and a nucleotide for a given moiety."
+            }
+        ]
+    }
+ ]

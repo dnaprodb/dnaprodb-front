@@ -1,0 +1,83 @@
+#!/home/conda/bin/python
+
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import os
+import json
+import cgi
+from jinja2 import Template
+
+def isList(value):
+    return isinstance(value, list)
+
+data = cgi.FieldStorage()
+
+GLOSSARY_PATH = os.path.abspath("../htdocs/resources")
+GLOSSARY_NAME = "glossary.json"
+with open(os.path.join(GLOSSARY_PATH, GLOSSARY_NAME)) as JSON_FILE:
+    JSON_DATA = json.load(JSON_FILE)
+
+TEMPLATE = Template("""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Glossary of DNAproDB Terms and Concepts</title>
+    <meta charset="utf-8">
+    <style> 
+    ul { list-style-type: none; } 
+    hr { margin-top: 15px; margin-bottom: 15px;}
+    .no-pad { padding-left: 0; }
+    strong.highlight { background-color: yellow; color: black; }
+    </style>
+</head>
+<body>
+<ul class="no-pad">
+{%- for item in JSON recursive %}
+  {%- if item.id == ID %}
+  <li id="{{item.id}}"><strong class="highlight">{{item.item}}</strong></li>
+  {%- else %}
+  <li id="{{item.id}}"><strong>{{item.item}}</strong></li>
+  {%- endif %}
+  <li><u>Description:</u> {{item.description}}</li>
+  {%- if item.example %}
+    {%- if item.example is string %}
+      <li><u>Example:</u> {{item.example}}</li>
+    {%- elif item.example is iterable %}
+      {%- for e in item.example %}
+        <li><u>Example:</u> {{e}}</li>
+      {%- endfor %}
+    {%- endif %}
+  {%- endif %}
+  {%- if item['sub-items'] %}
+    <ul> {{ loop(item['sub-items']) }} </ul>
+  {%- endif %}
+  {% if not loop.last %}
+  <hr>
+  {% endif %}
+{%- endfor %}
+</ul>
+</body>
+</html>""")
+
+if("id" in data):
+    ID = data.getvalue("id", None)
+if("query" in data):
+    QUERY = data.getvalue("query", None)
+    
+
+print "Content-Type: text/html"
+print
+print TEMPLATE.render(JSON=JSON_DATA,ID=ID)
+

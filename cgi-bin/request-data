@@ -1,0 +1,165 @@
+#!/home/conda/bin/python
+
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import cgi
+import cgitb
+import json
+import pymongo
+import re
+import json
+from bson import ObjectId
+from pymongo import MongoClient
+import datetime
+
+class JSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if isinstance(o, ObjectId):
+            return str(o)
+        return json.JSONEncoder.default(self, o)
+
+def compile_regex(search_dict, field):
+    # compile any regex expressions found in search query string
+    for key, value in search_dict.iteritems():
+        if key == field:
+            search_dict[key] = re.compile(value.strip('/'))
+        elif isinstance(value, dict):
+            compile_regex(value,field)
+        elif isinstance(value, list):
+            for item in value:
+                if isinstance(item, dict):
+                    compile_regex(item, field)
+        elif(key == "$not" and isinstance(value, basestring)):
+            if(re.search('^/.*/$', value)):
+                search_dict[key] = re.compile(value.strip('/'))
+
+def printOutput(output, indent=None):
+    print "Content-Type: application/json"
+    print
+    print json.dumps(output, indent=indent)
+    exit(0)
+
+# Retrieve GET/POST data
+cgitb.enable()
+REQUEST = cgi.FieldStorage()
+db = REQUEST.getvalue("db", "dnaprodb2")
+collection = REQUEST.getvalue("collection", "dna-protein")
+
+# Connect to MongoDB
+try:
+    client = MongoClient()
+except pymongo.errors.ConnectionFailure:
+    printOutput({
+        'return_status': 'error', 
+        'message': 'could not connect to mongodb.{}.{}'.format(db,collection)
+    }, indent=2)
+
+# Check that db/collection are valid
+try:
+    dname = client[db].name
+    cname = client[db][collection].name
+except pymongo.errors.InvalidName:
+    printOutput({
+        'return_status': 'error', 
+        'message': 'invalid name used: ({}.{})'.format(db, collection)
+    }, indent=2)
+except pymongo.errors.CollectionInvalid:
+     printOutput({
+        'return_status': 'error', 
+        'message': 'invalid collection: {}'.format(collection)
+    }, indent=2)
+
+# Decide what to do. 
+if("query" in REQUEST):
+    query = REQUEST.getvalue("query")
+    
+    try:
+        query_d = json.loads(query)
+        compile_regex(query_d, "$regex")
+        OUTPUT = []
+        results = client[db][collection].find(query_d, {'_id': False})
+        for result in results:
+            OUTPUT.append(result)
+        printOutput(OUTPUT)
+    except pymongo.errors.OperationFailure:
+        printOutput({
+            'return_status': 'error', 
+            'message': 'could not perform query, possibly malformed string: {}'.format(query)
+        }, indent=2)
+elif("pdbid" in REQUEST):
+    pdbid = REQUEST.getvalue("pdbid")
+    
+    try:
+        result = client[db][collection].find_one({"structure_id":pdbid}, {'_id': False})
+        printOutput(result)
+    except pymongo.errors.OperationFailure:
+        printOutput({
+            'return_status': 'error', 
+            'message': 'invalid PDBID ({}) or not found in database'.format(pdbid)
+        }, indent=2)
+elif("count" in REQUEST):
+    try:
+        count = client[db][collection].count()
+        printOutput({
+            'count': count
+        })
+    except pymongo.errors.OperationFailure:
+        printOutput({
+            'return_status': 'error', 
+            'message': 'Unable to process the request. Please contact the database admin for assistance.'
+        }, indent=2)
+elif("last-updated" in REQUEST):
+    months = [
+        "Unknown",
+        "January",
+        "February",
+        "March",
+        "April",
+        "May",
+        "June",
+        "July",
+        "August",
+        "September",
+        "October",
+        "November",
+        "December"
+        ]
+    try:
+        pdb_date = client[db][collection].find_one(
+            sort=[("meta_data.citation_data.release_date", -1)], 
+            projection={"meta_data.citation_data.release_date": 1}
+        )["meta_data"]["citation_data"]["release_date"]
+        pdb_date = datetime.datetime.strptime(pdb_date, "%Y-%m-%d")
+        
+        process_date = client[db][collection].find_one(
+            sort=[("meta_data.processed_date", -1)],
+            projection={"meta_data.processed_date": 1}
+        )["meta_data"]["processed_date"]
+        process_date = datetime.datetime.strptime(process_date, "%Y-%m-%d")
+        
+        printOutput({
+            'last_pdb_retrieval': "{} {}, {}".format(months[pdb_date.month], pdb_date.day, pdb_date.year),
+            'last_database_update': "{} {}, {}".format(months[process_date.month], process_date.day, process_date.year)
+        })
+    except pymongo.errors.OperationFailure:
+        printOutput({
+            'return_status': 'error', 
+            'message': 'Unable to process the request. Please contact the database admin for assistance.'
+        }, indent=2)
+else:
+    printOutput({
+            'return_status': 'error', 
+            'message': 'Empty GET/POST request. What do you want?'
+        }, indent=2)

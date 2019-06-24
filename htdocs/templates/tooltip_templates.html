@@ -1,0 +1,201 @@
+<style>
+div.tooltip {
+    position: fixed;
+    font: 12px sans-serif;
+    border: 0px;
+    pointer-events: none;
+    background-color: white;
+    opacity: 0;
+}
+</style>
+
+<!-- Residue Tooltip -->
+<script id="residue_tooltip" type="text/x-handlebars-template">
+    <div class="card-header text-white bg-dark p-2">
+        <strong>Residue: {{name}} {{chain}} {{number}}{{ins_code}} ({{label}}) &mdash; {{chem_name}}</strong>
+    </div>
+    <div class="card-body p-0" style="background-color: {{color}};">
+        <table class="table table-sm">
+            <tbody>
+                <tr>
+                    <td class="text-right"><strong>SST</strong>:</td>
+                    <td>{{sst}}</td>
+                    <td class="text-right"><strong>SAP</strong>:</td>
+                    <td>{{sap}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>SC BASA</strong>:</td>
+                    <td>{{scbasa}}</td>
+                    <td class="text-right"><strong>MC BASA</strong>:</td>
+                    <td>{{mcbasa}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>SC FASA</strong>:</td>
+                    <td>{{scfasa}}</td>
+                    <td class="text-right"><strong>MC FASA</strong>:</td>
+                    <td>{{mcfasa}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>SC FESA</strong>:</td>
+                    <td>{{scfesa}}</td>
+                    <td class="text-right"><strong>MC FESA</strong>:</td>
+                    <td>{{mcfesa}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>CV Fine</strong>:</td>
+                    <td>{{cvfine}}</td>
+                    <td class="text-right"><strong>CV Coarse</strong>:</td>
+                    <td>{{cvcoarse}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="my-0 font-weight-bold text-center">Interaction Summary</p>
+        <table class="table table-sm thead-dark my-0">
+            <thead>
+                <th>DNA Moiety</th>
+                <th>HB Count</th>
+                <th>VdW Count</th>
+                <th>Nuc. Int. Count</th>
+            </thead>
+            <tbody>
+                {{#each mtyitem}}
+                <tr>
+                    <td>{{this.moiety}}</td>
+                    <td>{{this.hbond}}</td>
+                    <td>{{this.vdw}}</td>
+                    <td>{{this.int_count}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<!-- SSE Tooltip -->
+<script id="sse_tooltip" type="text/x-handlebars-template">
+    <div class="card-header text-white bg-dark p-2">
+        <strong>Secondary Structure Element: {{id}} ({{label}})</strong>
+    </div>
+    <div class="card-body p-0" style="background-color: {{color}};">
+        <table class="table table-sm">
+            <tbody>
+                <tr>
+                    <td class="text-right"><strong>SST</strong>:</td>
+                    <td>{{sst}}</td>
+                    <td class="text-right"><strong># of Residues</strong>:</td>
+                    <td>{{rnum}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>SC BASA</strong>:</td>
+                    <td>{{scbasa}}</td>
+                    <td class="text-right"><strong>MC BASA</strong>:</td>
+                    <td>{{mcbasa}}</td>
+                </tr>
+            </tbody>
+        </table>
+        <p class="my-0 font-weight-bold text-center">Interaction Summary</p>
+        <table class="table table-sm my-0">
+            <thead>
+                <th>Moiety</th>
+                <th>HB Count</th>
+                <th>VdW Count</th>
+                <th>Nuc. Int. Count</th>
+            </thead>
+            <tbody>
+                {{#each mtyitem}}
+                <tr>
+                    <td>{{this.moiety}}</td>
+                    <td>{{this.hbond}}</td>
+                    <td>{{this.vdw}}</td>
+                    <td>{{this.int_count}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</script>
+
+<!-- Nucleotide Tooltip -->
+<script id="nucleotide_tooltip" type="text/x-handlebars-template">
+    <div class="card-header text-white bg-dark p-2">
+        <strong>Nucleotide: {{name}} {{chain}} {{number}}{{ins_code}} ({{label}}) &mdash; {{chem_name}}</strong>
+    </div>
+    <div class="card-body p-0" style="background-color: {{color}};">
+        <table class="table table-sm my-0">
+            <tbody>
+                <tr>
+                    <td class="text-right"><strong>SST</strong>:</td>
+                    <td>{{sst}}</td>
+                    <td class="text-right"><strong>Glyco. Conformation</strong>:</td>
+                    <td>{{glyco}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>PP. present</strong>:</td>
+                    <td>{{ppp}}</td>
+                    <td class="text-right"><strong>Chemical Modifications</strong>:</td>
+                    <td>{{modified}}</td>
+                </tr>
+            </tbody>
+        </table>
+        {{#if mtyitem}}
+        <p class="mb-0 mt-2 font-weight-bold text-center">Moiety Summary</p>
+        <table class="table table-sm my-0">
+            <thead>
+                <th>Moiety</th>
+                <th>BASA</th>
+                <th>FASA</th>
+                <th>Hbond</th>
+                <th>Vdw Count</th>
+            </thead>
+            <tbody>
+                {{#each mtyitem}}
+                <tr>
+                    <td>{{this.moiety}}</td>
+                    <td>{{this.basa}}</td>
+                    <td>{{this.fasa}}</td>
+                    <td>{{this.hbond}}</td>
+                    <td>{{this.vdw}}</td>
+                </tr>
+                {{/each}}
+            </tbody>
+        </table>
+        {{/if}}
+    </div>
+</script>
+
+<!-- Residue Interaction Tooltip -->
+<script id="residue_interaction_tooltip" type="text/x-handlebars-template">
+    <div class="card-header text-white bg-dark p-2">
+        <strong>Interaction: {{nuc_name}} {{nuc_chain}} {{nuc_number}}{{nuc_ins_code}} ({{nuc_label}}) &mdash; {{res_name}} {{res_chain}} {{res_number}}{{res_ins_code}} ({{res_label}})</strong>
+    </div>
+    <div class="card-body p-0" style="background-color: {{color}};">
+        <table class="table table-sm">
+            <tbody>
+                <tr>
+                    <td class="text-right"><strong>{{mty}} BASA</strong>:</td>
+                    <td>{{basa}}</td>
+                    <td class="text-right"><strong>{{mty}} HBonds</strong>:</td>
+                    <td>{{hbond}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>{{mty}} vdW Count</strong>:</td>
+                    <td>{{vdw}}</td>
+                    <td class="text-right"><strong>Min Distance</strong>:</td>
+                    <td>{{mindist}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>CoM Distance</strong>:</td>
+                    <td>{{comdist}}</td>
+                    <td class="text-right"><strong>MNN Distance</strong>:</td>
+                    <td>{{mnndist}}</td>
+                </tr>
+                <tr>
+                    <td class="text-right"><strong>Geometry</strong>:</td>
+                    <td>{{geo}}</td>
+                    <td class="text-right"><strong>Weak</strong>:</td>
+                    <td>{{weak}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</script>

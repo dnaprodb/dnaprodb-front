@@ -1,0 +1,208 @@
+<style>
+    .scroll-x {
+        max-width: 250px;
+        overflow-x: auto;
+        scrollbar-width: thin;
+    }
+    
+    .scroll-y {
+        max-height: 75px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    
+    .no-scroll-x {
+        max-width: none;
+        overflow-x: hidden;
+    }
+    
+    table.nw {
+        white-space: nowrap;
+    }
+    
+    .mono {
+      font-family: Courier, monospace;
+    }
+    
+    .pro {
+        background-color: #01796F;
+    }
+    
+    .dna {
+        background-color: #996699;
+    }
+    
+    .int {
+        background-color: #34DDDD;
+    }
+    
+    /*
+    div.resize:hover {
+        max-width: none;
+        max-height: 125px;
+    }
+    div.resize {
+        max-width: 300px;
+        overflow-x: hidden;
+    }
+    */
+    table th:first-child {
+        border-radius:5px 0 0 5px;
+    }
+
+    table th:last-child {
+        border-radius:0 5px 5px 0;
+    }
+</style>
+
+<!-- Protein Table Row Template -->
+<script id="protein_chain_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{chain_id}}</td>
+        <td>{{au_id}}</td>
+        <td>{{{uniprot}}}</td>
+        <td><div class="scroll-y">{{{cath}}}</div></td>
+        <td><div class="scroll-y no-scroll-x">{{{go_function}}}</div></td>
+        <td><div class="scroll-y no-scroll-x">{{{go_process}}}</div></td>
+        <td><div class="scroll-y no-scroll-x">{{{go_component}}}</div></td>
+        <td><div class="scroll-y no-scroll-x">{{{names}}}</div></td>
+        <td>{{organism}}</td>
+        <td><div class="scroll-x mono">{{{sequence}}}</div></td>
+        <td>{{length}}</td>
+        <td>{{{ss}}}</td>
+        <td><div class="scroll-y">{{{segments}}}</div></td>
+    </tr>
+</script>
+                            
+<script id="protein_segment_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{id}}</td>
+        <td>{{length}}</td>
+        <td>{{start}}</td>
+        <td>{{stop}}</td>
+    </tr>
+</script>
+
+<script id="protein_entity_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{entity_id}}</td>
+        <td>{{res_count}}</td>
+        <td>{{seg_count}}</td>
+        <td>{{segments}}</td>
+    </tr>
+    <!--
+    <tr>
+    <td><button type="button" class="btn btn-sm btn-info" data-toggle="collapse" data-target="#{{collapse_id}}" name="show_segments">show</button></td>
+        <td colspan="4">
+            <div id="{{collapse_id}}" class="collapse">
+                <table>
+                    <thead>
+                        <th>Segment ID</th>
+                        <th>Length</th>
+                        <th>N terminal Residue</th>
+                        <th>C terminal Residue</th>
+                    </thead>
+                    <tbody>
+                        {{#each segments}}
+                        <tr>
+                            <td>{{this.id}}</td>
+                            <td>{{this.length}}</td>
+                            <td>{{this.start}}</td>
+                            <td>{{this.stop}}</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </td>
+    </tr>
+    -->
+</script>
+
+<!-- DNA Table Row Template -->
+<script id="dna_entity_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{entity_id}}</td>
+        <td>{{entity_type}}</td>
+        <td>{{num_nucleotides}}</td>
+        <td>{{num_basepairs}}</td>
+        <td>{{num_strands}}</td>
+        <td>{{num_helices}}</td>
+        <td>{{num_segments}}</td>
+    </tr>
+</script>
+
+<script id="dna_strand_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{parent_id}}</td>
+        <td>{{strand_id}}</td>
+        <td>{{length}}</td>
+        <td>{{p5}}</td>
+        <td>{{p3}}</td>
+        <td><div class="scroll-x mono">{{sequence}}</div></td>
+        <td>{{gc_content}}</td>
+        <td>{{interacts}}</td>
+    </tr>
+</script>
+
+<script id="dna_helix_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{parent_id}}</td>
+        <td>{{id}}</td>
+        <td><div class="scroll-x mono">{{{sequence}}}</div></td>
+        <td>{{length}}</td>
+        <td>{{conformation}}</td>
+        <td>{{atracts}}</td>
+        <td>{{mismatches}}</td>
+        <td>{{non_wc}}</td>
+        <td>{{gc_content}}</td>
+        <td>{{radius}}</td>
+        <td>{{curvature}}</td>
+        <td>{{axis_length}}</td>
+    </tr>
+</script>
+
+<!-- Interface Table Row Template -->
+<script id="interface_table_row" type="text/x-handlebars-template">
+    <tr>
+        <td>{{dna_entity_id}}</td>
+        <td>{{pro_chain_id}}</td>
+        <td>{{pro_chain_segments}}</td>
+        <td>{{nuc_res_interactions}}</td>
+        <td>{{nuc_res_weak_interactions}}</td>
+        <td>{{basa}}</td>
+        <td>{{hbonds}}</td>
+        <td>{{vdw}}</td>
+        <td>{{hydrophobicity}}</td>
+        <td>{{ss_composition}}</td>
+    </tr>
+</script>
+
+<!-- Citation Table Row Template -->
+<script id="citation_table" type="text/x-handlebars-template">
+    <div class="table-responsive">
+        <h4 class="text-center">Structure Citation</h4>
+        <table class="table table-sm nw">
+            <thead class="thead-dark">
+                <th>Authors</th>
+                <th>Year</th>
+                <th>Title</th>
+                <th>DOI</th>
+                <th>PubMed</th>
+                <th>RCSB PDB</th>
+            </thead>
+            <tbody>
+                <tr>
+                    <!--<td><div class="scroll-y">{{{authors}}}</div></td>-->
+                    <td>{{{authors}}}</td>
+                    <td>{{year}}</td>
+                    <td>{{title}}</td>
+                    <td>{{{doi}}}</td>
+                    <td>{{{pubmed}}}</td>
+                    <td><a href="http://www.rcsb.org/pdb/explore/explore.do?structureId={{pdbid}}">{{pdbid}}</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <hr>
+</script>

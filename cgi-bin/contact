@@ -1,0 +1,173 @@
+#!/home/conda/bin/python
+
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import cgi
+import cgitb
+import smtplib
+import os
+import requests
+from jinja2 import Environment, FileSystemLoader
+import json
+
+# Initialize CGI
+cgitb.enable()
+
+# Stored Constants
+with open("../.sensitive.json") as FH:
+    sensitive = json.load(FH)
+gmail_usr = sensitive["dnaprodb_email_name"]
+gmail_pwd = sensitive["dnaprodb_email_pass"]
+cc_list = [sensitive["usc_email_name"]]
+
+TEMPLATE_PATH = os.path.abspath("../htdocs/templates")
+TEMPLATE_NAME = "contact_template.html"
+NAV_PATH = os.path.join(TEMPLATE_PATH, "nav.html")
+FOOT_PATH = os.path.join(TEMPLATE_PATH, "foot.html")
+
+# retrieve the HTML templates
+j2Env = Environment(loader=FileSystemLoader(TEMPLATE_PATH),trim_blocks=True)
+template = j2Env.get_template(TEMPLATE_NAME)
+
+with open(NAV_PATH,'r') as NAV:
+    nav_html = NAV.read()
+
+with open(FOOT_PATH,'r') as FOOT:
+    foot_html = FOOT.read()
+
+if( os.environ['REQUEST_METHOD'] == "GET"):
+    with open(os.path.join(TEMPLATE_PATH, "contact_form.html"), "r") as UPLOAD_FORM:
+        content_html = UPLOAD_FORM.read() 
+    
+    javascript_html = """
+    <script type="text/javascript">
+        $.validator.setDefaults({
+            errorElement: 'span',
+            errorPlacement: function (error, element) {
+                error.addClass('invalid-feedback');
+                element.closest('.form-group').append(error);
+            },
+            highlight: function (element, errorClass, validClass) {
+                $(element).addClass('is-invalid');
+            },
+            unhighlight: function (element, errorClass, validClass) {
+                $(element).removeClass('is-invalid');
+            }
+        });
+        
+        $("#contact_form").validate({
+            ignore: ".ignore",
+            rules: {
+                email: {
+                    email: true
+                },
+                name :{
+                    maxlength: 100
+                },
+                subject: {
+                    required: true
+                },
+                message: {
+                    required: true,
+                    maxlength: 10000
+                },
+                'g-recaptcha-response': {
+                    required: function () {
+                        return grecaptcha.getResponse() == '';
+                    }
+                }
+            },
+            messages: {
+                name: {
+                    maxlength: "name must be 100 characters or less"
+                },
+                message: {
+                    maxlength: "message must be 10,000 characters or less",
+                    required: "please enter a message"
+                },
+                subject: {
+                    required: "please choose a subject"
+                },
+                'g-recaptcha-response': {
+                    required: "please verify you are human"
+                }
+            }
+        });
+        
+        function captcha_load_callback() {
+            grecaptcha.render('recaptcha', {
+                'sitekey' : '%s'
+            });
+        }
+    </script>
+    <script src="https://www.google.com/recaptcha/api.js?onload=captcha_load_callback&render=explicit" async defer></script>
+    """ % (sensitive["recaptcha_public_key"])
+else:
+    javascript_html = ""
+    captcha_verify_url = "https://www.google.com/recaptcha/api/siteverify"
+    secret_key = sensitive["recaptcha_secret_key"]
+    form = cgi.FieldStorage()
+    TO = gmail_usr
+    CC = cc_list
+    
+    # Read form data
+    NAME = form.getvalue("name", "anonymous")
+    SUBJECT = form.getvalue("subject")
+    FROM = form.getvalue("email", "anonymous")
+    TEXT = form.getvalue("message")
+    CAPTCHA = form.getvalue("g-recaptcha-response")
+    
+    r = requests.post(captcha_verify_url, data={"secret": secret_key, "response": CAPTCHA})
+    if(r.json()["success"]):
+        # Prepare the message
+        message = "To: %s\r\nCC: %s\r\nSubject: (%s) %s\r\n\r\nName: %s\r\nE-mail: %s\r\n%s" % (TO, ",".join(CC), NAME, SUBJECT, NAME, FROM, TEXT)
+        toaddrs = [gmail_usr] + cc_list
+        try:
+            server = smtplib.SMTP("smtp.gmail.com", 587)
+            server.ehlo()
+            server.starttls()
+            server.login(gmail_usr, gmail_pwd)
+            server.sendmail(FROM, toaddrs, message)
+            server.close()
+            content_html = """
+            <h4>Your message has been recieved</h4>
+            <p>We greatly appreciate your feedback! To send another message, click <a href="/cgi-bin/contact">here</a></p>
+            """
+        except:
+            content_html = """
+            <p>
+            We apologize, but an internal server error occured and your message could not be delivered. You can use the back-button on your browser
+            to recover your message, and manually e-mail us at <a href="mailto:dnaprodb@gmail.com">dnaprodb@gmail.com</a> with your feedback.
+            Thank you for your interest in DNAproDB.
+            </p>
+            """
+    else:
+        content_html = """
+            <p>Sorry, but we couldn't confirm if you're a human or not. Please click <a href="/cgi-bin/contact">here</a> to try again.</p>
+            """
+
+# render the HTML
+context = {
+    'content': content_html,
+    'nav': nav_html,
+    'foot': foot_html,
+    'scripts': javascript_html
+}
+html = template.render(context)
+
+# send to browser
+print "Content-Type: text/html"
+print
+print html

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title>Download DNAproDB</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+     <!-- Bootstrap Code/Bootstrap Plugins -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/main.css?v=1488920049">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/images/fav.ico/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/images/fav.ico/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/fav.ico/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/images/fav.ico/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/images/fav.ico/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/fav.ico/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/fav.ico/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/fav.ico/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/fav.ico/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/fav.ico/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/fav.ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/images/fav.ico/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/fav.ico/favicon-16x16.png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/images/fav.ico/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+</head>
+
+<body>
+    <div id="nav-wrapper"></div>
+    <div class="container">
+        <h3 class="mt-3">Download the DNAproDB Database</h3>
+        <p>Below are links where you can download the entire DNAproDB database for your own use. The file you'll recieve is a compressed text file. Once extracted, <strong>each line will contain a single JSON document </strong>corresponding to a single DNA-protein complex which is stored in the database. You'll have to read the file line-by-line and parse each line individually, rather than parsing the entire file at once. Only the data which is extracted from the structure is stored - the actual coordinates of the structures are not provided. The uncompressed file will be several GB in size.</p>
+        
+        <p> To extract the file, use the program p7zip. A useful tutorial is available <a href="https://www.ibm.com/developerworks/community/blogs/6e6f6d1b-95c3-46df-8a26-b7efd8ee4b57/entry/how_to_use_7zip_on_linux_command_line144?lang=en">here</a>. Once installed, the command to extract is simply:</p>
+        
+        <pre><code>7z e &lt;FILE_NAME&gt;</code></pre>
+        
+        <p>If you use data provided by DNAproDB in your work, please remember to cite us!</p>
+        <h3>Links</h3>
+        <p>Right-click, choose "save link as..." and choose a filename and destination.</p>
+        <p>Version 2.0 (beta release): <a href="/data/dnaprodb_2.0.7z">http://dnaprodb.usc.edu/data/dnaprodb_2.0.7z</a></p>
+        <p>Version 1.0 (initial release): <a href="/data/dnaprodb_1.0.7z">http://dnaprodb.usc.edu/data/dnaprodb_1.0.7z</a></p>
+    </div>
+    <div id="foot-wrapper"></div>
+
+    <!-- JQuery, Popper and Bootstap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    
+    <!-- Load the navbar and footer -->
+    <script type="text/javascript">
+        $("#nav-wrapper").load("/templates/nav.html", function () {
+            $("#nav_download").addClass("active");
+        });
+        $("#foot-wrapper").load("/templates/foot.html");
+    </script>
+</body>
+
+</html>

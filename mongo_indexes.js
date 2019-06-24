@@ -1,0 +1,24 @@
+database = 'dnaprodb2';
+collection = 'dna-protein';
+
+conn = new Mongo();
+db = conn.getDB(database);
+db[collection].createIndex({"protein.chains.uniprot_names": "text"});
+db[collection].createIndex({"protein.chains.uniprot_accession": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.30": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.40": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.50": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.70": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.90": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.95": 1});
+db[collection].createIndex({"protein.chains.sequence_clusters.100": 1});
+db[collection].createIndex({"protein.chains.cath_class": 1});
+db[collection].createIndex({"protein.chains.cath_architecture": 1});
+db[collection].createIndex({"protein.chains.cath_topology": 1});
+db[collection].createIndex({"protein.chains.cath_homologous_superfamily": 1});
+db[collection].createIndex({"protein.chains.GO_cellular_component.GO_ID": 1});
+db[collection].createIndex({"protein.chains.GO_biological_process.GO_ID": 1});
+db[collection].createIndex({"protein.chains.GO_molecular_function.GO_ID": 1});
+db[collection].createIndex({"structure_id": 1});
+db[collection].createIndex({"meta_data.processed_date": 1});
+db[collection].createIndex({"meta_data.citation_data.release_date": 1});

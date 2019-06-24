@@ -1,0 +1,56 @@
+<nav class="navbar navbar-expand-xl navbar-dark">
+    <a class="navbar-brand" href="/index.html"><img src="/images/nav_logo.png" alt="dnaprodb" height="60px" /></a>
+
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarContent">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navbarContent">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item" id="nav_search">
+                <a class="nav-link" href="/search.html">SEARCH</a>
+            </li>
+            <li class="nav-item" id="nav_upload">
+                <a class="nav-link" href="/cgi-bin/upload">UPLOAD</a>
+            </li>
+            <li class="nav-item" id="nav_documentation">
+                <a class="nav-link" href="/construction.html">DOCUMENTATION</a>
+            </li>
+            <li class="nav-item" id="nav_contact">
+                <a class="nav-link" href="/cgi-bin/contact">CONTACT</a>
+            </li>
+            <li class="nav-item" id="nav_download">
+                <a class="nav-link" href="/download.html">DOWNLOAD</a>
+            </li>
+        </ul>
+        <div class="form-inline my-2 my-lg-0">
+            <input class="form-control form-control-sm mr-sm-2" type="search" placeholder="enter a PDB identifier" id="quicksearch_input" onfocus="this.placeholder = 'enter a PDB identifier';" onblur="this.placeholder = 'enter a PDB identifier';" maxlength="4" style="width:170px;">
+            <button class="btn btn-sm btn-outline-success my-2 my-sm-0" type="button" onclick="quickSearch();">Quick Search</button>
+        </div>
+    </div>
+</nav>
+
+<script type="text/javascript">
+    function quickSearch() {
+        var pdbid = document.getElementById("quicksearch_input").value.trim();
+        var xhr = new XMLHttpRequest();
+
+        xhr.open('HEAD', `/data/${pdbid[pdbid.length-1]}/${pdbid}.pdb`);
+        xhr.addEventListener("load", function () {
+            if (xhr.status === 200) {
+                window.location.replace(`/cgi-bin/report?pdbid=${pdbid}`);
+            } else {
+                document.getElementById("quicksearch_input").value = "";
+                document.getElementById("quicksearch_input").placeholder = `"${pdbid}" not found!`;
+            }
+        });
+        xhr.send();
+    }
+
+    var input = document.getElementById("quicksearch_input");
+    input.addEventListener("keyup", function (event) {
+        if (event.keyCode === 13) {
+            event.preventDefault();
+            quickSearch();
+        }
+    });
+</script>

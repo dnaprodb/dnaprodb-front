@@ -1,0 +1,196 @@
+.line_chart path {
+    fill: none;
+    stroke: #000;
+    stroke-width: 2px;
+}
+
+.highlighted {
+    stroke: #ffcc00 !important;
+    fill: #ffff00 !important;
+}
+
+.nucleotide rect {
+    fill: #fff;
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.nucleotide circle {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.nucleotide polygon {
+    stroke: black;
+    stroke-width: 1px;
+}
+
+.nucleotide text {
+    pointer-events: none;
+    font: 10px sans-serif;
+}
+
+.lines line {
+    stroke: #000;
+    stroke-width: 2px;
+}
+
+.lines line.wg {
+    stroke: #00ffff;
+    stroke-width: 1px;
+}
+
+.lines line.sg {
+    stroke: #dda0dd;
+    stroke-width: 1px;
+}
+
+.lines line.pp {
+    stroke: #ff9933;
+    stroke-width: 1px;
+}
+
+.lines line.sr {
+    stroke: #ffe333;
+    stroke-width: 1px;
+}
+
+.lines line.bs {
+    stroke: #808b96;
+    stroke-width: 1px;
+}
+
+.lines line.background {
+    stroke: #000;
+    stroke-width: 2.5px;
+}
+
+.lines line.watson-crick {
+    stroke: #000;
+}
+
+.lines line.hoogsteen {
+    stroke: #A00;
+}
+
+.lines line.other {
+    stroke: #A00;
+    stroke-dasharray: 5, 5;
+}
+
+.lines line.stack {
+    stroke: #888;
+    stroke-width: 1px;
+}
+
+.lines line.linkage {
+    stroke: orange;
+    stroke-width: 3px;
+}
+
+path.H {
+    fill: #FF0000;
+    stroke: #000;
+    stroke-width: 1.5;
+}
+
+path.S {
+    fill: #49E20E;
+    stroke: #000;
+    stroke-width: 1.5;
+}
+
+path.L {
+    fill: #003EFF;
+    stroke: #000;
+    stroke-width: 1.5;
+}
+
+.legend .shape{
+    stroke: #000;
+    stroke-width: 1px;
+}
+
+.legend path, line {
+    fill: #fff;
+    stroke: #000;
+    stroke-width: 1;
+}
+
+.legend .border {
+    stroke-width: 1.5px;
+    fill: #FFF;
+    stroke: #000;
+}
+
+.legend .base {
+    fill: #fff;
+    stroke-width: 1px;
+}
+
+.legend text {
+    pointer-events: none;
+    font: 14px sans-serif;
+    dominant-baseline: hanging;
+    font-weight: normal;
+}
+
+.label text {
+    pointer-events: none;
+    font: 12px sans-serif;
+    alignment-baseline: middle;
+    text-anchor: middle;
+    dominant-baseline: middle;
+}
+
+#svg_container {
+    border-style: solid;
+}
+
+.grid line {
+  stroke: lightgrey;
+  stroke-opacity: 0.7;
+  shape-rendering: crispEdges;
+}
+
+.grid path {
+  stroke-width: 0;
+}
+
+.frame {
+    fill: none;
+    stroke: #000;
+}
+
+.sop_axis text {
+    font: 15px sans-serif;
+}
+
+.pcm_axis text {
+    font: 15px sans-serif;
+}
+
+.pcm_axis text.sm {
+    font: 10px sans-serif;
+}
+
+.pcm_axis line {
+    fill: none;
+    stroke: #777;
+    stroke-dasharray: 1, 4;
+}
+
+.pcm_axis circle {
+    fill-opacity: 0.5;
+    stroke: #000;
+}
+
+.pcm_axis:last-of-type circle {
+    stroke: #333;
+    stroke-dasharray: none;
+}
+
+.hidden_label_input {
+    position: fixed;
+    opacity: 0;
+}

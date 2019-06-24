@@ -1,0 +1,30 @@
+.error {
+    color: red;
+    font-style: normal;
+}
+
+.navbar {
+    margin-bottom: 0;
+    border-radius: 0;
+    background-color: #020e20;
+}
+
+
+footer {
+    background-color: #020e20;
+    color: white;
+    padding: 15px;
+}
+
+.navbar-nav > .active {
+    color: #000;
+    background: #eee;
+} 
+.navbar-nav > .nav-item:hover,
+.navbar-nav > .nav-item:focus {
+    color: #000;
+    background: #eee;
+}
+.nav-link {
+    color: #007bff !important;
+}

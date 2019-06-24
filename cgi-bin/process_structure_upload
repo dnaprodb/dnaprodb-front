@@ -1,0 +1,254 @@
+#!/home/conda/bin/python
+
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import cgi
+import cgitb
+from Bio.PDB.PDBParser import PDBParser
+import string
+import random
+import smtplib
+import json
+import re
+import os
+import subprocess
+import requests
+
+# Load sensitive information
+with open("../.sensitive.json") as FH:
+    sensitive = json.load(FH)
+
+def send_confirmation_email(TO, title='none', url=None):
+    """
+    Sends a confirmation e-mail to the user if an e-mail was provided.
+    also notifies me that a job was submitted.
+    """
+    sender_email = sensitive["dnaprodb_email_name"]
+    sender_passw = sensitive["dnaprodb_email_pass"]
+    if(TO != 'none'):
+        RECV = [TO, sensitive["usc_email_name"]]
+    else:
+        RECV = [sensitive["usc_email_name"]]
+    
+    # Send confirmation E-mail
+    if(title != 'none'):
+        SUBJECT = "DNAproDB: Confirmation E-mail for your job request ({})".format(title)
+    else:
+        SUBJECT = "DNAproDB: Confirmation E-mail for your job request"
+    TEXT = """\
+This e-mail is to confirm that your job has been submitted and is being processed. You will receive a follow-up e-mail when your \
+job is complete, or to notify you if your job failed for some reason. Please allow \
+up to one hour for this job to complete.
+
+When finished, your structure report will be available at {}. If you wish to keep your data private and secure, do not share this url with other people.
+
+DNAproDB will never share any data which is uploaded to our server, nor do we collect any information from your data. We hope you will find \
+our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (http://dnaprodb.usc.edu/cgi-bin/contact).\
+""".format(url)
+    
+    MESSAGE = "To: %s\r\n" % TO + "Subject: %s\r\n" % SUBJECT + "\r\n" + TEXT
+    
+    server = smtplib.SMTP("smtp.gmail.com", 587)
+    server.ehlo()
+    server.starttls()
+    server.login(sender_email, sender_passw)
+    server.sendmail(sender_email, RECV, MESSAGE)
+    server.close()
+
+def print_html(message, error=False):
+    """
+    Returns the HTML page to the client.
+    """
+    if(error):
+        glyph = "<span class='glyphicon glyphicon-warning-sign' style='color:red;'></span> Structure upload failed!"
+    else:
+        glyph = "<span class='glyphicon glyphicon-ok' style='color:green;'></span>  Your structure has been successfully received!"
+    content = """
+    <h3>{}</h3>
+    <p>{}</p>
+    """.format(glyph, message)
+    
+    # send to browser
+    print "Content-Type: text/html"
+    print
+    print content
+    exit(0)
+
+# Initialize CGI
+cgitb.enable()
+cgi.maxlen = 5*1024*1024
+UPLOAD_PATH = os.path.abspath("../htdocs/uploads")
+SCRIPT_PATH = os.path.abspath("../scripts")
+
+# get form data
+try:
+    form = cgi.FieldStorage()
+except ValueError:
+    message = "The file you uploaded is too large - files must not exceed 5MB. Try removing the PDB header data to reduce the file size."
+    print_html(message, error=True)
+
+# Validate captch response
+captcha_verify_url = "https://www.google.com/recaptcha/api/siteverify"
+secret_key = sensitive["recaptcha_secret_key"]
+CAPTCHA = form.getvalue("g-recaptcha-response")
+
+r = requests.post(captcha_verify_url, data={"secret": secret_key, "response": CAPTCHA})
+if(not r.json()["success"]):
+    # recaptcha failed - reject upload
+    message = "Could not verify that you are human. Please reload the page and try again."
+    print_html(message, error=True)
+
+FILE = form.getvalue("structure")
+EMAIL = form.getvalue("email", "none")
+TITLE = form.getvalue("title", "none")
+PDB2PQR = form.getvalue("pdb2pqr")
+if(not EMAIL):
+    EMAIL = 'none'
+if(not TITLE):
+    TITLE = 'none'
+
+# test the uploaded file is a string
+if(type(FILE) is not str):
+    message = "The file you uploaded was not recognized as a plain-text file. Please ensure the encoding and format is valid."
+    print_html(message, error=True)
+
+# attempt to parse the structure
+parser = PDBParser(PERMISSIVE=True, QUIET=False)
+choices = string.ascii_lowercase + string.ascii_uppercase + string.digits
+RANDOM_ID = ''.join(random.SystemRandom().choice(choices) for _ in range(15))
+FILE_NAME = RANDOM_ID + ".pdb"
+try:
+    FH = open("{}/{}".format(UPLOAD_PATH, FILE_NAME), "w")
+    FH.write(FILE)
+    FH.close()
+    
+    structure = parser.get_structure("test", "{}/{}".format(UPLOAD_PATH, FILE_NAME))
+except Exception as error:
+    message = "Parsing of this structure failed. Please address any format issues and try again.<br>Technical information which may be relevant: {}".format(str(error))
+    if(os.access("{}/{}".format(UPLOAD_PATH, FILE_NAME), os.R_OK)):
+        os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+
+# Verify MODELS are consistent
+N = len(structure)
+if(N > 1):
+    SETS = []
+    ERROR = False
+    for i in range(N):
+        s = set()
+        for chain in structure[i]:
+            for residue in chain:
+                resname = residue.get_resname().strip()
+                s.add((resname, residue.get_id()))
+        SETS.append(s)
+    for i in range(N):
+        for j in range(i+1, N):
+            diff = SETS[i]^SETS[j]
+            if(len(diff) > 0):
+                ERROR = True
+                break
+    if(ERROR):
+        message = 'Multiple MODEL entries found, but they are inconsistent with eachother. Some contain residues which others do not!'
+        os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+        print_html(message, error=True)
+
+# verify certain structure properties
+BYPASS = False
+if(TITLE == "bypass_filters"):
+    BYPASS = True 
+nuc_count = 0
+res_count = 0
+nucRe = re.compile("^DA$|^DT$|^DC$|^DG$")
+resRe = re.compile("^ALA$|^ARG$|^ASN$|^ASP$|^CYS$|^GLN$|^GLU$|^GLY$|^HIS$|^ILE$|^LEU$|^LYS$|^MET$|^PHE$|^PRO$|^SER$|^THR$|^TRP$|^TYR$|^VAL$|^SEC$|^PYL$|^ASX$|^GLX$|^XLE$")
+chainIDs = set()
+for chain in structure[0]:
+    chainIDs.add(chain.get_id())
+    for residue in chain:
+        rname = residue.get_resname().strip()
+        if(nucRe.search(rname)):
+            nuc_count += 1
+        elif(resRe.search(rname)):
+            res_count += 1
+
+# check for DNA
+if(nuc_count < 2 and not BYPASS):
+    message = 'Less than two standard nucleotides were detected. Verify that this structure actually contains DNA, or <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
+    os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+# check for protein
+elif(res_count < 10 and not BYPASS):
+    message = 'Less than ten standard residues were detected. Verify that this structure actually contains a protein, or <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
+    os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+# check for multiple chain IDs
+elif(len(chainIDs) < 2):
+    message = 'Only one chain ID was found. <strong>Every chain must have a unique chain ID</strong>. See the official <a href="http://www.wwpdb.org/documentation/file-format-content/format33/v3.3.html">PDB format documentation</a> for more details.'
+    os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+# check structure size
+elif(res_count+nuc_count > 3000):
+    message = "This structure is too large. Structures must have less than 3000 residues. Structure not accepted."
+    os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+elif(res_count+nuc_count < 10 and not BYPASS):
+    message = 'This structure seems too small to be a DNA-protein complex. This may be caused by incorrect ATOM record formats, or failure to generate the complete structure coordinates. Try verifying the correctness of your structure file, or <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
+    os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+
+# process structure
+try:
+    # Add to queue
+    if(PDB2PQR == "yes"):
+        line = "{} {}\n".format(RANDOM_ID, '-p')
+    else:
+        line = "{} {}\n".format(RANDOM_ID, '')
+    QF = open("{}/queue.dat".format(UPLOAD_PATH), "a")
+    QF.write(line)
+    QF.close()
+    
+    FH = open("{}/{}-info.json".format(UPLOAD_PATH, RANDOM_ID), "w")
+    FH.write(json.dumps({"name": FILE_NAME, "title": TITLE, "email": EMAIL}))
+    FH.close()
+    
+    if(TITLE != 'none'):
+        URL = 'http://dnaprodb.usc.edu/cgi-bin/report?jobid={}&title={}'.format(RANDOM_ID, TITLE)
+    else:
+        URL = 'http://dnaprodb.usc.edu/cgi-bin/report?jobid={}'.format(RANDOM_ID)
+    
+    if(EMAIL != 'none'):
+        message = """
+        When finished, a report page for your structure will be available at <a href="{0}">{0}</a>.
+        <br>
+        A confirmation e-mail has been sent to {1}, and you will be notified when your job is complete. Please check your spam folder if you do not 
+        receive these e-mails.
+        """.format(URL, EMAIL)
+    else:
+        message = """
+        When finished, a report page for your structure will be available at <a href="{0}">{0}</a>.</p>
+        <br>
+        You opted not to include an e-mail address. Please bookmark the above URL so you do not lose it, and check back in 10-20 minutes.
+        """.format(URL)
+    send_confirmation_email(EMAIL, title=TITLE, url=URL)
+    print_html(message)
+except SystemExit:
+    pass
+except:
+    message = """
+    We're sorry, an internal server error occured - please try again in a few minutes. If you see this message repeatedly,
+    you may ask for assistance through the <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact page</a>.
+    """.format(EMAIL)
+    os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
+    print_html(message, error=True)
+    

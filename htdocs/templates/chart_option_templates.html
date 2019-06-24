@@ -1,0 +1,103 @@
+<script id="labels_res_format_row" type="text/x-handlebars-template">
+    <div class="form-row">
+        <div class="col-sm-2 text-right">{{text}}</div>
+        <div class="col-sm-10">
+            <div class="row  no-gutters">
+                {{#fields}}
+                    <div class="col-sm-3">{{> resFieldPartial}}</div>
+                {{/fields}}
+                <div class="col-sm-3">
+                    <input type="text" class="form-control form-control-sm mx-2" placeholder="number offset" data-chain={{chain}}>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<script id="labels_sse_format_row" type="text/x-handlebars-template">
+    <div class="form-row">
+        <div class="col-sm-2 text-right">{{text}}</div>
+        <div class="col-sm-10">
+            <div class="row no-gutters">
+                {{#fields}}
+                    <div class="col-sm-3">{{> sseFieldPartial}}</div>
+                {{/fields}}
+                <div class="col-sm-3"></div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- Labels Format Specifier Input -->
+<script id="labels_residue_format_input" type="text/x-handlebars-template">
+    <!--
+    <select class="form-control form-control-sm mx-2" data-chain="{{chain}}" data-fnumber="{{number}}">
+        <option value="blank" {{s1}} data-description="ignored field" data-placeholder=""></option>
+        <option value="name_natural" {{s2}} data-description="full name, first letter uppercase"  data-placeholder="Name">Name</option>
+        <option value="name_upper" {{s3}} data-description="full name, all uppercase" data-placeholder="NAME">NAME</option>
+        <option value="name_lower" {{s4}} data-description="full name, all lowercase" data-placeholder="name">name</option>
+        <option value="name_short" {{s5}} data-description="single letter name"  data-placeholder="Name(1)">Name(1)</option>
+        <option value="chain" {{s6}} data-description="chain identifier" data-placeholder="chain">chain</option>
+        <option value="number" {{s7}} data-description="residue number plus offset if given" data-placeholder="residue number">residue number</option>
+        <option value="ins" {{s8}} data-description="residue insertion code" data-placeholder="insertion code">insertion code</option>
+    </select>
+    -->
+    <div class="dropdown">
+        <button class="btn dropdown-toggle form-control btn-outline-dark" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-value={{default_value}} data-chain={{chain}}>
+            {{default_text}}
+        </button>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" data-value="blank" data-placeholder="" onclick="labelOptionClick(this);">(ignore field)</a>
+            <a class="dropdown-item" data-value="name_natural" data-placeholder="Name" onclick="labelOptionClick(this);">Name <i class="text-secondary">full name, first letter uppercase</i></a>
+            <a class="dropdown-item" data-value="name_upper" data-placeholder="NAME" onclick="labelOptionClick(this);">NAME <i class="text-secondary">full name, all uppercase</i></a>
+            <a class="dropdown-item" data-value="name_lower" data-placeholder="name" onclick="labelOptionClick(this);">name <i class="text-secondary">full name, all lowercase</i></a>
+            <a class="dropdown-item" data-value="name_short" data-placeholder="Name(1)" onclick="labelOptionClick(this);">Name(1) <i class="text-secondary">single letter name</i></a>
+            <a class="dropdown-item" data-value="chain" data-placeholder="chain" onclick="labelOptionClick(this);">chain <i class="text-secondary">chain identifier</i></a>
+            <a class="dropdown-item" data-value="number" data-placeholder="number" onclick="labelOptionClick(this);">residue number <i class="text-secondary">residue number plus offset if given</i></a>
+            <a class="dropdown-item" data-value="ins" data-placeholder="ins. code" onclick="labelOptionClick(this);">insertion code <i class="text-secondary">residue insertion code</i></a>
+        </div>
+    </div>
+</script>
+
+<script id="labels_sse_format_input" type="text/x-handlebars-template">
+    <!--
+    <select class="form-control form-control-sm mr-2" data-chain="{{chain}}" data-fnumber="{{number}}">
+        <option value="blank"></option>
+        <option value="secondary_structure">secondary structure</option>
+        <option value="number">SSE number</option>
+        <option value="chain">chain ID</option>
+        <option value="range">residue range</option>
+    </select>
+    -->
+    <div class="dropdown">
+        <button class="btn dropdown-toggle form-control btn-outline-dark" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-value={{default}} data-chain={{chain}}>
+            {{default_text}}
+        </button>
+        <div class="dropdown-menu">
+            <a class="dropdown-item" data-value="blank" data-placeholder="" onclick="labelOptionClick(this);">(ignore field)</a>
+            <a class="dropdown-item" data-value="secondary_structure" data-placeholder="sec. structure">secondary structure <i class="text-secondary">three letter secondary structure [H, S, L]</i></a>
+            <a class="dropdown-item" data-value="number" data-placeholder="number" onclick="labelOptionClick(this);">SSE number <i class="text-secondary">order in which the SSE appears in the chain</i></a>
+            <a class="dropdown-item" data-value="chain" data-placeholder="chain" onclick="labelOptionClick(this);">chain <i class="text-secondary">chain identifier</i></a>
+            <a class="dropdown-item" data-value="range" data-placeholder="range" onclick="labelOptionClick(this);">residue range <i class="text-secondary">starting-ending residue numbers</i></a>
+        </div>
+    </div>
+</script>
+
+<!-- Color input partial -->
+<script id="color_input_partial" type="text/x-handlebars-template">
+    <input type="color" value="{{color}}" name="{{name}}" data-chain="{{chain}}">
+</script>
+
+<!-- Color input rows -->
+<script id="pro_color_input_row" type="text/x-handlebars-template">
+    <div class="form-row">
+        <div class="col-sm-5 text-right">{{text}}</div>
+        <div class="col-sm-7">
+            <div class="form-row">
+                {{#colors}}
+                <div class="col-sm-4">{{> colorPartial}}</div>
+                {{/colors}}
+            </div>
+        </div>
+    </div>
+</script>

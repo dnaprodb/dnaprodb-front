@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Process a structure with DNAproDB.</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <!-- Bootstrap Code/Bootstrap Plugins -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/font-awesome-4.7.0/css/font-awesome.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/main.css?v=1488920049">
+
+    <link rel="apple-touch-icon" sizes="57x57" href="/images/fav.ico/apple-icon-57x57.png">
+    <link rel="apple-touch-icon" sizes="60x60" href="/images/fav.ico/apple-icon-60x60.png">
+    <link rel="apple-touch-icon" sizes="72x72" href="/images/fav.ico/apple-icon-72x72.png">
+    <link rel="apple-touch-icon" sizes="76x76" href="/images/fav.ico/apple-icon-76x76.png">
+    <link rel="apple-touch-icon" sizes="114x114" href="/images/fav.ico/apple-icon-114x114.png">
+    <link rel="apple-touch-icon" sizes="120x120" href="/images/fav.ico/apple-icon-120x120.png">
+    <link rel="apple-touch-icon" sizes="144x144" href="/images/fav.ico/apple-icon-144x144.png">
+    <link rel="apple-touch-icon" sizes="152x152" href="/images/fav.ico/apple-icon-152x152.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/images/fav.ico/apple-icon-180x180.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="/images/fav.ico/android-icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/images/fav.ico/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="/images/fav.ico/favicon-96x96.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/images/fav.ico/favicon-16x16.png">
+    <meta name="msapplication-TileColor" content="#ffffff">
+    <meta name="msapplication-TileImage" content="/images/fav.ico/ms-icon-144x144.png">
+    <meta name="theme-color" content="#ffffff">
+
+    <!-- Loader CSS -->
+    <style>
+        .loader {
+            border: 16px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 16px solid #3498db;
+            border-bottom: 16px solid #3498db;
+            width: 120px;
+            height: 120px;
+            -webkit-animation: spin 1s linear infinite;
+            /* Safari */
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        /* Safari */
+        
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    {{nav}}
+    <div class="container">
+        <h3 class="mt-3"> Upload a DNA-Protein Complex</h3>
+        <p>Use the form below to upload a structure file in <a href="https://www.cgl.ucsf.edu/chimera/docs/UsersGuide/tutorials/pdbintro.html">PDB format</a> to DNAproDB. You'll be given a link to a report page for your structure. From the report page you can use our visualization tools and view or download extracted features in JSON format.</p>
+        <p> In order to ensure your structure is processed correctly, please check the following requirements:
+            <ul>
+                <li><strong>Ensure that your structure is complete and has the proper symmetry </strong> before uploading. All HEADER information is ignored. We will not attempt to generate biological assemblies or apply any symmetry operations. </li>
+                <li><strong>All chain identifiers must be unique and all residue identifiers within a chain must be unique.</strong> Additionally, chains should correspond to a polymeric chain, either a protein polypeptide or a nucleic acid strand.</li>
+                <li><strong>Each model in the structure must contain an identical set of residues and nucleotides.</strong> Every residue and nucleotide should appear in every MODEL entry.</li>
+                <li><strong>Ensure your structure is in the correct PDB format.</strong> This includes making sure atom and residue names are correct and match those of the PDB convention exactly. For example, an adenine nucleotide should be named " DA", including the space. Any issues parsing your file will result in it being rejected from further processing.</li>
+            </ul>
+        </p>
+        <hr>
+        <div id="content">{{content}}</div>
+    </div>
+    {{foot}}
+
+    <!-- JQuery, Popper and Bootstap -->
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.15.0/additional-methods.min.js"></script>
+
+    <!-- Load the navbar and footer -->
+    <script type="text/javascript">
+        $("#nav_upload").addClass("active");
+    </script>
+    {{scripts}}
+</body>
+
+</html>

@@ -1,0 +1,173 @@
+#!/home/conda/bin/python
+
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+
+import cgi
+import cgitb
+import os
+import json
+from jinja2 import Environment, FileSystemLoader
+
+UPLOAD_PATH = os.path.abspath("../htdocs/uploads")
+TEMPLATE_PATH = os.path.abspath("../htdocs/templates")
+TEMPLATE_NAME = "report_template.html"
+NAV_PATH = os.path.join(TEMPLATE_PATH, "nav.html")
+FOOT_PATH = os.path.join(TEMPLATE_PATH, "foot.html")
+CHART_OPT_PATH = os.path.join(TEMPLATE_PATH, "chart_option_templates.html")
+TOOLTIP_PATH = os.path.join(TEMPLATE_PATH, "tooltip_templates.html")
+OVERVIEW_PATH = os.path.join(TEMPLATE_PATH, "overview_table_templates.html")
+
+# retrieve the HTML templates
+j2Env = Environment(loader=FileSystemLoader(TEMPLATE_PATH),trim_blocks=True)
+template = j2Env.get_template(TEMPLATE_NAME)
+
+with open(NAV_PATH,'r') as NAV:
+    nav_html = NAV.read()
+
+with open(FOOT_PATH,'r') as FOOT:
+    foot_html = FOOT.read()
+
+with open(CHART_OPT_PATH,'r') as OPT:
+    chart_opt_html = OPT.read()
+
+with open(TOOLTIP_PATH,'r') as PATH:
+    tooltip_html = PATH.read()
+
+with open(OVERVIEW_PATH,'r') as PATH:
+    overview_html = PATH.read()
+
+cgitb.enable()
+data = cgi.FieldStorage()
+
+if("pdbid" in data):
+    pdbid = data.getvalue("pdbid")
+    db = data.getvalue("db", "dnaprodb2")
+    collection = data.getvalue("collection", "dna-protein")
+    context = {
+        'json_url': "/cgi-bin/request-data/?pdbid={}&db={}&collection={}".format(pdbid,db,collection),
+        'pdb_url': "/data/{}/{}.pdb".format(pdbid[-1], pdbid),
+        'pdb_structure': 'true',
+        'structure_id': pdbid,
+        'structure_title': pdbid,
+        'nav': nav_html,
+        'foot': foot_html,
+        'option_templates': chart_opt_html,
+        'tooltip_templates': tooltip_html,
+        'overview_templates': overview_html,
+        'jobready': True
+    }
+elif("jobid" in data):
+    jobid = data.getvalue("jobid")
+    title = data.getvalue("title", jobid)
+    
+    if(os.access("{}/{}.pdb".format(UPLOAD_PATH, jobid), os.R_OK) and os.access("{}/{}.json".format(UPLOAD_PATH, jobid), os.R_OK)):
+        with open("{}/{}.json".format(UPLOAD_PATH, jobid)) as JSON_FILE:
+            DATA = json.load(JSON_FILE)
+        if('error' in DATA):
+            message_html = """
+            <div style="height:300px">
+                <div class="alert alert-danger" style="margin-top: 20px;">
+                    <strong>Error!</strong> There was a problem processing your job.
+                </div>
+                <p> 
+                There was a problem processing your structure and the job could not be completed. Please verify that your structure meets
+                all the requirements listed on the upload page. If you believe this is an error, feel free to try uploading your structure again
+                through the <a href="/cgi-bin/upload">upload page</a>, or to contact us through the <a href="/cgi-bin/contact">contact page</a> for assistance.
+                </p> 
+                <p>
+                The following error message may provide more information.
+                </p>
+                <p>
+                {}: {}
+                </p>
+            </div>
+            """.format(DATA['error'],DATA['message'])
+            context = {
+                'nav': nav_html,
+                'foot': foot_html,
+                'jobready': False,
+                'message': message_html
+            }
+        else:
+            context = {
+                'json_url': "/uploads/{}.json".format(jobid),
+                'pdb_url': "/uploads/{}.pdb".format(jobid),
+                'pdb_structure': 'false',
+                'structure_id': jobid,
+                'structure_title': title,
+                'nav': nav_html,
+                'foot': foot_html,
+                'option_templates': chart_opt_html,
+                'tooltip_templates': tooltip_html,
+                'overview_templates': overview_html,
+                'jobready': True
+            }
+    elif(os.access("{}/{}.pdb".format(UPLOAD_PATH, jobid), os.R_OK) and not os.access("{}/{}.json".format(UPLOAD_PATH, jobid), os.R_OK)):
+        message_html = """
+        <div style="height:300px">
+            <div class="alert alert-info" style="margin-top: 20px;">
+                 Your job has been received and is being processed.
+            </div>
+            <p> 
+            Bookmark this page and check back soon, or wait for a verification e-mail if you provided your e-mail address. 
+            In the meantime, why not check out the <a href="/documentation.html">documentation page</a> and familiarize yourself 
+            with ways you can use DNAproDB.
+            </p>
+        </div>
+        """
+        context = {
+            'nav': nav_html,
+            'foot': foot_html,
+            'jobready': False,
+            'message': message_html
+        }
+    else:
+        with open("{}/{}".format(UPLOAD_PATH, "deleted_date.txt"),"r") as DFH:
+            last_purge = DFH.readlines()
+            DFH.close()
+        message_html = """
+        <div style="height:300px">
+            <div class="alert alert-danger" style="margin-top: 20px;">
+                <strong>Error!</strong> No such job with id '{}' exists.
+            </div>
+            <p> 
+            We periodically remove old data from the server to limit disk space usage and 
+            occasionally when performing updates. If this URL used to work, 
+            you should re-submit your job and a fresh report page will be created for you. 
+            Use the <a href="/cgi-bin/upload">upload page</a> to upload a new structure. If you believe this page is an error, 
+            feel free to contact us through the <a href="/cgi-bin/contact">contact page</a>.
+            </p>
+            <p>
+            Note: all structures uploaded prior to {} have been removed.
+            </p>
+        </div>
+        """.format(jobid, last_purge[0])
+        context = {
+            'nav': nav_html,
+            'foot': foot_html,
+            'jobready': False,
+            'message': message_html
+        }
+else:
+    context = {}
+
+# render the HTML
+html = template.render(context)
+
+# send to browser
+print "Content-Type: text/html"
+print "Access-Control-Allow-Origin: *"
+print
+print html
