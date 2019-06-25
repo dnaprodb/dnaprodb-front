@@ -25,6 +25,6 @@ footer {
     color: #000;
     background: #eee;
 }
-.nav-link {
+.navbar-nav .nav-link {
     color: #007bff !important;
 }
