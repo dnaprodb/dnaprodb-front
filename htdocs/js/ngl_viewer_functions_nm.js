@@ -1,8 +1,7 @@
 //Author: Nicholas Markarian
-//Last updated: 6/5/2019 at 12:56 am
+//Last updated: 6/16/2019 at 9:49 am
 var stage_nm1;
 var ballStick_list_nm1 = [] //list of index values for ballStick representations... used to dispose of them after use
-var ballStick_list_nm1_index = 0; //dont need anymore, will delete later
 var chain_set_nm1 = new Set();
 var model_list_nm1 = []
 var visible_residue_list_nm1 = [];
@@ -13,8 +12,6 @@ var multi_nm1 = new Map();
 var index_nm1 = 0;
 
 
-//TODO 
-// 1. actually delete with deleteLater in addMissingRepresentation
 
 
 /*loadStructure() must be called first. takes in a string, loads file onto stage. Everything gets added as a representation to the component "init_component." For each
@@ -34,11 +31,11 @@ function selectModel(model_number_)
   selectResidues3D([]); //clear with empty list
   //turn off visibility of layer 0 for old model
   var old_cartoon_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon"+"/"+model_number_nm1).index;
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_cartoon_reprList_index].setVisibility(0);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_cartoon_reprList_index].setVisibility(false);
   var old_base_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_base"+"/"+model_number_nm1).index;
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_base_reprList_index].setVisibility(0);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_base_reprList_index].setVisibility(false);
   var old_hetero_reprList_index = model_list_nm1[model_number_nm1].get("/"+model_number_nm1+"_hetero").index;
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_hetero_reprList_index].setVisibility(0);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_hetero_reprList_index].setVisibility(false);
   
   //change model number
   model_number_nm1 = model_number_;
@@ -46,20 +43,21 @@ function selectModel(model_number_)
   //turn on visiblity of layer 0 for new model
   var new_cartoon_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon"+"/"+model_number_nm1).index;
   //console.log(stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_reprList_index])
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_reprList_index].setVisibility(1);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_reprList_index].setVisibility(true);
   var new_base_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_base"+"/"+model_number_nm1).index;
   //console.log(stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_base_reprList_index])
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_base_reprList_index].setVisibility(1);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_base_reprList_index].setVisibility(true);
   var new_hetero_reprList_index = model_list_nm1[model_number_nm1].get("/"+model_number_nm1+"_hetero").index;
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_hetero_reprList_index].setVisibility(1);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_hetero_reprList_index].setVisibility(true);
 
+  //rotate based on principal axes
   var principleAxes = stage_nm1.getComponentsByName("my_structure").list[0].structure.getPrincipalAxes();
   stage_nm1.animationControls.rotate(principleAxes.getRotationQuaternion(), 0);
 
 }
 
 function loadStructure(structure_url) {
-  console.log("6/5/2019 12:56 am")
+  console.log("6/16/2019 9:49 am")
   stage_nm1 = new NGL.Stage("viewport", {backgroundColor: "white", opacity: 0});
 
   var tooltip = document.createElement("div");
@@ -81,12 +79,12 @@ function loadStructure(structure_url) {
     var mySstrucColors = NGL.ColormakerRegistry.addScheme(function (params) 
     {
       this.atomColor = function (atom) {
-        //atom.residue.sstruc = "s"; //turn
-        //atom.residue.sstruc = "e"; //sheet
-        //atom.residue.sstruc = "h"; //helix
-        if (atom.isNucleic()) {
+        if (atom.isDna()) {
           return 0xFFA500;  // orange
-        } 
+        }
+        else if (atom.isRna()){
+          return 0xF45C42; //orange-red
+        }
         else if (atom.isHelix()){
           return 0xFF0000;  // red
         }
@@ -101,19 +99,12 @@ function loadStructure(structure_url) {
         }
       };
     });
-    stage_nm1.animationControls.dispose();
-    //init_component.addRepresentation("ball+stick", {sele: ":F", color: "red"})
-    //init_component.addRepresentation("ball+stick", {sele: ":C", color: "blue"})
-    //init_component.addRepresentation("ball+stick", {sele: ":E", color: "yellow"})
-   // init_component.addRepresentation("cartoon", {sele: "188-301", color: "green"})
-    //init_component.addRepresentation("ball+stick", {sele: ":A", color: "yellow"})
-    //init_component.addRepresentation("cartoon", {sele: "all", color: "orange"})
-    //init_component.addRepresentation("ball+stick", {sele: ":C", color: "yellow"})
-    //init_component.addRepresentation("cartoon", {sele: "1:C", color: "blue"})
-    //init_component.addRepresentation("ball+stick", {sele: ":D", color: "red"})
-    //init_component.addRepresentation("cartoon", {sele: ":D", color: "green"})
-    var deleteLater = new Set();
 
+    //dispose of rocking and turning with keyboard controls
+    stage_nm1.animationControls.dispose();
+    
+    var deleteLater = new Set();
+  
     init_component.structure.eachModel( function (modelProxy)
     {
       number_of_models_nm1++;
@@ -121,25 +112,23 @@ function loadStructure(structure_url) {
       var model_name = modelProxy.qualifiedName();
       var model_number = model_name.substring(1, model_name.length)
       var cart = init_component.addRepresentation("cartoon", {name: "_layer_0_cartoon"+ model_name, sele: model_name+"/", color: "lightgray", opacity: 0.2}) //layer 0: transparent baselayer
-      var repr_info = {index: index_nm1, nucleic: 0, visibility: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
+      var repr_info = {index: index_nm1, nucleic: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
       model_list_nm1[model_number].set(cart.name, repr_info);
-      cart.setVisibility(0);
-      if (model_number == "0")
+      cart.setVisibility(false);
+      if (model_number == "0") //model 0 visible by default
       {
-        cart.setVisibility(1);
+        cart.setVisibility(true);
       }
       index_nm1++;
-      ballStick_list_nm1_index++;
       var base = init_component.addRepresentation("base", {name: "_layer_0_base" + model_name , color: "lightgray", sele: model_name+"/", opacity: 0.2, cylinderOnly: 1}) //adds nucleotides as sticks
-      var repr_info = {index: index_nm1, nucleic: 0, visibility: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
+      var repr_info = {index: index_nm1, nucleic: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
       model_list_nm1[model_number].set(base.name, repr_info);
-      base.setVisibility(0);
-      if (model_number == "0")
+      base.setVisibility(false);
+      if (model_number == "0") //model 0 visible by default
       {
-        base.setVisibility(1);
+        base.setVisibility(true);
       }
       index_nm1++;
-      ballStick_list_nm1_index++;
       modelProxy.eachChain(function(chain) //layer 1, each chain is a different representation that can be turned on/off with setVisibility()
       {
         //console.log("chain:  "+chain.qualifiedName())
@@ -162,13 +151,15 @@ function loadStructure(structure_url) {
           var range_ = "("+polymerName.substring(begin_starting_res_num+1,end_starting_res_num)+"-"+polymerName.substring(begin_ending_res_num+1,end_ending_res_num)+")";
           
           
-          var chainName = polymer.qualifiedName().substring(polymerName.indexOf(":"),polymerName.indexOf(" "));
-          var chainName_noRange = polymer.qualifiedName().substring(polymerName.indexOf(":"),polymerName.indexOf(" "));
+          var chainName = polymerName.substring(polymerName.indexOf(":"),polymerName.indexOf(" "));
+          var chainName_noRange = polymerName.substring(polymerName.indexOf(":"),polymerName.indexOf(" "));
           //console.log(chainName)
           if (model_list_nm1[model_number].has(chainName))
           {
             var temp = model_list_nm1[model_number].get(chainName);
             var temp_name = chainName;
+            deleteLater.add(temp_name);
+
             model_list_nm1[model_number].set(temp_name+temp.range, temp);
             if (multi_nm1.has(chainName))
             {
@@ -180,13 +171,11 @@ function loadStructure(structure_url) {
               //insert array with {start, end} pair
               multi_nm1.set(chainName, [{start: Number(polymerName.substring(begin_starting_res_num+1,end_starting_res_num)), end: Number(polymerName.substring(begin_ending_res_num+1,end_ending_res_num))}]);
               //add old one
-              var prev_dash = temp.range.indexOf("-");
+              var prev_dash = temp.range.indexOf("-",2); //making sure negative index values don't match the dash
               var prev_start = Number(temp.range.substring(1,prev_dash));
               var prev_end = Number(temp.range.substring(prev_dash+1, temp.range.length -1))
               multi_nm1.get(chainName).push({start: prev_start, end: prev_end})
             }
-            
-            deleteLater.add(temp_name);
             
             chainName = chainName+range_;
 
@@ -200,34 +189,29 @@ function loadStructure(structure_url) {
           }
           //console.log(chainName_noRange + " and " + range_)
           var new_rep = init_component.addRepresentation("cartoon", {name: chainName, sele: chainName_noRange + " and " + range_, color: mySstrucColors});
-          new_rep.setVisibility(0); //sets the colored chains as invisible
+          new_rep.setVisibility(false); //sets the colored chains as invisible
           
-          var repr_info = {index: index_nm1, name: chainName, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
+          var repr_info = {index: index_nm1, name: chainName, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
           
-          model_list_nm1[model_number].set(chainName, repr_info); //this causes the map entries to get overwritten
-          index_nm1++; //increments anyways, since the heteroatoms get put into the real structure
-          ballStick_list_nm1_index++;
+          model_list_nm1[model_number].set(chainName, repr_info);
+          index_nm1++;
 
           if (polymer.isNucleic())
           {
               //console.log(chainName)
               var base = init_component.addRepresentation("base", {name: chainName+"_base", sele: chainName_noRange + " and " + range_, color: "resname", cylinderOnly: 1});
              // console.log(chainName + " and " + range_)
-              base.setVisibility(0);
+              base.setVisibility(false);
               var base_info = {index: index_nm1, name:chainName+"_base", range: range_, cartoon_index: index_nm1-1, cartoon_name: chainName, visibility: 0}// modified_colors: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
               var base_name = chainName + "_base"
               model_list_nm1[model_number].set(base_name, base_info);
               model_list_nm1[model_number].get(chainName).nucleic = 1;
               index_nm1++;
-              ballStick_list_nm1_index++;
           }
         });
         if (!hasPolymer)
         {
-          /*if (chain.qualifiedName() == ":C/0")
-          {
-            console.log(":C/0 has no polymer")
-          }*/
+          
           var resProxy;
           var first = true;
           var start_ = -1;
@@ -253,35 +237,23 @@ function loadStructure(structure_url) {
           if (model_list_nm1[model_number].has(chainName))
           {
             range_ = "("+start_+"-"+end_+")";
-            /*if (chain.qualifiedName() == ":C/0")
-              {
-                console.log("model list has chain name")
-                console.log(multi_nm1)
-              }*/
+            
             var temp = model_list_nm1[model_number].get(chainName);
             var temp_name = chainName;
             model_list_nm1[model_number].set(temp_name+temp.range, temp);
             if (multi_nm1.has(chainName))
             {
-              /*if (chain.qualifiedName() == ":C/0")
-              {
-                console.log("multi has chain name")
-                console.log(multi_nm1)
-              }*/
+              
               //{start,end} pair to indicate range
               multi_nm1.get(chainName).push({start: start_, end: end_})
             }
             else
             {
-              /*if (chain.qualifiedName() == ":C/0")
-              {
-                console.log("multi does not have chain name")
-                console.log(multi_nm1)
-              }*/
+              
               //insert array with {start, end} pair
               multi_nm1.set(chainName, [{start: start_, end: end_}]);
               //add old one
-              var prev_dash = temp.range.indexOf("-");
+              var prev_dash = temp.range.indexOf("-",2); //making sure negative index values don't mess it up
               var prev_start = Number(temp.range.substring(1,prev_dash));
               var prev_end = Number(temp.range.substring(prev_dash+1, temp.range.length -1))
               multi_nm1.get(chainName).push({start: prev_start, end: prev_end})
@@ -300,82 +272,44 @@ function loadStructure(structure_url) {
           }
           
           var new_rep = init_component.addRepresentation("cartoon", {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
-          new_rep.setVisibility(0); //sets the colored chains as invisible
+          new_rep.setVisibility(false); //sets the colored chains as invisible
           
-          var repr_info = {index: index_nm1, name: chainName+range_, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
+          var repr_info = {index: index_nm1, name: chainName+range_, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
           
           model_list_nm1[model_number].set(chainName+range_, repr_info); //this causes the map entries to get overwritten
           index_nm1++; //increments anyways, since the heteroatoms get put into the real structure
-          ballStick_list_nm1_index++;
-
           if (resProxy.isNucleic())
           {
               //console.log(chainName)
               var base = init_component.addRepresentation("base", {name: chainName+range_+"_base", sele: chainName+ " and "+ range_, color: "resname", cylinderOnly: 1});
              // console.log(chainName + " and " + range_)
-              base.setVisibility(0);
+              base.setVisibility(false);
               var base_info = {index: index_nm1, name:chainName+range_+"_base", range: range_, cartoon_index: index_nm1-1, cartoon_name: chainName, visibility: 0}// modified_colors: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
               var base_name = chainName +range_+ "_base"
               model_list_nm1[model_number].set(base_name, base_info);
               model_list_nm1[model_number].get(chainName +range_).nucleic = 1;
               index_nm1++;
-              ballStick_list_nm1_index++;
           }
          }
-          //---------------------------------------//
-          /*if (!resProxy.hetero)
-          {
-            var new_rep = init_component.addRepresentation("cartoon", {name: chainName, sele: chainName, color: mySstrucColors});
-            new_rep.setVisibility(0);
-            var repr_info = {index: index_nm1, name: chainName, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
-            model_list_nm1[model_number].set(chainName, repr_info); //this causes the map entries to get overwritten
-            index_nm1++; //increments anyways, since the heteroatoms get put into the real structure
-            ballStick_list_nm1_index++;
-            if (resProxy.isNucleic())
-            {
-                //console.log(chainName)
-                var base = init_component.addRepresentation("base", {name: chainName+"_base", sele: chainName, color: "resname", cylinderOnly: 1});
-               // console.log(chainName + " and " + range_)
-                base.setVisibility(0);
-                var base_info = {index: index_nm1, name:chainName+"_base", cartoon_index: index_nm1-1, cartoon_name: chainName, visibility: 0}// modified_colors: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
-                var base_name = chainName + "_base"
-                model_list_nm1[model_number].set(base_name, base_info);
-                model_list_nm1[model_number].get(chainName).nucleic = 1;
-                index_nm1++;
-                ballStick_list_nm1_index++;
-            }
-          }*/
         }
       });
 
-      var hetero = init_component.addRepresentation("ball+stick", {name: model_name + "_hetero", sele: "(hetero or ion or ligand) and (not nucleic)"});
-      hetero.setVisibility(0);
+      var hetero = init_component.addRepresentation("ball+stick", {name: model_name + "_hetero", sele: "(hetero or ion or ligand) and (not nucleic) and "+model_name});
+      hetero.setVisibility(false);
       if (model_number == "0")
       {
-        hetero.setVisibility(1);
+        hetero.setVisibility(true);
       }
-      var repr_info = {index: index_nm1, nucleic: 0, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}; 
+      var repr_info = {index: index_nm1, nucleic: 0, visibility: 0, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}; 
       model_list_nm1[model_number].set(model_name + "_hetero", repr_info);
       index_nm1++;
-      ballStick_list_nm1_index++; 
     })
+  
+  
     //console.log(deleteLater)
-    deleteLater.forEach( function(item)
-    {
-      var end_1 = item.indexOf("_");
-      if (end_1 == -1)
-      {
-        end_1 = item.length;
-      }
-      var model_number = Number(item.substring(item.indexOf("/")+1,end_1));
-      
-      //console.log(item)
-      //console.log(model_number)
-      model_list_nm1[model_number].delete(item);
-      model_list_nm1[model_number].delete(item);
-    });
+    cleanupDeleteLater(deleteLater);
     stage_nm1.mouseControls.remove("hoverPick"); //copied code from NGL gallery
-    /* stage_nm1.signals.hovered.add(function (pickingProxy) 
+    stage_nm1.signals.hovered.add(function (pickingProxy) 
     {    //copied and modified code from NGL gallery
       if (pickingProxy && (pickingProxy.atom || pickingProxy.bond)) 
       {
@@ -392,7 +326,7 @@ function loadStructure(structure_url) {
       {
           tooltip.style.display = "none"
       }
-    }); */
+    });
           stage_nm1.handleResize()
           init_component.autoView()
           var principleAxes = stage_nm1.getComponentsByName("my_structure").list[0].structure.getPrincipalAxes();
@@ -413,7 +347,7 @@ function log() {
 
 function saveViewerAsImage() //returns a promise that resolves to an image blob
 {
-  return stage_nm1.makeImage({trim: false, scale: 2, antialias: true, transparent: true});
+  return stage_nm1.makeImage({trim: false, factor: 2, antialias: true, transparent: true});
 }
 
 /*residue_specification must contain a chain_list array with color info.
@@ -493,7 +427,8 @@ function  changeColorScheme3D(residue_specification)
       var range_ = ""
       if(!model_list_nm1[model_number_nm1].has(chain_name))
       {//console.log("multi")
-        var repr_info = {index: 3, colorDummy: true, range: "(2147483645-2147483646)", nucleic: 0, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
+        //arbitrarily picked 3
+        var repr_info = {index: 3, colorDummy: true, range: "(2147483645-2147483646)", nucleic: 0, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
         model_list_nm1[model_number_nm1].set(chain_name+"(2147483645-2147483646)",repr_info) //colorDummy
         if (!multi_nm1.has(chain_name))
         {
@@ -519,7 +454,7 @@ function  changeColorScheme3D(residue_specification)
         });
       }
       else
-      {//console.log("regular")
+      {
         if (chain.DNA != undefined)
           model_list_nm1[model_number_nm1].get(chain_name).DNA = chain.DNA;
         if (chain.RNA != undefined)
@@ -544,10 +479,9 @@ Passing an empty array clears the ball+stick represntation and unhiglights resid
 */
 function addBallStick(residue_list)
 {
-  var count = ballStick_list_nm1_index;
   //console.log(ballStick_list_nm1)
   
-  for (var i = ballStick_list_nm1_index; i<ballStick_list_nm1.length + ballStick_list_nm1_index;) //iterate through list of prev selections, popping them from the list afterwards
+  for (var i = 0; i<ballStick_list_nm1.length;) //iterate through list of prev selections, popping them from the list afterwards
   { 
     var prev_selection_index = ballStick_list_nm1.pop()
     //console.log(ballStick_list_nm1.length+" items after pop")
@@ -556,11 +490,10 @@ function addBallStick(residue_list)
     if (ballStick_list_nm1 ==  undefined) {}
     else
     {
-      stage_nm1.getComponentsByName("my_structure").list[0].reprList[prev_selection_index].disposeRepresentation();
+      stage_nm1.getComponentsByName("my_structure").list[0].reprList[prev_selection_index]._disposeRepresentation();
     }
-    count++;
+    
   }
-  ballStick_list_nm1_index = count;
   if (Array.isArray(residue_list)) //process arrays only
   { 
     //console.log("sending for processing")
@@ -570,7 +503,7 @@ function addBallStick(residue_list)
   { 
     processed_residue_list = " ".concat(residue_list)
     processed_residue_list = processed_residue_list.concat(" ")
-    console.log("Potential error. String passed into selectResidues3D... causes issue with clearing previous selection")
+    console.log("Error. String passed into selectResidues3D. Causes issue with clearing previous selection")
   }
   var valid = false;
   if (processed_residue_list.length > 2) //2 spaces are concatenated already, prevents empty list from being used for selection (will make entire structure ball+stick)
@@ -582,7 +515,7 @@ function addBallStick(residue_list)
   //console.log(processed_residue_list)
   if (valid == true)
   {
-    var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: residue_list[0], sele: "("+processed_residue_list +") and /"+ model_number_nm1})
+    var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: "("+processed_residue_list +") and /"+ model_number_nm1, sele: "("+processed_residue_list +") and /"+ model_number_nm1})
     ballStick_list_nm1.push(index_nm1);
     index_nm1++;
     //console.log(ballstick_Rep)
@@ -603,7 +536,7 @@ function addBallStick(residue_list)
       {
         if(processed_residue_list.search(spaced_res_name) != -1) //highlighted
         {
-          return 0xFCFF19; //yellow
+          return 0xFCFF19; //yellow if selected
         }
         else 
         {
@@ -622,9 +555,12 @@ function addBallStick(residue_list)
             chain_name = chain_name+range_;
             //console.log(chain_name+" "+ atom.resno)
           }
-          if (atom.isNucleic()) 
+          if (atom.isDna()) 
           {
             return model_list_nm1[model_number_nm1].get(chain_name).DNA;  
+          }
+          else if (atom.isRna()){
+            return model_list_nm1[model_number_nm1].get(chain_name).RNA; 
           } 
           else if (atom.isHelix())
           {
@@ -646,7 +582,7 @@ function addBallStick(residue_list)
       }
       else
       {
-        return 0xF1F1F1;
+        return 0xF1F1F1; //gray for unselected residues
       }
       
     };
@@ -655,10 +591,11 @@ function addBallStick(residue_list)
   
   for (let item of chain_set_nm1) //need to iterate through everything in chain_set (both old and new) to properly set colors
   {
-    var reprList_index = model_list_nm1[model_number_nm1].get(item).index;
+    var reprList_index = getReprListIndex(item);
     stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setColor(chain_colors)
   }
-
+  //unlike in selectResidues3D, the modified chains are not stored. The only color change imposed here is the yellow highlighting,
+  //which is not permanent and will be reset by selectResidues3D when a new selection is made
   
 } 
 
@@ -680,7 +617,7 @@ function selectResidues3D(residue_list)
   var temp_chain_set_nm1 = new Set();
   
   var empty_list = [];
-  addBallStick(empty_list);
+  addBallStick(empty_list); //clears previous selection
   if (Array.isArray(residue_list)) //process arrays only
   {
     processed_residue_list = process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
@@ -725,10 +662,13 @@ function selectResidues3D(residue_list)
           });
           chain_name = chain_name+range_;
         }
-        if (atom.isNucleic()) 
+        if (atom.isDna())
         {
           return model_list_nm1[model_number_nm1].get(chain_name).DNA;  
-        } 
+        }
+        else if (atom.isRna()){
+          return model_list_nm1[model_number_nm1].get(chain_name).RNA;
+        }
         else if (atom.isHelix())
         {
           return model_list_nm1[model_number_nm1].get(chain_name).helix;
@@ -748,7 +688,7 @@ function selectResidues3D(residue_list)
       }
       else
       {
-        return 0xF1F1F1;
+        return 0xF1F1F1; //gray if unselected
       } 
     };
   });
@@ -757,37 +697,38 @@ function selectResidues3D(residue_list)
     for (let item of chain_set_nm1) //need to iterate through everything in chain_set_nm1 (both old and new) to properly set colors
     {
       //console.log(item)
-      var reprList_index = model_list_nm1[model_number_nm1].get(item).index;
+      var reprList_index = getReprListIndex(item);
       stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setColor(chain_colors)
       
     }
     //console.log(chain_set_nm1)
-    for (let item of chain_set_nm1) //need the chain set to store which chains have selection-modified colors
+    for (let item of chain_set_nm1) //store which chains have selection-modified colors
     {
-      if (!temp_chain_set_nm1.has(item))
+      //temp chain set contains current selection. chain_set_nm1 contains current AND previous selection
+      if (!temp_chain_set_nm1.has(item)) //old selection
       {
-        chain_set_nm1.delete(item); //no need to store the chains that were previously modified but got reset to default color scheme
-        var reprList_index = model_list_nm1[model_number_nm1].get(item).index;
+        chain_set_nm1.delete(item); //remove the chains that were previously modified but got reset to default color scheme
+        reprList_index = getReprListIndex(item);
         model_list_nm1[model_number_nm1].get(item).visibility = 0;
-        stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(0)
+        stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(false)
         if (model_list_nm1[model_number_nm1].get(item).nucleic)
         {
           var base_index = model_list_nm1[model_number_nm1].get(item+ "_base").index;
-          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(0) 
+          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(false) 
           model_list_nm1[model_number_nm1].get(item+ "_base").visibility = 0;
         }
         
       }
-      else
+      else //new selection
       {
-        var reprList_index = model_list_nm1[model_number_nm1].get(item).index;
-        stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(1);
+        reprList_index = getReprListIndex(item);
+        stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(true);
         model_list_nm1[model_number_nm1].get(item).visibility = 1;
         visibility_list_nm1.push(item);
         if (model_list_nm1[model_number_nm1].get(item).nucleic)
         {
           var base_index = model_list_nm1[model_number_nm1].get(item+ "_base").index;
-          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(1);
+          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(true);
           //console.log(base_index);
           model_list_nm1[model_number_nm1].get(item+ "_base").visibility = 1;
           visibility_list_nm1.push(item+ "_base");
@@ -806,12 +747,12 @@ function cartoonInvisible()
   //console.log(visibility_list_nm1)
   visibility_list_nm1.forEach(function (item)
   {
-    var reprList_index = model_list_nm1[model_number_nm1].get(item).index;
-    stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(0)
+    reprList_index = getReprListIndex(item);
+    stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(false)
     if (model_list_nm1[model_number_nm1].get(item).nucleic)
         {
           var base_index = model_list_nm1[model_number_nm1].get(item+"_base").index;
-          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(0)
+          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(false)
         }
   })
 }
@@ -819,12 +760,12 @@ function cartoonVisible()
 {
   visibility_list_nm1.forEach(function (item)
   {
-    var reprList_index = model_list_nm1[model_number_nm1].get(item).index;
-    stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(1)
+    reprList_index = getReprListIndex(item);
+    stage_nm1.getComponentsByName("my_structure").list[0].reprList[reprList_index].setVisibility(true)
     if (model_list_nm1[model_number_nm1].get(item).nucleic)
         {
           var base_index = model_list_nm1[model_number_nm1].get(item+ "_base").index;
-          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(1)
+          stage_nm1.getComponentsByName("my_structure").list[0].reprList[base_index].setVisibility(true)
         }
   })
 }
@@ -848,7 +789,7 @@ function process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
     processed_list = processed_list.concat(residue_list[i].substring(0, start_res_number))
     var range_ = "";
     var chainName = ":" + residue_list[i].substring(0, start_res_number)+"/"+model_number_nm1;   // ex. :A/0
-    //check to see if there are multiple polymers (normal) or representation is missing (bc highly broken up chains mess up the NGL iterators)
+    //check to see if there are multiple polymers (normal) or representation is missing (highly broken up chains mess up the NGL iterators)
     if (!model_list_nm1[model_number_nm1].has(chainName))
     { 
       var multi = multi_nm1.get(chainName)
@@ -859,14 +800,6 @@ function process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
         //console.log("multi undefined for: " + temp_range)
         addMissingRepresentation(temp_range, res_number, chainName, deleteLater);
         range_ = temp_range;
-        /*console.log(new_rep_name)
-        var new_rep = stage_nm1.getComponentsByName("my_structure").list[0].addRepresentation("base", {name: chainName, sele: chainName + " and " + res_number, color: "red"});
-
-        var repr_info = {index: index_nm1, name: chainName, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
-          
-        model_list_nm1[model_number].set(chainName_withRange, repr_info); //this causes the map entries to get overwritten
-        index_nm1++;
-        ballStick_list_nm1_index++;*/
 
       }
       else
@@ -892,22 +825,23 @@ function process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
     }
     if (temp_chain_set_nm1 != undefined)
     {
-      temp_chain_set_nm1.add(chainName+range_)
+      temp_chain_set_nm1.add(chainName+range_);
     }
     if (chain_set_nm1 != undefined)
     {
-      chain_set_nm1.add(chainName+range_)
+      chain_set_nm1.add(chainName+range_);
     }
     
     if (i < residue_list.length - 1) 
     {
-      processed_list = processed_list.concat(" or ")
+      processed_list = processed_list.concat(" or ");
     }
     else
     {
-      processed_list = processed_list.concat(" ")
+      processed_list = processed_list.concat(" ");
     }
   }
+  cleanupDeleteLater(deleteLater);
  /*console.log("chain set")
   console.log(chain_set_nm1)
   console.log("temp chain set")
@@ -921,7 +855,7 @@ function process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
 function addMissingRepresentation(range_, res_number, chainName, deleteLater)
 {
   console.log("making new representation for: " + range_ +"" +chainName)
-  nucleic_ = true; //not always the case, but it shoudnt cause problems besides wasted memory
+  nucleic_ = true; //not always the case, but it shoudnt cause problems besides wasted memory. an empty representation would be created if it is non-nucleic
   if (model_list_nm1[model_number_nm1].has(chainName))
   {
     var temp = model_list_nm1[model_number_nm1].get(chainName);
@@ -939,7 +873,7 @@ function addMissingRepresentation(range_, res_number, chainName, deleteLater)
       //insert array with {start, end} pair
       multi_nm1.set(chainName, [{start: Number(res_number), end: Number(res_number)}]);
       //add old one
-      var prev_dash = temp.range.indexOf("-");
+      var prev_dash = temp.range.indexOf("-",2); //making sure negative index values don't mess it up
       var prev_start = Number(temp.range.substring(1,prev_dash));
       var prev_end = Number(temp.range.substring(prev_dash+1, temp.range.length -1))
       multi_nm1.get(chainName).push({start: prev_start, end: prev_end})
@@ -968,17 +902,17 @@ function addMissingRepresentation(range_, res_number, chainName, deleteLater)
       //console.log("multi missing it, pushing "+ chainName+ " range: "+ res_number)
       //insert array with {start, end} pair
       multi_nm1.set(chainName, [{start: Number(res_number), end: Number(res_number)}]);
-      //add old one
-      //possible spot for an error
     }
   }
-  //chainName+"(2147483645-2147483646)"
   var mySstrucColors = NGL.ColormakerRegistry.addScheme(function (params) 
   {
     this.atomColor = function (atom) {
-      if (atom.isNucleic()) {
-        return 0xFFA500;  // orange
-      } 
+      if (atom.isDna()) {
+          return 0xFFA500;  // orange
+      }
+      else if (atom.isRna()){
+        return 0xF45C42; //orange-red
+      }
       else if (atom.isHelix()){
         return 0xFF0000;  // red
       }
@@ -993,14 +927,18 @@ function addMissingRepresentation(range_, res_number, chainName, deleteLater)
       }
     };
   });
-  if (model_list_nm1[model_number_nm1].has(chainName+"(2147483645-2147483646)"))
+  if (model_list_nm1[model_number_nm1].has(chainName+"(2147483645-2147483646)")) //occurs if changeColorScheme was called on a chain before any representations were created. 2147483645-2147483646 is a dummy with color information
   {
     mySstrucColors = NGL.ColormakerRegistry.addScheme(function (params) 
     {
       this.atomColor = function (atom) {
-        if (atom.isNucleic()) 
+        if (atom.isDna()) 
         {
           return model_list_nm1[model_number_nm1].get(chainName+"(2147483645-2147483646)").DNA;  
+        }
+        else if (atom.isRna()) 
+        {
+          return model_list_nm1[model_number_nm1].get(chainName+"(2147483645-2147483646)").RNA;  
         } 
         else if (atom.isHelix())
         {
@@ -1022,26 +960,53 @@ function addMissingRepresentation(range_, res_number, chainName, deleteLater)
     });
   }
   var new_rep = stage_nm1.getComponentsByName("my_structure").list[0].addRepresentation("cartoon", {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
-  new_rep.setVisibility(0); //sets the colored chains as invisible
+  new_rep.setVisibility(false); //sets the colored chains as invisible
   
-  var repr_info = {index: index_nm1, name: chainName+range_, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
+  var repr_info = {index: index_nm1, name: chainName+range_, range: range_, nucleic: nucleic_, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
   
-  model_list_nm1[model_number_nm1].set(chainName+range_, repr_info); //this causes the map entries to get overwritten
-  index_nm1++; //increments anyways, since the heteroatoms get put into the real structure
-  ballStick_list_nm1_index++;
+  model_list_nm1[model_number_nm1].set(chainName+range_, repr_info);
+  index_nm1++;
 
   if (nucleic_)
   {
     var base = stage_nm1.getComponentsByName("my_structure").list[0].addRepresentation("base", {name: chainName+range_+"_base", sele: chainName+ " and "+ range_, color: "resname", cylinderOnly: 1});
-    base.setVisibility(0);
-    var base_info = {index: index_nm1, name:chainName+range_+"_base", range: range_, cartoon_index: index_nm1-1, cartoon_name: chainName, visibility: 0}// modified_colors: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
+    base.setVisibility(false);
+    var base_info = {index: index_nm1, name:chainName+range_+"_base", range: range_, cartoon_index: index_nm1-1, cartoon_name: chainName}// modified_colors: 0, DNA: 0xFFA500, RNA: 0xFFA500, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
     var base_name = chainName +range_+ "_base"
     model_list_nm1[model_number_nm1].set(base_name, base_info);
     model_list_nm1[model_number_nm1].get(chainName +range_).nucleic = 1;
     index_nm1++;
-    ballStick_list_nm1_index++;
   } 
 }
 
+function getReprListIndex(name)
+{
+  var reprList_index =  model_list_nm1[model_number_nm1].get(name).index;
+  return reprList_index;
+}
+
+function cleanupDeleteLater(deleteLater)
+{
+  deleteLater.forEach( function(item)
+  {
+    //console.log(item)
+    var end_1 = item.indexOf("-",2); //making sure negative index values don't mess it up
+    if (end_1 == -1)
+    {
+      end_1 = item.length;
+      //console.log("length = "+end_1)
+    }
+    var base_position = item.indexOf("_base");
+    if (base_position != -1)
+    {
+      end_1 = item.length - base_position -1;
+      //console.log("adjusted to "+end_1)
+    }
+    var model_number = Number(item.substring(item.indexOf("/")+1,end_1));
+    
+    //console.log(model_number)
+    model_list_nm1[model_number].delete(item);
+  });
+}
 
 
