@@ -1,0 +1,6 @@
+# NGL edge cases - this is a list of PDB structures for various edge cases
+# or which produced bugs in previous versions. These serve as good example 
+# structures for testing the NGL viewer for bugs whenever new features or 
+# fixes are made.
+# pdbid 	original issue/edge case description
+2ht0	missing DNA backbone on some strands
