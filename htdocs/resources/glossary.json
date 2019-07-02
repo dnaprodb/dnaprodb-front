@@ -181,7 +181,7 @@
     {
          "item": "Model",
          "id": "model",
-         "description": "A model is one possible structure in an ensemble of structures that are possible for a given set of residues/nucleotides. Multiple model entries usually occur for NMR structures, where as structures obtained through X-ray diffraction will usually only have a single model. Any quantity which is derived from the three dimensional coordinates of the residues/nucleotides may vary across models. This includes protein secondary structure, nucleotide base-pairing, and nucleotide-residue interactions."
+         "description": "A model is one possible structure in an ensemble of structures that are possible for a given set of residues/nucleotides. A model is defined by the assignment of atomic coordinates to each atom within the model. Multiple model entries usually occur for NMR structures, where as structures obtained through X-ray diffraction will usually only have a single model. Any quantity which is derived from the three dimensional coordinates of the residues/nucleotides may vary across models. This includes protein secondary structure, nucleotide base-pairing, and nucleotide-residue interactions."
     },
     {
          "item": "DNA Strand",

@@ -13,52 +13,16 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 */
-.sidebar-nav {
-    position: fixed;
-    width: auto;
-    left: 0px;
-    background-color: #020e20;
-    list-style: none;
-}
-
-.sidebar-nav li {
-    line-height: 40px;
-    text-indent: 20px;
-}
-
-.sidebar-nav li a {
-    color: #999999;
-    display: block;
-    text-decoration: none;
-    padding-left: 20px;
-}
-
-.sidebar-nav li a:hover,
-.sidebar-nav li.active {
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
-    text-decoration: none;
-}
-
-.sidebar-nav li a:active,
-.sidebar-nav li a:focus {
-    text-decoration: none;
-    color: #fff;
-    background: rgba(255, 255, 255, 0.2);
-}
-
 body {
     position: relative;
 }
 
-:target:before {
-    content: "";
-    display: block;
-    height: 82px;
-    /* fixed header height*/
-    margin: -82px 0 0;
-    /* negative fixed header height */
+div.sticky {
+    position: -webkit-sticky; /* Safari */
+    position: sticky;
+    top: 0;
 }
+
 
 .code {
     font-family: "Courier New", Courier, monospace;
