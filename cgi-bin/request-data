@@ -45,10 +45,17 @@ def compile_regex(search_dict, field):
             if(re.search('^/.*/$', value)):
                 search_dict[key] = re.compile(value.strip('/'))
 
-def printOutput(output, indent=None):
-    print "Content-Type: application/json"
+def printOutput(output, indent=None, header='json'):
+    if(header == 'json'):
+        content_type = "Content-Type: application/json"
+        output = json.dumps(output, indent=indent)
+    elif(header == 'text'):
+        content_type = "Content-Type: text/plain"
+    
+    # print and exit
+    print content_type
     print
-    print json.dumps(output, indent=indent)
+    print output
     exit(0)
 
 # Retrieve GET/POST data
@@ -158,6 +165,10 @@ elif("last-updated" in REQUEST):
             'return_status': 'error', 
             'message': 'Unable to process the request. Please contact the database admin for assistance.'
         }, indent=2)
+elif("pdbid-list" in REQUEST):
+    results = client[db][collection].find({}, {'structure_id': True})
+    results = ",".join(map(lambda x: x["structure_id"], results))
+    printOutput(results, header='text')
 else:
     printOutput({
             'return_status': 'error', 
