@@ -2153,7 +2153,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             /* use link neighbors to define angle */
             n1 = LCM.node_lookup[LINKS[mi][node.data.id].p5];
             n2 = LCM.node_lookup[LINKS[mi][node.data.id].p3];
-        } else if (node.data.id in LINKS[mi]) {
+        } else if (node.data.id in LINKS[mi] && Object.keys(LINKS[mi]).length > 2) {
             /* use linked neighbor for angle */
             if (LINKS[mi][node.data.id].p3) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p3]);
             if (LINKS[mi][node.data.id].p5) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p5]);
