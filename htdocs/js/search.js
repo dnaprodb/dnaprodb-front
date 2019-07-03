@@ -118,6 +118,25 @@ var DNAalphabet = {
     ".": '[ACGT]*'
 };
 
+var DNAcompliment = {
+    A: 'T',
+    C: 'G',
+    T: 'A',
+    G: 'C',
+    R: '[TC]',
+    Y: '[AG]',
+    S: '[CG]',
+    W: '[AT]',
+    K: '[CA]',
+    M: '[TG]',
+    B: '[GCA]',
+    D: '[TCA]',
+    H: '[TGA]',
+    V: '[TGC]',
+    N: '[ACGT]',
+    ".": '[ACGT]*'
+}
+
 var aminoAcids = [
     'ALA',
     'ARG',
@@ -426,7 +445,7 @@ function dnaMenu(num) {
     });
 
     $(`${selector} input[name=seq_motif]`).rules("add", {
-        pattern: "[ACTGRYSWKMBDHVN]+",
+        pattern: "([ACTGRYSWKMBDHVN]+[, ]*)*",
         maxlength: 300,
         messages: {
             pattern: "Invalid motif",
@@ -665,20 +684,34 @@ function submitSearch() {
             if(fieldset_data['seq_motif']) {
                 let op = {"sequence": {}};
                 // build the regular expression
-                let re = '';
+                let regexes = [];
+                fieldset_data['seq_motif'] = fieldset_data['seq_motif'].replace(/^[, ]+/, '');
+                fieldset_data['seq_motif'] = fieldset_data['seq_motif'].replace(/$[, ]+/, '');
+                fieldset_data['seq_motif'] = fieldset_data['seq_motif'].split(/[, ]+/);
                 for (let j = 0; j < fieldset_data['seq_motif'].length; j++) {
-                    re += DNAalphabet[fieldset_data['seq_motif'][j]];
+                    let re = '';
+                    for (let k = 0; k < fieldset_data['seq_motif'][j].length; k++) {
+                        re += DNAalphabet[fieldset_data['seq_motif'][j][k]];
+                    }
+                    if (re.length > 0) {
+                        regexes.push(re);
+                    }
                 }
-                if(fieldset_data['reverse_seq_motif']) {
-                    re += '|' + re.split().reverse().join();
+                
+                if (fieldset_data['reverse_seq_motif']) {
+                    let rl = regexes.length;
+                    for (let j = 0; j < rl; j++) {
+                        regexes.push(regexes[j].split('').reverse().map(c => DNAcompliment[c]).join(''));
+                    }
                 }
-                re = '/' + re + '/';
+                regexes = regexes.join('|');
+                regexes = '/' + regexes + '/';
                 
                 // Apply negation if selected
                 if (fieldset_data['negate_seq_motif']) {
-                    op['sequence']['$not'] = re;
+                    op['sequence']['$not'] = regexes;
                 } else {
-                    op['sequence']['$regex'] = re;
+                    op['sequence']['$regex'] = regexes;
                 }
                 strand_ops.push(op);
             }
@@ -1135,5 +1168,5 @@ function submitSearch() {
         query = _nor(searchItems);
     }
     console.log(JSON.stringify(query));
-    window.open("/cgi-bin/query-results?query=" + JSON.stringify(query));
+    //window.open("/cgi-bin/query-results?query=" + JSON.stringify(query));
 }
