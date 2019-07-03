@@ -253,7 +253,7 @@ function labelInputShow(d) {
     var text = $(this).siblings("text").text();
     $("#label_input").attr("placeholder", text);
     
-    console.log(d);
+    //console.log(d);
     /*
     if(d.res_id) {
         PLOT_DATA.label_id = d.res_id;
@@ -2147,16 +2147,16 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         let n1, n2, dx, dy, theta;
         if (node.data.id in PAIRS[mi] && PAIRS[mi][node.data.id].length == 1 && LCM.layout_type == "radial") {
             /* use pair neighbor to define angle */
-            n1 = node_lookup[PAIRS[mi][node.data.id][0].id1];
-            n2 = node_lookup[PAIRS[mi][node.data.id][0].id2];
+            n1 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id1];
+            n2 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id2];
         } else if (node.data.id in LINKS[mi] && LINKS[mi][node.data.id].p5 && LINKS[mi][node.data.id].p3) {
             /* use link neighbors to define angle */
-            n1 = node_lookup[LINKS[mi][node.data.id].p5];
-            n2 = node_lookup[LINKS[mi][node.data.id].p3];
+            n1 = LCM.node_lookup[LINKS[mi][node.data.id].p5];
+            n2 = LCM.node_lookup[LINKS[mi][node.data.id].p3];
         } else if (node.data.id in LINKS[mi]) {
             /* use linked neighbor for angle */
-            if (LINKS[mi][node.data.id].p3) return getNucleotideAngle(node_lookup[LINKS[mi][node.data.id].p3]);
-            if (LINKS[mi][node.data.id].p5) return getNucleotideAngle(node_lookup[LINKS[mi][node.data.id].p5]);
+            if (LINKS[mi][node.data.id].p3) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p3]);
+            if (LINKS[mi][node.data.id].p5) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p5]);
         } else {
             return 0.0;
         }
@@ -2342,17 +2342,19 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             let indices = [];
             for (let i = 0; i < strand_ids.length; i++) {
                 indices.push(i);
-            } 
+            }
             switch(LCM.layout_type) {
                 case "radial":
-                    indices = indices.filter(function(i) {
-                            return PAIRS[mi][getHash(strand_ids[i], pair_ids[i])]["pair_type"] != "other";
+                    let filtered = indices.filter(function(i) {
+                        return PAIRS[mi][getHash(strand_ids[i], pair_ids[i])]["pair_type"] != "other";
                     });
+                    if( (indices.length-filtered.length)/indices.length < 0.75) {
+                        indices = filtered;
+                    }
                     break;
                 case "circular":
                     break;
             }
-            
             /* get an array of points which lie along the strand */
             let cx = 0.0;
             let cy = 0.0;
@@ -2405,7 +2407,6 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                     id: nid
                 })
             }
-            
             return [cx, cy, new kdTree(points, function(p1, p2) {return Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2);}, ["x", "y"])];
         }
         
@@ -2590,7 +2591,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             case "radial":
                 for (let i = 0; i < entity["nucleotides"].length; i++) {
                     nid = entity["nucleotides"][i];
-                    LCM.graph_coordinates[entity["nucleotides"][i]] = {
+                    LCM.graph_coordinates[nid] = {
                         x: NUCLEOTIDES[nid].graph_coordinates[mi].radial.x * scale + LCM.cx,
                         y: NUCLEOTIDES[nid].graph_coordinates[mi].radial.y * scale + LCM.cy
                     }
@@ -2599,7 +2600,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             case "circular":
                 for (let i = 0; i < entity["nucleotides"].length; i++) {
                     nid = entity["nucleotides"][i];
-                    LCM.graph_coordinates[entity["nucleotides"][i]] = {
+                    LCM.graph_coordinates[nid] = {
                         x: NUCLEOTIDES[nid].graph_coordinates[mi].circular.x * scale + LCM.cx,
                         y: NUCLEOTIDES[nid].graph_coordinates[mi].circular.y * scale + LCM.cy
                     }
@@ -2608,6 +2609,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         }
         
         /* Add nucleotide nodes */
+        LCM.node_lookup = {};
         for (let i = 0; i < entity.nucleotides.length; i++) {
             nid = entity.nucleotides[i];
             node = {
@@ -2624,6 +2626,8 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             node._fx = node.fx;
             node._fy = node.fy;
             nodes.push(node);
+            LCM.node_lookup[nid] = node;
+            LCM.node_lookup[PLOT_DATA.idMap[nid]] = node;
         }
         
         // add sets of residues nodes, which are dependent on the layout type
@@ -2684,6 +2688,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         }
         
         /* Add residue nodes */
+        var nuc_angle;
         for(let k = 0; k < interfaces.length; k++) {
             for (let i = 0; i < interfaces[k]["nucleotide-residue_interactions"].length; i++) {
                 if (interfaces[k]["nucleotide-residue_interactions"][i].include) {
@@ -2706,8 +2711,9 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                                 res: PLOT_DATA.idMap[rid] + '_' + node_sets[j].num,
                                 data: interfaces[k]["nucleotide-residue_interactions"][i]
                             });
-                            node_sets[j].residue_nodes[rid].x += LCM.graph_coordinates[nid].x;
-                            node_sets[j].residue_nodes[rid].y += LCM.graph_coordinates[nid].y;
+                            nuc_angle = getNucleotideAngle(LCM.node_lookup[nid]) * Math.PI / 180;
+                            node_sets[j].residue_nodes[rid].x += LCM.graph_coordinates[nid].x - Math.cos(nuc_angle) * (LCM.link_distance.interaction) + 10*Math.random()-5;
+                            node_sets[j].residue_nodes[rid].y += LCM.graph_coordinates[nid].y - Math.sin(nuc_angle) * (LCM.link_distance.interaction) + 10*Math.random()-5;
                             node_sets[j].residue_nodes[rid].count += 1.0;
                             node_sets[j].residue_nodes[rid].nuc_ind.push(node_sets[j].nuc_ids.indexOf(nid));
                         }
@@ -2745,9 +2751,10 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                 kdT = coords[2];
             }
             
-            // iterate over each node in set
+            // iterate over each residue node in set
             for (let j = 0; j < node_sets[i].res_ids.length; j++) {
                 rid = node_sets[i].res_ids[j];
+                // average initial residue position
                 node_sets[i].residue_nodes[rid].x /= node_sets[i].residue_nodes[rid].count;
                 node_sets[i].residue_nodes[rid].y /= node_sets[i].residue_nodes[rid].count;
                 
@@ -2758,14 +2765,15 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                     size: getMarkerSize(RESIDUES[rid], LCM.min_marker_size, "residue"),
                     type: "residue",
                     data: RESIDUES[rid],
-                    x: 0.0,
-                    y: 0.0,
+                    x: node_sets[i].residue_nodes[rid].x,
+                    y: node_sets[i].residue_nodes[rid].y,
                     fx: null,
                     fy: null,
                     count: 0.0,
                     com_id: rid,
                     total_interactions: 0,
-                    active_interactions: 0
+                    active_interactions: 0,
+                    angle: null
                 };
                 
                 // label node
@@ -2778,8 +2786,8 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                     point = kdT.nearest({x: node_sets[i].residue_nodes[rid].x, y: node_sets[i].residue_nodes[rid].y}, 1)[0][0];
                     
                     // get ideal position
-                    node.fx = node_sets[i].residue_nodes[rid].x + LCM.link_distance.interaction*point.dx[0];
-                    node.fy = node_sets[i].residue_nodes[rid].y + LCM.link_distance.interaction*point.dx[1];
+                    node.fx = node.x + LCM.link_distance.interaction*point.dx[0];
+                    node.fy = node.y + LCM.link_distance.interaction*point.dx[1];
 
                     if (!(SSE[mi][rid].id in optResPosition)) {
                         optResPosition[SSE[mi][rid].id] = {
@@ -2798,6 +2806,13 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                 }
                 nodes.push(node);
                 labels.push(label);
+                LCM.node_lookup[node.id] = node;
+            }
+            
+            // iterate over each nucleotide node in set 
+            for (let j = 0; j < node_sets[i].nuc_ids.length; j++) {
+                // set nucleotide angle
+                LCM.node_lookup[node_sets[i].nuc_ids[j]].angle = getNucleotideAngle(LCM.node_lookup[node_sets[i].nuc_ids[j]]);
             }
             
             if(node_sets[i].helical) {
@@ -3232,56 +3247,14 @@ function makeLCM(mi, dna_entity_id, interfaces) {
     var node_data = nd[0];
     var node_sets = nd[1];
     var node_labels = nd[2];
-    var node_lookup = {};
-    for (let i = 0; i < node_data.length; i++) {
-        node_lookup[node_data[i].id] = node_data[i];
-        if (node_data[i].type == "nucleotide") {
-            node_lookup[node_data[i].data.id] = node_data[i];
-        }
-    }
-    LCM.node_lookup = node_lookup;
-
     var ld = makeLinks(entity, node_sets, node_data, mi);
     var link_data = ld[0];
     var line_data = ld[1];
-
-    /* initialze residue node positions */
-    let angle;
-    for (let i = 0; i < node_sets.length; i++) {
-        if(node_sets[i].helical) {
-            continue;
-        }
-        for (let j = 0; j < node_sets[i].interactions.length; j++) {
-            angle = getNucleotideAngle(node_lookup[node_sets[i].interactions[j].nuc]) * Math.PI / 180;
-            node_lookup[node_sets[i].interactions[j].res].x += node_lookup[node_sets[i].interactions[j].nuc]._fx;
-            node_lookup[node_sets[i].interactions[j].res].x -= Math.cos(angle) * (LCM.link_distance.interaction) + 10*Math.random()-5;
-            node_lookup[node_sets[i].interactions[j].res].y += node_lookup[node_sets[i].interactions[j].nuc]._fy;
-            node_lookup[node_sets[i].interactions[j].res].y -= Math.sin(angle) * (LCM.link_distance.interaction) + 10*Math.random()-5;
-            node_lookup[node_sets[i].interactions[j].res].count += 1;
-        }
-    }
-
-    for (let i = 0; i < node_data.length; i++) {
-        if (node_data[i].type == "residue") {
-            /* initialize position */
-            if (node_data[i].fx) {
-                // skip nodes with initialized positions
-                continue;
-            }
-            node_data[i].x /= node_data[i].count;
-            node_data[i].y /= node_data[i].count;
-            node_data[i]._x = node_data[i].x;
-            node_data[i]._y = node_data[i].y;
-        } else if (node_data[i].type == "nucleotide") {
-            /* initialize angle */
-            node_data[i].angle = getNucleotideAngle(node_data[i]);
-        }
-    }
-
+    
     /* initialize line source/targets */
     for (let i = 0; i < line_data.length; i++) {
-        line_data[i].source = node_lookup[line_data[i].source];
-        line_data[i].target = node_lookup[line_data[i].target];
+        line_data[i].source = LCM.node_lookup[line_data[i].source];
+        line_data[i].target = LCM.node_lookup[line_data[i].target];
     }
 
     /* set up SVG Element */
@@ -4487,7 +4460,6 @@ function initializeVisualizations() {
     // bind the save button event
     $("#lcm_save_button").click(function () {
         saveSvgAsPng(document.getElementById("lcm_svg"), "lcm.png", {scale: 2.0});
-        console.log("saved");
     });
 
     // bind hide/show grid event

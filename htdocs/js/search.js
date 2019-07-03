@@ -1168,5 +1168,5 @@ function submitSearch() {
         query = _nor(searchItems);
     }
     console.log(JSON.stringify(query));
-    //window.open("/cgi-bin/query-results?query=" + JSON.stringify(query));
+    window.open("/cgi-bin/query-results?query=" + JSON.stringify(query));
 }
