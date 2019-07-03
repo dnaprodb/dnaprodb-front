@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Bootstrap Code/Bootstrap Plugins -->
-    <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
 
     <!-- Syntax Highlighting -->
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/styles/default.min.css">
@@ -15,9 +15,7 @@
     <!-- Custom JS/CSS and Plugins -->
     <link rel="stylesheet" href="/css/main.css?v=1488920049">
     <link rel="stylesheet" href="/css/documentation.css?v=1493589808">
-    <link rel="stylesheet" href="/css/jquery.json-viewer.css?v=1">
-
-    <link href='http://fonts.googleapis.com/css?family=Roboto:300, 400,500,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="/css/big-json-viewer.css?v=1">
 
     <link rel="apple-touch-icon" sizes="57x57" href="/images/fav.ico/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/images/fav.ico/apple-icon-60x60.png">
@@ -35,140 +33,148 @@
     <meta name="msapplication-TileColor" content="#ffffff">
     <meta name="msapplication-TileImage" content="/images/fav.ico/ms-icon-144x144.png">
     <meta name="theme-color" content="#ffffff">
+
 </head>
 
-<body>
+<body data-spy="scroll" data-target="#side_nav">
     <!-- data-spy="scroll" data-target="#sidebar-spy" data-offset="80"> -->
     <div id="nav-wrapper"></div>
     <div class="container-fluid">
         <div class="row">
             <!-- Sidebar -->
-            <nav class="col-sm-3" id="sidebar-spy">
-                <ul class="sidebar-nav nav nav-pills nav-stacked">
-                    <li>
-                        <a href="#intro" class="sidenav-link">
-                            Introduction
-                        </a>
-                    </li>
-                    <li> <a href="#using-data" class="sidenav-link">
-                            Using Data from DNAproDB
-                        </a>
-                    </li>
-                    <ul style="list-style: none;">
-                        <li>
-                            <a href="#data-format" class="sidenav-link">
-                           Data Format
-                        </a>
-                        </li>
-                        <li>
-                            <a href="#data-parse" class="sidenav-link">
-                           Parsing A Data File
-                        </a>
-                        </li>
-                    </ul>
-                    <li>
-                        <a href="#searching" class="sidenav-link">
-                            Searching The Database
-                        </a>
-                    </li>
+            <div class="col-sm-3" id="side_nav">
+                <div class="list-group list-group-flush sticky" id="side_nav">
+                    <a href="#intro" class="list-group-item list-group-item-action active">Introduction</a>
+                    <a href="#using-data" class="list-group-item list-group-item-action">Using Data from DNAproDB</a>
+                    <div class="list-group pl-3 mt-1">
+                        <a href="#data-format" class="list-group-item list-group-item-action">Data Format</a>
+                        <a href="#data-parse" class="list-group-item list-group-item-action">Parsing A Data File</a>
+                    </div>
+                    <a href="#searching" class="list-group-item list-group-item-action">Searching The Database</a>
                     <!--
-                    <li>
-                        <a href="#report" class="sidenav-link">
-                            The Report Page
-                        </a>
-                    </li>
--->
-                </ul>
-            </nav>
+                    <a href="#report" class="list-group-item list-group-item-action">Report Pages</a>
+                    <a href="#links" class="list-group-item list-group-item-action">Links and References</a>
+                    -->
+                </div>
+            </div>
 
             <!-- Page content -->
             <div class="col-sm-9">
-                <div>
-                    <h1 id="intro">Introduction</h1>
-                    <img src="/images/documentation/flowchart.png" id="flowchart">
-                    <p>DNAproDB is web server and database which aims to assist researchers in performing structural analysis of DNA-protein complexes, and specifically to help the user understand the way in which DNA (double-stranded) and proteins interact. Many excellent programs and algorithms have been developed for analyzing various structural aspects of biological macromolecules. However, developing an automated workflow for processing structural data is difficult and time-consuming. In order to get a full picture of the structural features and biophysical interactions which are most often of interest when studying DNA-protein complexes, one usually has to employ a suite of software packages, each of which specializes in a particular aspect of biomolecular structure and has a unique interface, and may have special format requirements, quirks, and pitfalls. Further, structures vary widely in their complexity and quality, and there are many edge-cases to consider when attempting to perform structural analysis on large datasets of DNA-protein complexes.</p>
+                <h1 id="intro">Introduction</h1>
+                <img src="/images/documentation/flowchart.png" id="flowchart">
+                <p>DNAproDB is processing pipeline, web server and database which aims to assist researchers in performing structural analysis of DNA-protein complexes. The DNAproDB processing pipeline takes as input the three dimensional structure of a DNA-protein complex (in mmCIF or PDB format) and extracts useful biophysical information from it, using a combination of our own tools and well known third-party libraries and software. Information is organized into three main categories: DNA features which describe the sequence and structure of the DNA present in the complex, protein features which describe the sequence and structure of the protein in the complex, and interface features that describe the various DNA-protein interactions and statistics of those interactions present in the complex. This information is then combined in a hierarchical way and stored in a <a href="http://www.json.org/">JSON</a> file, which is ideal for easy parsing and integration with the web.</p>
 
-                    <p>Once generated, one has to parse the data that has been extracted from the structures, and organize this very high-dimensional data in a consistent way that is useful for performing the desired analysis. Finally, as a crucial component of the users analysis, one should visualize their data in a clear and insightful way. This entire process adds up to a highly non-trivial task. DNAproDB was designed to address all of these concerns, and automate as much of the process as possible, to allow the user to spend the most amount of time actually analyzing data, and the least amount of time generating it.</p>
+                <p>The DNAproDB web server (which you are currently visiting) provides tools for exploring and visualizing the data extracted from a complex by the processing pipeline. These tools are found in the report page for each structure, which can be accessed by searching the database, typing the PDB identifier in the search box at the top of any page on the website, or by following the link generated when uploading a structure. These tools allow you to visualize various DNA-protein interactions side-by-side with the three-dimensional view of the complex. Clicking and hovering on different parts of the visualizations will display additional information or highlight parts of the three-dimensional structure and allow the user to visually explore different layers of the DNA-protein interface. These visualizations can be customized and exported as a PNG file.</p>
 
-                    <p>DNAproDB has three major components. The first is the processing pipeline, which takes as input structure files (in mmCIF or PDB format) and extracts useful biophysical information from them, using a variety of third-party libraries and software, as well as some of our own code. This information is then combined in a hierarchical way and stored in a JSON file, which is ideal for easy parsing and integration with the web.</p>
+                <p>Finally, the third component of DNAproDB is our database. We have pre-processed a large number of DNA-protein complexes retrieved from the <a href="http://www.wwpdb.org/">Protein Data Bank</a> (PDB) which we store in a database - hence the "DB" in "DNAproDB". The database is designed as a <a href="https://en.wikipedia.org/wiki/Document-oriented_database">document-oriented database</a>, and is implemented in <a href="https://docs.mongodb.com/v3.2/">MongoDB</a>. The data stored in the DNAproDB database is identical to the data produced by the processing pipeline and the data available in the report pages, and is returned in the form of a <a href="http://www.json.org/">JSON</a> file.</p>
 
-                    <p> The second component of DNAproDB is our visualization tools, which are found in the report page for a structure (here a structure always refers to the structure of a protein bound to double-stranded DNA). These tools allow you to visualize various DNA-protein interactions side-by-side with the three-dimensional view of the complex. Clicking and hovering on different parts of the visualizations will display additional information, or highlight parts of the three-dimensional structure, and allow the user to visually explore different layers of the DNA-protein interface. These visualizations can be customized and exported as a PNG file.</p>
+                <p>On the remainder of this page you'll find information about how to use the various aspects of DNAproDB. Have a scroll through or use the side-navigation to the left to jump to a specific section.</p>
 
-                    <p> Finally, the third component of DNAproDB is our database. We have pre-processed a large number of DNA-protein complexes retrieved from the <a href="http://www.wwpdb.org/">Protein Data Bank</a> (PDB) which we store in a database - hence the "DB" in "DNAproDB". The database is designed as a <a href="https://en.wikipedia.org/wiki/Document-oriented_database">document-oriented database</a>, and is implemented in <a href="https://docs.mongodb.com/v3.2/">MongoDB</a>. All data retrieved from DNAproDB (whether is is an uploaded structure or an entry in our database) is returned in the form of a <a href="http://www.json.org/">JSON</a> file. JSON is a popular text-based data interchange standard, similar in some ways to XML, but in general much easier to use. </p>
+                <h2 id="using-data">Using Data from DNAproDB</h2>
+                <p>Every page on this website which displays information to the user about a DNA-protein complex generates the content of that page from the data stored in a DNAproDB data file (JSON format) corresponding to that complex. The data files are self-contained, that is, a single data file describes all the information about a particular DNA-protein complex in one place. For structures which come from the PDB, this includes a small amount of information which is retrieved from external databases such as <a href="http://www.uniprot.org/">UniProt</a>, <a href="http://www.cathdb.info/">CATH</a> and the <a href="http://http://geneontology.org/">Gene Ontology knowledgebase</a>. This information is not included for uploaded structures since it is assumed these are unpublished - if they are, search the database for them instead. Using this web-site is easy and convenient for the user, however, the user has the option to download our data and do whatever they would like with it (all we ask is a citation). Users can download the entire database as a flat file from the <a href="/download.html">download page</a>, can download data for a set of structures returned from a query by <a href="/search.html">searching</a> the database, or can visit the report page for an individual structure and download the data there.
+                </p>
+                <legend id="data-format">Data Format</legend>
+                <p>In order to understand the way DNAproDB data is organized, it is important to define some key terminology which is used throughout the site and to describe the conceptual framework DNAproDB is built on. Below is a diagram representing the conceptual framework of how we organize structural data in DNAproDB, which is based on the Protein Data Bank's framework.</p>
 
-                    <p>On the remainder of this page you'll find information about how to use the various aspects of DNAproDB. Have a scroll through, or use the side-navigation to the left to jump to a specific section.</p>
-                </div>
-                <div>
-                    <h2 id="using-data">Using Data from DNAproDB</h1>
-                    <p>Every page on this website which displays information to the user about a DNA-protein complex generates the content of that page from the data stored in a JSON file corresponding to that complex. The JSON files are self-contained, that is, a single JSON file describes all the information about a particular DNA-protein complex in one place. This includes a small set of information which is retrieved from external databases, such as <a href="http://www.uniprot.org/">UniProt</a> and the PDB, which is not available directly in the mmCIF files (for obvious reasons, this information is not included for uploaded structures since it is assumed these are unpublished - if they are, search the database for them instead). Therefore, while using this web-site is very easy and convenient for the user, the user has the option to download our data and do whatever they would like with it (all we ask is a citation).
-                    </p>
-                    <legend id="data-format">Data Format</legend>
+                <img src="/images/documentation/data_framework.png" class="d-block mx-auto" id="framework" width="800px">
+                <div class="accordion" id="terms_accordian"></div>
+                <br>
+                <p>Below is the basic schema for the way we organize the data in DBAproDB. In general, every DNA-protein complex which is stored in DNAproDB is represented by a JSON file with the same basic structure. However, some fields are of variable length, which depends on the size and complexity of the structure. Use the interactive diagram below to explore the structure of the data file and read the description about each field. Note that the field "description" is only used here for documentation purposes, and does not appear in actual data files retrieved from DNAproDB.</p>
+                <div id="json-viewer-schema"></div>
+                <br>
+                <p>As a more concrete example, below is a JSON file which is returned from DNAproDB for the small structure <a href="/cgi-bin/report?pdbid=1jgg">1jgg</a>. Click on the different fields to expand them and explore the data structure.</p>
+                <div id="json-viewer-example"></div>
+                <br>
+                <p>Note that when downloading data for multiple structures from the DNAproDB database, the data will be returned in a single file, which contains and array of objects. Each object corresponds to a single structure.</p>
 
+                <legend id="data-parse">Parsing A Data File</legend>
+                <p>In addition to extracting information from a data file in-browser via the <a href="#report">report page</a>, one can download DNAproDB data files, which contains all the information about a DNA-protein complex provided by DNAproDB, and parse those files offline. In general, all you need is a programming language which supports a JSON parser, and the parser its self. A long list of JSON parsers is available at the official <a href="http://www.json.org">JSON web-page</a>. </p>
 
-                    <p>Below is the basic schema for the way we organize the data in DBAproDB. In general, every DNA-protein complex which is stored in DNAproDB is represented by a JSON file with the same basic structure. However, many fields are of variable length, which depends on the size and complexity of the structure. Use the interactive diagram below to explore the structure of the datafile and read the description about each field. Note that the field "description" is only used here for documentation purposes, and does not appear in actual datafiles retrieved from DNAproDB.</p>
-                    <div id="json-viewer-schema"></div>
-                    <br>
-                    <p>As a more concrete example, below is a JSON file which is returned from DNAproDB for the small structure <a href="/cgi-bin/report?pdbid=1jgg">1jgg</a>. Click on the different fields to expand them and explore the data structure.</p>
-                    <div id="json-viewer-example"></div>
-                    <p>Note that when downloading data for multiple structures from the DNAproDB database, the data will be returned in a single file, which contains and array of objects. Each object corresponds to a single structure.</p>
-                </div>
-                <div>
-                    <legend id="data-parse">Parsing A Data File</legend>
-                    <p>In addition to extracting information from a data file in-browser via the <a href="#">report page</a>, one can download a JSON file which contains all the information about a DNA-protein complex which is stored in DNAproDB, and parse that file offline. In general, all you need is a programming language which supports a JSON parser, and the parser its self. A long list of JSON parsers is available at the official <a href="http://www.json.org">JSON web-page</a>. Below is a simple example in Python. We'll extract all the Hydrogen Bond information from the <span class="code">interactions.nucleotide-residue_interactions.hbonds</span> fields, and count the number of times we have a hydrogen bond involving an Arginine in the minor groove.</p>
+                <p>Below are some simple examples in Python. Note that neither JSON nor the structure of the DNAproDB data files are specific to python - the user can work in whatever language they prefer.</p>
 
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Python Example</div>
-                        <div class="panel-body">
-                            <pre><code class="python">
+                <div class="card">
+                    <div class="card-header">Python example - counting hydrogen bonds in the DNA major groove</div>
+                    <div class="card-body">
+                        In this example we'll count the number of hydrogen bonds made by arginine residues in the DNA major groove, assuming our data file contains some helical DNA, and print the result to the console.
+                        <pre><code class="python">
 import json
 with open("data_file.json") as DATA:
-    dnaprodb_data = json.load(DATA)
+    dnaprodb_data = json.load(DATA)                                  # load the data file using the json module
 
-count = 0
-for interaction in dnaprodb_data["interactions"]["nucleotide-residue_interactions"]:
-    if(interaction['hbonds'] is not None):
-        for hbond in interaction['hbonds']:
-            if(hbond["res_name"] == "ARG" and hbond["groove"] == "sg"):
-                count += 1
-print("Arginine - Minor Groove Hbonds: %d" % count)
-                        </code></pre></div>
+hb_count = 0                                                         # store the number of hydrogen bonds which meet our criteria
+model_num = 0                                                        # choose the first model in the structure
+for interface in dnaprodb_data["interfaces"]["models"][model_num]:   # iterate over each DNA-protein interface for model 'model_num'
+    for interaction in interface["nucleotide-residue_interactions"]: # iterate over each nucleotide-residue interaction
+        if(
+            interaction["res_name"] == "ARG"                         # check if the residue in the interaction is an arginine
+            and 
+            interaction["nuc_secondary_structure"] == "helical"      # check if the nucleotide is in a helical conformation
+        ):                        
+            hb_count += interaction["hbond_sum"]["wg"]["sc"]         # if so, add the number of major groove-side chain hbonds to count
+print("Arginine - Minor Groove Hbonds: %d" % count)                  # print the result
+                        </code></pre>
                     </div>
-
-                    <div>
-                        <h2 id="searching">Searching DNAproDB</h2>
-                    <p>DNAproDB's database has powerful search capabilities that allow users to search for structures based on characteristics of the DNA, the protein, or the DNA-protein interface. Multiple criteria can be combined using different selection logic. In addition, you can search for structures with their PDB identifier, or supply a list of PDB identifiers in combination with additional criteria, which act as a filter. This search capability is unique to DNAproDB, and can be used to generate data sets, or find structures for which you do not know the PDB identifier of. The easiest way to search the database is through the search-page, where you can construct a query using a regular HTML form. The database can also be searched using a RESTful API, but requires one to be familiar with the mongoDB query syntax.</p>
-                    <legend>The Search Form</legend>
-                    <p>The search form can be accessed from the <a href="/search.html">search page</a>. When first presented, the form will be empty and contain no fields. Choose from one of the critera, and you'll be presented with different fields you can fill in which correspond to the different aspects of a DNA-protein complex (protein properties, DNA properties, or DNA-protein interaction properties).</p>
-                    <img src="/images/documentation/search1.png" class="img-responsive">
-                    <p> Choosing one of the critera will update the form with a panel which shows different fields corresponding to that criteria. Additionally, you may choose to add more criteria, or clear all the criteria with the "add another criteria" and "clear all criteria" buttons, remove an individual criteria using the "remove" button, and choose how different critera are combined logically.</p>
-                    <img src="/images/documentation/search2.png" class="img-responsive">
-                    <p>Once chosen, any fields within a criteria which are left blank or unchecked will be ignored, so you only have to choose items which you care about. <strong>Currently, any matching structure must match all the defined fields within a specific criteria.</strong>. For example, if you choose the DNA properties, and specify that the sequence length should be between 10 and 20 base-pairs, and also check that the DNA Conformation should be B-form, then only structures which meet BOTH requirements will be returned. However, for fields which have multiple options such as B-DNA, A-DNA, or Other under DNA Conformation, choosing multiple options will match structures which meet ANY of the selected options. So, if you chose the sequence length to be between 10 and 20 base-pairs, and checked B-DNA and A-DNA under DNA conformation, then that will return structures in which the DNA is between 10 and 20 base-pairs in length AND is either B-DNA or A-DNA like.</p>
-
-<!--
-                    <legend>Web API</legend>
-                    Documentation comming soon. -->
                 </div>
-                    <!--
-                <div>
-                    <h2 id="report">The Report Page</h2>
-                    <p>Documentation comming soon.</p>
+                <br>
+                <div class="card">
+                    <div class="card-header">Python example - identifying interactions in regions of narrow minor groove width</div>
+                    <div class="card-body">
+                        In this example we'll find all nucleotide-residue interactions which occur in the DNA minor groove and where the minor groove width is less than 5 &#8491; wide. We'll choose the first model in the structure (model 0), and loop over all DNA entities, and all helical segments within each entity, and record the nucleotide identifiers that correspond to narrow minor groove widths. We then loop over all nucleotide-residue interactions, and find which interactions occur with a nucleotide in a narrow minor groove region.
+                        <pre><code class="python">
+import json
+with open("data_file.json") as DATA:
+    dnaprodb_data = json.load(DATA)                                            # load the data file using the json module
+
+
+model_num = 0                                                                  # choose the first model in the structure
+narrow_minor_groove_nucleotides = []                                           # an array to store nucleotide identifiers in narrow minor groove regions
+for entity in dnaprodb_data["dna"]["models"][model_num]["entities"]            # loop over DNA entities in model model_num
+    for helix in entity["helical_segments"]:                                   # loop over helices for each entity
+        for i in xrange(helix["length"]):
+            if(helix["shape_parameters"]["minor_groove_curves"][i] &#60; 5.0):     # check if minor groove at position 'i' is less than 5.0
+                narrow_minor_groove_nucleotides.append(helix["ids1"][i])       # if so push nucleotide id at position 'i' from strand 1
+                narrow_minor_groove_nucleotides.append(helix["ids2"][i])       # and from strand 2
+
+narrow_minor_groove_interactions = []                                          # array to store interactions meeting our criteria
+for interface in dnaprodb_data["interfaces"]["models"][model_num]:             # iterate over each DNA-protein interface for model model_num
+    for interaction in interface["nucleotide-residue_interactions"]:           # iterate over each nucleotide-residue interaction
+        if("sg" in interaction["nucleotide_interaction_moieties"]):            # check if this interaction involves the minor groove
+            if(interaction["nuc_id"] in narrow_minor_groove_nucleotides):      # check if the nucleotide is in our list of narror minor groove nucleotides
+                narrow_minor_groove_interactions.append(interaction)           # if the above conditions are met, push the interaction
+
+# now the array 'narrow_minor_groove_interactions' contains all minor groove 
+# interactions which involve nucleotides in narrow minor groove regions.
+                        </code></pre>
+                    </div>
                 </div>
--->
+                <h2 id="searching">Searching DNAproDB</h2>
+                <p>DNAproDB's database has powerful search capabilities that allow users to search for structures based on characteristics of the DNA, the protein, or the DNA-protein interface. Multiple criteria can be combined using different selection logic. In addition, you can search for structures with their PDB identifier, or supply a list of PDB identifiers in combination with additional criteria, which act as a filter. This search capability is unique to DNAproDB, and can be used to generate data sets, or find structures for which you do not know the PDB identifier of. The easiest way to search the database is through the search-page, where you can construct a query using a regular HTML form. The database can also be searched using a RESTful API, but requires one to be familiar with the mongoDB query syntax - this feature is intentionally undocumented, but interested users should contact us using the <a href="/cgi-bin/contact">contact page</a> for instructions.</p>
+                <legend>The Search Form</legend>
+                <p>The search form can be accessed from the <a href="/search.html">search page</a>. When first presented, the form will be empty and contain no fields. Choose from one of the criteria, and you'll be presented with different fields you can fill in which correspond to the different aspects of a DNA-protein complex (protein properties, DNA properties, or DNA-protein interaction properties).</p>
+                <img src="/images/documentation/search1.png" class="img-responsive">
+                <p> Choosing one of the criteria will update the form with a panel which shows different fields corresponding to that criteria. Additionally, you may choose to add more criteria, or clear all the criteria with the "add another criteria" and "clear all criteria" buttons, remove an individual criteria using the "remove" button, and choose how different criteria are combined logically.</p>
+                <img src="/images/documentation/search2.png" class="img-responsive">
+                <p>Once chosen, any fields within a criteria which are left blank or unchecked will be ignored, so you only have to choose items which you care about. You can choose to search for structures which match any selected feature within a category, or which match all selected features. For example, if you are matching on all selected features and choose DNA properties and specify that the sequence length should be between 10 and 20 base-pairs, and also check that the DNA Conformation should be B-form, then only structures which meet BOTH requirements will be returned. However, for fields which have multiple options such as B-DNA, A-DNA, or Other under DNA Conformation, choosing multiple options will match structures which meet ANY of the selected options. So, if you chose the sequence length to be between 10 and 20 base-pairs, and checked B-DNA and A-DNA under DNA conformation, then that will return structures in which the DNA is between 10 and 20 base-pairs in length AND is either B-DNA or A-DNA like.</p>
+                
+                <!--
+                <h2 id="report">The Report Page</h2>
+                <p>Documentation coming soon.</p>
+
+                <h2 id="links">Links and References</h2>
+                <p>Tools, libraries and references.</p>
+                -->
+
             </div>
         </div>
     </div>
     <div id="foot-wrapper"></div>
     <!-- JQuery Code -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.2/jquery.min.js"></script>
-
-    <!-- Bootstrap Code/Bootstrap Plugins -->
-    <script type="text/javascript" src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js" integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js" integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k" crossorigin="anonymous"></script>
 
     <!-- Syntax Highlighting -->
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/9.8.0/highlight.min.js"></script>
-
-    <!-- JSON Viewer Plugin -->
-    <script type="text/javascript" src="/js/jquery.json-viewer.js"></script>
 
     <!-- Load the navbar and footer -->
     <script type="text/javascript">
@@ -178,20 +184,74 @@ print("Arginine - Minor Groove Hbonds: %d" % count)
         $("#foot-wrapper").load("/templates/foot.html");
     </script>
 
+    <!-- JSON Viewer Plugin -->
+    <script type="text/javascript" src="/js/big-json-viewer.js"></script>
+    
+    <!-- Handlebars Code -->
+    <script type="text/javascript" src="/js/handlebars.min-latest.js"></script>
+    
+    <!-- Handlebars Template -->
+    <script id="accordian_template" type="text/x-handlebars-template">
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">
+                <button class="btn btn-link collapsed" type="button" data-toggle="collapse" data-target="#{{id}}">{{title}}</button>
+                </h2>
+            </div>
+
+            <div id="{{id}}" class="collapse" data-parent="#terms_accordian">
+                <div class="card-body">{{text}}</div>
+            </div>
+        </div>
+    </script>
+    
     <!-- Add JSON docfiles -->
     <script type="text/javascript">
+        var accordian_template = Handlebars.compile($('#accordian_template').html());
+        
         $.getJSON("/resources/data-schema.json", function (data) {
-            $('#json-viewer-schema').jsonViewer(data);
-        });
-
-
-        $.getJSON("/cgi-bin/request-data?pdbid=1jgg", function (data) {
-            $('#json-viewer-example').jsonViewer(data, {
-                collapsed: true
+            BigJsonViewerDom.fromObject(data, {
+                arrayNodesLimit: 25
+            }).then(viewer => {
+                const node = viewer.getRootElement();
+                document.getElementById("json-viewer-schema").appendChild(node);
+                node.openAll(3);
             });
         });
 
-
+        $.getJSON("/cgi-bin/request-data?pdbid=1jgg", function (data) {
+            BigJsonViewerDom.fromObject(data, {
+                arrayNodesLimit: 25
+            }).then(viewer => {
+                const node = viewer.getRootElement();
+                document.getElementById("json-viewer-example").appendChild(node);
+                node.openAll(1);
+            });
+        });
+        
+        $.getJSON("/resources/glossary.json", function (data) {
+            let items = [
+                "model",
+                "dna_entities",
+                "dna_strand",
+                "protein_entities",
+                "protein_chain_segments",
+                
+            ];
+            let data_map = {};
+            for(let i = 0; i < data.length; i++) {
+                data_map[data[i]["id"]] = data[i];
+            }
+            
+            for(let i = 0; i < items.length; i++) {
+                $("#terms_accordian").append(accordian_template({
+                    "id": data_map[items[i]]["id"],
+                    "title": data_map[items[i]]["item"],
+                    "text": data_map[items[i]]["description"]
+                }));
+            }
+        });
+        
         $(document).ready(function () {
             $('pre code').each(function (i, block) {
                 hljs.highlightBlock(block);

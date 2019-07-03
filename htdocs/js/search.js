@@ -1,3 +1,18 @@
+/*
+#  Copyright 2019, Jared Sagendorf, All rights reserved.
+#  
+#  Correspondance can be sent by e-mail to Jared Sagendorf <sagendor@usc.edu>
+#  
+#  This program is free software; you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation; either version 2 of the License, or
+#  (at your option) any later version.
+#  
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+*/
 // Register custom JQuery function
 $.fn.serializeObject = function () {
     // takes a form and serializes input elements
@@ -102,6 +117,25 @@ var DNAalphabet = {
     N: '[ACGT]',
     ".": '[ACGT]*'
 };
+
+var DNAcompliment = {
+    A: 'T',
+    C: 'G',
+    T: 'A',
+    G: 'C',
+    R: '[TC]',
+    Y: '[AG]',
+    S: '[CG]',
+    W: '[AT]',
+    K: '[CA]',
+    M: '[TG]',
+    B: '[GCA]',
+    D: '[TCA]',
+    H: '[TGA]',
+    V: '[TGC]',
+    N: '[ACGT]',
+    ".": '[ACGT]*'
+}
 
 var aminoAcids = [
     'ALA',
@@ -411,7 +445,7 @@ function dnaMenu(num) {
     });
 
     $(`${selector} input[name=seq_motif]`).rules("add", {
-        pattern: "[ACTGRYSWKMBDHVN]+",
+        pattern: "([ACTGRYSWKMBDHVN]+[, ]*)*",
         maxlength: 300,
         messages: {
             pattern: "Invalid motif",
@@ -650,20 +684,34 @@ function submitSearch() {
             if(fieldset_data['seq_motif']) {
                 let op = {"sequence": {}};
                 // build the regular expression
-                let re = '';
+                let regexes = [];
+                fieldset_data['seq_motif'] = fieldset_data['seq_motif'].replace(/^[, ]+/, '');
+                fieldset_data['seq_motif'] = fieldset_data['seq_motif'].replace(/$[, ]+/, '');
+                fieldset_data['seq_motif'] = fieldset_data['seq_motif'].split(/[, ]+/);
                 for (let j = 0; j < fieldset_data['seq_motif'].length; j++) {
-                    re += DNAalphabet[fieldset_data['seq_motif'][j]];
+                    let re = '';
+                    for (let k = 0; k < fieldset_data['seq_motif'][j].length; k++) {
+                        re += DNAalphabet[fieldset_data['seq_motif'][j][k]];
+                    }
+                    if (re.length > 0) {
+                        regexes.push(re);
+                    }
                 }
-                if(fieldset_data['reverse_seq_motif']) {
-                    re += '|' + re.split().reverse().join();
+                
+                if (fieldset_data['reverse_seq_motif']) {
+                    let rl = regexes.length;
+                    for (let j = 0; j < rl; j++) {
+                        regexes.push(regexes[j].split('').reverse().map(c => DNAcompliment[c]).join(''));
+                    }
                 }
-                re = '/' + re + '/';
+                regexes = regexes.join('|');
+                regexes = '/' + regexes + '/';
                 
                 // Apply negation if selected
                 if (fieldset_data['negate_seq_motif']) {
-                    op['sequence']['$not'] = re;
+                    op['sequence']['$not'] = regexes;
                 } else {
-                    op['sequence']['$regex'] = re;
+                    op['sequence']['$regex'] = regexes;
                 }
                 strand_ops.push(op);
             }
