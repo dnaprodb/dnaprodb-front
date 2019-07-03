@@ -2144,25 +2144,49 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
 function makeLCM(mi, dna_entity_id, interfaces) {
     /* called functions */
     function getNucleotideAngle(node) {
-        let n1, n2, dx, dy, theta;
+        let node_list = [];
         if (node.data.id in PAIRS[mi] && PAIRS[mi][node.data.id].length == 1 && LCM.layout_type == "radial") {
             /* use pair neighbor to define angle */
-            n1 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id1];
-            n2 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id2];
-        } else if (node.data.id in LINKS[mi] && LINKS[mi][node.data.id].p5 && LINKS[mi][node.data.id].p3) {
-            /* use link neighbors to define angle */
-            n1 = LCM.node_lookup[LINKS[mi][node.data.id].p5];
-            n2 = LCM.node_lookup[LINKS[mi][node.data.id].p3];
+            node_list.push(LCM.node_lookup[PAIRS[mi][node.data.id][0].id1]);
+            node_list.push(LCM.node_lookup[PAIRS[mi][node.data.id][0].id2]);
         } else if (node.data.id in LINKS[mi] && Object.keys(LINKS[mi]).length > 2) {
-            /* use linked neighbor for angle */
-            if (LINKS[mi][node.data.id].p3) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p3]);
-            if (LINKS[mi][node.data.id].p5) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p5]);
+            let nmax = 3; // max number of neighbors
+            let c_id, n_id; // current and neighbor node id
+            // 3' direction neighbors
+            c_id = node.data.id; // current node id
+            for(let i = 0; i < nmax; i++) {
+                if(LINKS[mi][c_id].p3) {
+                    n_id = LINKS[mi][c_id].p3;
+                    node_list.push(LCM.node_lookup[n_id]);
+                    c_id = n_id;
+                } else {
+                    break;
+                }
+            }
+            // 5' direction neighbors
+            c_id = node.data.id; // current node id
+            for(let i = 0; i < nmax; i++) {
+                if(LINKS[mi][c_id].p5) {
+                    n_id = LINKS[mi][c_id].p5;
+                    node_list.push(LCM.node_lookup[n_id]);
+                    c_id = n_id;
+                } else {
+                    break;
+                }
+            }
         } else {
             return 0.0;
         }
-
-        dx = (n1.x + n2.x) / 2 - node.x;
-        dy = (n1.y + n2.y) / 2 - node.y;
+        
+        let dx, dy, theta;
+        dx = 0;
+        dy = 0;
+        for(let i = 0; i < node_list.length; i++) {
+            dx += node_list[i].x;
+            dy += node_list[i].y;
+        }
+        dx = dx/node_list.length - node.x;
+        dy = dy/node_list.length - node.y;
 
         theta = Math.atan2(dy, dx);
         if (theta < 0) {
