@@ -1,5 +1,5 @@
 //Author: Nicholas Markarian
-//Last updated: 6/16/2019 at 9:49 am
+//Last updated: 7/9/2019 at 2:34 pm
 var stage_nm1;
 var ballStick_list_nm1 = [] //list of index values for ballStick representations... used to dispose of them after use
 var chain_set_nm1 = new Set();
@@ -10,8 +10,45 @@ var model_number_nm1 = 0;
 var number_of_models_nm1 = 0;
 var multi_nm1 = new Map();
 var index_nm1 = 0;
+var hydrogen_setting = "and not hydrogen";
 
 
+function hydrogen_toggle()
+{
+  var sel_list = [];
+  if (hydrogen_setting == "")
+  {
+    hydrogen_setting = "and not hydrogen";
+  }
+  else
+  {
+    hydrogen_setting = "";
+  }
+  for (var i = 0; i<ballStick_list_nm1.length;) //iterate through list of prev selections, popping them from the list afterwards
+  { 
+    var prev_selection_index = ballStick_list_nm1.pop()
+    //console.log(ballStick_list_nm1.length+" items after pop")
+    //stage_nm1.getComponentsByName("my_structure").removeRepresentation(prev_selection)
+    //console.log(prev_selection_index)
+    if (prev_selection_index ==  undefined) {}
+    else
+    {
+      var sel = stage_nm1.getComponentsByName("my_structure").list[0].reprList[prev_selection_index].name;
+      sel_list.push(sel);
+      stage_nm1.getComponentsByName("my_structure").list[0].reprList[prev_selection_index]._disposeRepresentation();
+      
+    }
+    
+  }
+  for (var i = 0; i < sel_list.length; i++)
+  {
+      var sel = sel_list[i];
+      var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: sel, sele: sel + hydrogen_setting})
+      ballStick_list_nm1.push(index_nm1);
+      index_nm1++;
+  }
+
+}
 
 
 /*loadStructure() must be called first. takes in a string, loads file onto stage. Everything gets added as a representation to the component "init_component." For each
@@ -343,6 +380,9 @@ function log() {
   console.log(model_list_nm1)
   console.log("multi map")
   console.log(multi_nm1)
+  var sel5gse = "165:I";
+  stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {sele: sel5gse })
+
 }
 
 function saveViewerAsImage() //returns a promise that resolves to an image blob
@@ -480,7 +520,7 @@ Passing an empty array clears the ball+stick represntation and unhiglights resid
 function addBallStick(residue_list)
 {
   //console.log(ballStick_list_nm1)
-  
+  var processed_residue_list;
   for (var i = 0; i<ballStick_list_nm1.length;) //iterate through list of prev selections, popping them from the list afterwards
   { 
     var prev_selection_index = ballStick_list_nm1.pop()
@@ -503,7 +543,7 @@ function addBallStick(residue_list)
   { 
     processed_residue_list = " ".concat(residue_list)
     processed_residue_list = processed_residue_list.concat(" ")
-    console.log("Error. String passed into selectResidues3D. Causes issue with clearing previous selection")
+    //console.log("Error. String passed into selectResidues3D. Causes issue with clearing previous selection")
   }
   var valid = false;
   if (processed_residue_list.length > 2) //2 spaces are concatenated already, prevents empty list from being used for selection (will make entire structure ball+stick)
@@ -515,7 +555,7 @@ function addBallStick(residue_list)
   //console.log(processed_residue_list)
   if (valid == true)
   {
-    var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: "("+processed_residue_list +") and /"+ model_number_nm1, sele: "("+processed_residue_list +") and /"+ model_number_nm1})
+    var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: "("+processed_residue_list +") and /"+ model_number_nm1, sele: "("+processed_residue_list +") and /"+ model_number_nm1 + hydrogen_setting})
     ballStick_list_nm1.push(index_nm1);
     index_nm1++;
     //console.log(ballstick_Rep)
@@ -636,7 +676,7 @@ function selectResidues3D(residue_list)
   }
 
   //console.log(processed_residue_list)
-  
+  stage_nm1.getComponentsByName("my_structure").autoView(processed_residue_list)
   var chain_colors = NGL.ColormakerRegistry.addScheme(function (params) 
   {
     this.atomColor = function (atom) 
