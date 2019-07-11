@@ -36,7 +36,12 @@
 <body>
     {{nav}}
     <div class="container-fluid">
-        {{content}}
+        <h3 id="result_header" class="mt-2"></h3>
+        <div id="result_container_container">
+            <div id="result_container">{{content}}</div>
+        </div>
+        <a id="json_download_link" class="btn btn-primary btn-lg disabled" download="dnaprodb_data.json">download data for selected <i class="fa fa-download"></i></a>
+        <button id="copy_ids_button" class="btn btn-primary btn-lg disabled" onclick="copyPDBIdentifiers();">copy identifiers to clipboard <i class="fa fa-copy"></i></button>
     </div>
     {{foot}}
 </body>
@@ -49,45 +54,10 @@
 <!-- DataTables Plugin -->
 <script type="text/javascript" src="https://cdn.datatables.net/v/bs4/dt-1.10.18/b-1.5.6/sl-1.3.0/datatables.min.js"></script>
     
-
-<!-- Handlebars Code -->
-<script type="text/javascript" src="/js/handlebars.min-latest.js"></script>
-
-<!-- Handlebar HTML templates go here. -->
-<!-- PDB ID Template -->
-{% raw %}
-<script id="table_row_template" type="text/x-handlebars-template">
-    <tr>
-        <td></td>
-        <td><img src="{{thumbnail_url}}" style="width:100px;height:100px;"></td>
-        <td><a href="/cgi-bin/report?pdbid={{pdbid}}">{{pdbid}}</a></td>
-        <td>{{{uniprot_name}}}</td>
-        <td>{{{dna_entity_types}}}</td>
-        <td>{{{size}}}</td>
-        <td>{{organism}}</td>
-        <td>{{method}}</td>
-        <td>{{citation}}</td>
-        <td>{{authors}}</td>
-    </tr>
-</script>
-{% endraw %} {% if noerror %}
 <script type="text/javascript">
-    var structureData = {{structureData}};
-
-    var table;
-
-    var rNum = structureData.length;
-    $("#result_count").html(rNum);
-
-    var resultTableRowTemplate = Handlebars.compile($("#table_row_template").html());
-
     function copyPDBIdentifiers() {
-        var PDBIDs = [];
-        for (let i = 0; i < rNum; i++) {
-            PDBIDs.push(structureData[i].pdbid);
-        }
         const el = document.createElement('textarea');  // Create a <textarea> element
-        el.value = PDBIDs.join('\n');                                 // Set its value to the string that you want copied
+        el.value = PDBIDS.join('\n');                                 // Set its value to the string that you want copied
         el.setAttribute('readonly', '');                // Make it readonly to be tamper-proof
         el.style.position = 'absolute';                 
         el.style.left = '-9999px';                      // Move outside the screen to make it invisible
@@ -105,67 +75,114 @@
         }
     }
     
-    $(document).ready(function () {
-        // Build HTML table
-        for (let i = 0; i < rNum; i++) {
-            $("#search_results_table tbody").append(resultTableRowTemplate(structureData[i]));
-        }
-        
-        // Style it with DataTables
-        table = $('#search_results_table').DataTable({
-            dom: 'lBrtip',
-            searching: false,
-            columnDefs: [{
-                orderable: false,
-                className: 'select-checkbox',
-                targets: 0
-        }],
-            select: {
-                style: 'multi',
-                selector: 'td:first-child'
-            },
-            buttons: [
-                {
-                    text: 'Select all',
-                    className: "btn-sm mr-2",
-                    action: function () {
-                        table.rows().select();
-                    }
-            },
-                {
-                    text: 'Clear selection',
-                    className: "btn-sm",
-                    action: function () {
-                        table.rows().deselect();
-                    }
-            }
-        ]
-        });
+    var query = '{{query}}';
+    var db = "{{db}}";
+    var collection = "{{collection}}";
+    var error = {{error}};
+    var N, PDBIDS;
+    
+    if(! error) {
+        $(document).ready(function () {
+            $("#result_container").attr("role", "status");
+            $("#result_container").attr("class", "spinner-border");
+            $("#result_container").attr("style", "width: 4rem; height: 4rem;");
+            $("#result_container_container").attr("class", "d-flex justify-content-center my-5");
+            $("#result_header").text("Fetching your query results...");
+            
+            // request data from server and render table on load
+            $.ajax({
+                url: '/cgi-bin/query-results',
+                async: true,
+                data: {
+                    'query': query,
+                    'db': db,
+                    'collection': collection
+                },
+                dataType: 'json',
+                method: 'POST',
+                success: function (data, status, jqXHR) {
+                    // remove spinner
+                    $("#result_container").removeAttr("role");
+                    $("#result_container").removeAttr("class");
+                    $("#result_container").removeAttr("style");
+                    $("#result_container_container").removeAttr("class");
+                    
+                    if(data["error"]) {
+                        $("#result_container").html(data["html"]);
+                        $("#result_header").text("");
+                    } else {
+                        // Build HTML table
+                        PDBIDS = data["pdbids"];
+                        N = PDBIDS.length;
+                        $("#result_container").html(data["table"]);
+                        $("#result_header").text(`Your search returned ${N} results.`);
+                        $("#copy_ids_button").removeClass("disabled");
+                        
+                        // Style it with DataTables
+                        let table = $('#search_results_table').DataTable({
+                            dom: 'lBrtip',
+                            searching: false,
+                            columnDefs: [{
+                                orderable: false,
+                                className: 'select-checkbox',
+                                targets: 0
+                        }],
+                            select: {
+                                style: 'multi',
+                                selector: 'td:first-child'
+                            },
+                            buttons: [
+                                {
+                                    text: 'Select all',
+                                    className: "btn-sm mr-2",
+                                    action: function () {
+                                        table.rows().select();
+                                    }
+                            },
+                                {
+                                    text: 'Clear selection',
+                                    className: "btn-sm",
+                                    action: function () {
+                                        table.rows().deselect();
+                                    }
+                            }
+                        ]
+                        });
 
-        table.on('select', function (e, dt, type, indexes) {
-            var data = table.rows('.selected').data();
-            var query = {
-                structure_id: {
-                    "$in": []
+                        table.on('select', function (e, dt, type, indexes) {
+                            var data = table.rows('.selected').data();
+                            var query = {
+                                structure_id: {
+                                    "$in": []
+                                }
+                            };
+                            for (var i = 0; i < data.length; i++) {
+                                query.structure_id['$in'].push($(data[i][2]).text());
+                            }
+                            $("#json_download_link").removeClass("disabled");
+                            $("#json_download_link").prop("href", '/cgi-bin/request-data?query=' + JSON.stringify(query));
+                        });
+
+                        table.on('deselect', function (e, dt, type, indexes) {
+                            if (table.rows('.selected').data().length == 0) {
+                                $("#json_download_link").addClass("disabled");
+                                $("#json_download_link").prop("href", '#');
+                            }
+                        });
+
+                        table.buttons().container().attr("class", "");
+                    }
+                },
+                error: function (jqXHR, status, error) {
+                    $("#result_container").removeAttr("role");
+                    $("#result_container").removeAttr("class");
+                    $("#result_container").removeAttr("style");
+                    $("#result_container_container").removeAttr("class");
+                    $("#result_header").text("");
+                    $("#result_container").html(`<div style="height:300px"><div class="alert alert-danger" style="margin-top: 20px;"><strong>Error!</strong> Something went wrong...</div><p>Something went wrong processing your request. Please try again or use the contact page for help.</p></div>`);
                 }
-            };
-            for (var i = 0; i < data.length; i++) {
-                query.structure_id['$in'].push($(data[i][2]).text());
-            }
-            $("#json_download_link").removeClass("disabled");
-            $("#json_download_link").prop("href", '/cgi-bin/request-data?query=' + JSON.stringify(query));
+            });
         });
-
-        table.on('deselect', function (e, dt, type, indexes) {
-            if (table.rows('.selected').data().length == 0) {
-                $("#json_download_link").addClass("disabled");
-                $("#json_download_link").prop("href", '#');
-            }
-        });
-        
-        table.buttons().container().attr("class", "");
-    });
+    }
 </script>
-{% endif %}
-
 </html>
