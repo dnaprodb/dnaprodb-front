@@ -160,6 +160,9 @@
                     <button type="button" class="btn btn-danger btn-xs pull-right" onclick={{remove_click}} data-number="{{num}}">remove</button>
                     {{/if}}
                 </div>
+                {{#if blinker}}
+                <div id="prompt_selection" class="text-center" ><span class="blink" style="color:red;">select an option to begin</span></div>
+                {{/if}}
             </div>
             <fieldset class="form-group feature-input" data-number="{{num}}"></fieldset>
         </div>

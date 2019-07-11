@@ -167,7 +167,8 @@ $(document).ready(function () {
         remove_click: "removeCategory(this);",
         determiner: 'a',
         num: 1,
-        button: true
+        button: true,
+        blinker: true
     }
     $('#search_form').prepend(categoryTemplate(context));
     
@@ -279,6 +280,7 @@ function categorySelection(element) {
     var val = $(element).val();
     var num = $(element).data("number");
 
+    $("#prompt_selection").remove();
     switch (val) {
     case "pdbid":
         pdbidMenu(num);
@@ -665,7 +667,8 @@ function submitSearch() {
         case "dna":
             searchTerms = {'dna.models': {'$elemMatch': {}}};
             var entity_ops = {'$elemMatch': []};
-                
+            let not_empty = false;
+            
             /* Strand Features */
             var strand_ops = [];
             // Sequence Length
@@ -756,6 +759,7 @@ function submitSearch() {
                     op["$lte"] = Number(fieldset_data['max_entity_count']);
                 }
                 searchTerms['dna.models']['$elemMatch']['num_entities'] = op;
+                not_empty = true;
             }
             
             // Entity types
@@ -831,23 +835,31 @@ function submitSearch() {
                 entity_ops['$elemMatch'].push(op);
             }
             
+            // Add strand ops to entity ops
             if(strand_ops.length > 0) {
                 let op = {'strands': {'$elemMatch': null}};
                 op['strands']['$elemMatch'] = logic_op(strand_ops);
                 entity_ops['$elemMatch'].push(op);
             }
             
+            // Add helix ops to entity ops
             if(helix_ops.length > 0) {
                 let op = {'helical_segments': {'$elemMatch': null}};
                 op['helical_segments']['$elemMatch'] = logic_op(helix_ops);
                 entity_ops['$elemMatch'].push(op);
             }
             
+            // Add entity ops to query term
             if(entity_ops['$elemMatch'].length > 0) {
                 entity_ops['$elemMatch'] = logic_op(entity_ops['$elemMatch']);
                 searchTerms['dna.models']['$elemMatch']['entities'] = entity_ops;
+                not_empty = true;
             }
-            searchItems.push(searchTerms);
+            
+            // Check for empty query
+            if(not_empty) {
+                searchItems.push(searchTerms);
+            }
             break;
         case "protein":
             /* Sequence Similarity */
@@ -1003,9 +1015,11 @@ function submitSearch() {
             }
             
             /* Add search terms to query */
-            op = {'protein.chains':{}};
-            op['protein.chains']['$elemMatch'] = logic_op(searchTerms);
-            searchItems.push(op);
+            if(searchTerms.length > 0) {
+                op = {'protein.chains':{}};
+                op['protein.chains']['$elemMatch'] = logic_op(searchTerms);
+                searchItems.push(op);
+            }
             break;
         case "interactions":
             let grvs = ['wg', 'sg', 'bs', 'sr', 'pp'];
@@ -1148,10 +1162,12 @@ function submitSearch() {
                     }
                 });
             }
-            
-            op = {'interfaces.models': {'$elemMatch': {'$elemMatch': null}}};
-            op['interfaces.models']['$elemMatch']['$elemMatch'] = logic_op(searchTerms);
-            searchItems.push(op);
+                
+            if( searchTerms.length > 0 ) {
+                op = {'interfaces.models': {'$elemMatch': {'$elemMatch': null}}};
+                op['interfaces.models']['$elemMatch']['$elemMatch'] = logic_op(searchTerms);
+                searchItems.push(op);
+            }
             break;
         default:
             return;
@@ -1160,13 +1176,17 @@ function submitSearch() {
     /* Combine Search Terms */
     var matchOpt = $('#search_form input[name=matchOpt]:checked').val();
     var query;
-    if (matchOpt == 0) {
-        query = _and(searchItems);
-    } else if (matchOpt == 1) {
-        query = _or(searchItems);
-    } else if (matchOpt == 2) {
-        query = _nor(searchItems);
+    if(searchItems.length > 0){
+        if (matchOpt == 0) {
+            query = _and(searchItems);
+        } else if (matchOpt == 1) {
+            query = _or(searchItems);
+        } else if (matchOpt == 2) {
+            query = _nor(searchItems);
+        }
+        console.log(JSON.stringify(query));
+        window.open("/cgi-bin/query-results?query=" + JSON.stringify(query));
+    } else {
+        alert("Please select at least one search criteria!");
     }
-    console.log(JSON.stringify(query));
-    window.open("/cgi-bin/query-results?query=" + JSON.stringify(query));
 }
