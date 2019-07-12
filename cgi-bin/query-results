@@ -42,8 +42,9 @@ def makeTable(data):
     row_template = """
     <tr>
         <td></td>
-        <td><img src="{thumbnail_url}" style="width:100px;height:100px;"></td>
-        <td><a href="/cgi-bin/report?pdbid={pdbid}">{pdbid}</a></td>
+        <td><a href="/cgi-bin/report?pdbid={pdbid}"><img src="{thumbnail_url}" style="width:100px;height:100px;"></a></td>
+        <td><a href="/cgi-bin/report?pdbid={pdbid}">{pdbid} <i class="fa fa-external-link" aria-hidden="true"></i>
+</a></td>
         <td>{uniprot_name}</td>
         <td>{dna_entity_types}</td>
         <td>{size}</td>
@@ -62,7 +63,7 @@ def makeTable(data):
                 <th>Protein Name(s)</th>
                 <th>DNA Entity Type(s)</th>
                 <th>Structure Size</th>
-                <th>Organism</th>
+                <th>Organism(s)</th>
                 <th>Structure Method</th>
                 <th>Title</th>
                 <th>Authors</th>
@@ -74,7 +75,7 @@ def makeTable(data):
                 <th>Protein Name(s)</th>
                 <th>DNA Entity Type(s)</th>
                 <th>Structure Size</th>
-                <th>Organism</th>
+                <th>Organism(s)</th>
                 <th>Structure Method</th>
                 <th>Title</th>
                 <th>Authors</th>
@@ -286,14 +287,6 @@ else:
         """.format(query)
         printOutput({"html": html_content, "error": True}, JSON=True)
     
-    ## redirect if a single result is returned
-    #if(results.count() == 1):
-        #pdbid = next(results)['structure_id']
-        #print "Status: 303 See other"
-        #print "Location: /cgi-bin/report?pdbid={}".format(pdbid)
-        #print 
-        #exit(0)
-    
     # notify if no result was returned
     if(results.count() == 0):
         html_content = """
@@ -358,3 +351,11 @@ else:
         })
         pdbids.append(r["structure_id"])
     printOutput({"table": makeTable(resultObjects), "pdbids": pdbids, "error": False}, JSON=True)
+
+## redirect if a single result is returned
+#if(results.count() == 1):
+    #pdbid = next(results)['structure_id']
+    #print "Status: 303 See other"
+    #print "Location: /cgi-bin/report?pdbid={}".format(pdbid)
+    #print 
+    #exit(0)
