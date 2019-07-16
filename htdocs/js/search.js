@@ -41,6 +41,18 @@ $.fn.serializeObject = function () {
     return o;
 };
 
+var glossary_window = {
+    closed: true
+};
+
+function glossary(id) {
+    var opts = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,height=400,width=800';
+    if (!glossary_window.closed) {
+        glossary_window.close();
+    }
+    glossary_window = window.open(`/cgi-bin/glossary?id=${id}#${id}`, 'targetWindow', opts);
+}
+
 Handlebars.registerPartial('ss_ms_none',
     '<select name="{{name}}" multiple>' +
     '<option value="H">helix</option>' +
@@ -908,21 +920,7 @@ function submitSearch() {
                 } else {
                     op['uniprot_accession'] = _eq(data);
                 }
-                searchTerms.push(op)
-            /*
-            searchTerms['protein.chains']['$elemMatch'][logic].push({
-                "$and": [{
-                    "$text": {
-                        "$search": fieldset_data['protein_name'],
-                        "$language": "none"
-                    }
-                }, {
-                    "uniprot_accession": {
-                        "$ne": fieldset_data['protein_name']
-                    }
-                }]
-            });
-            */
+                searchTerms.push(op);
             }
 
             /* CATH Domain ID */

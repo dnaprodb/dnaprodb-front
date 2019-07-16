@@ -109,3 +109,7 @@ hr.feature-separator {
 	-webkit-animation-timing-function:ease-in-out;
 	-webkit-animation-direction: alternate;
 }
+
+i {
+    cursor: pointer;
+}
