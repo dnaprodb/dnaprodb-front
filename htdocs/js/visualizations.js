@@ -2144,55 +2144,40 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
 function makeLCM(mi, dna_entity_id, interfaces) {
     /* called functions */
     function getNucleotideAngle(node) {
-        let node_list = [];
-        if (node.data.id in PAIRS[mi] && PAIRS[mi][node.data.id].length == 1 && LCM.layout_type == "radial") {
-            /* use pair neighbor to define angle */
-            node_list.push(LCM.node_lookup[PAIRS[mi][node.data.id][0].id1]);
-            node_list.push(LCM.node_lookup[PAIRS[mi][node.data.id][0].id2]);
-        } else if (node.data.id in LINKS[mi] && Object.keys(LINKS[mi]).length > 2) {
-            let nmax = 3; // max number of neighbors
-            let c_id, n_id; // current and neighbor node id
-            // 3' direction neighbors
-            c_id = node.data.id; // current node id
-            for(let i = 0; i < nmax; i++) {
-                if(LINKS[mi][c_id].p3) {
-                    n_id = LINKS[mi][c_id].p3;
-                    node_list.push(LCM.node_lookup[n_id]);
-                    c_id = n_id;
-                } else {
-                    break;
-                }
+        let n3, n5, offset;
+        if (node.data.id in LINKS[mi] ) {
+            // set 3' node
+            if(LINKS[mi][node.data.id].p3) {
+                n3 = LCM.node_lookup[LINKS[mi][node.data.id].p3];
+            } else {
+                n3 = node;
             }
-            // 5' direction neighbors
-            c_id = node.data.id; // current node id
-            for(let i = 0; i < nmax; i++) {
-                if(LINKS[mi][c_id].p5) {
-                    n_id = LINKS[mi][c_id].p5;
-                    node_list.push(LCM.node_lookup[n_id]);
-                    c_id = n_id;
-                } else {
-                    break;
-                }
+            
+            // set 5' node
+            if(LINKS[mi][node.data.id].p5) {
+                n5 = LCM.node_lookup[LINKS[mi][node.data.id].p5];
+            } else {
+                n5 = node;
             }
+            offset = Math.PI/2;
+        } else if ((node.data.id in PAIRS[mi]) && (PAIRS[mi][node.data.id].length == 1) && (LCM.layout_type == "radial")) {
+            n5 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id1];
+            n3 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id2];
+            offset = 0;
         } else {
-            return 0.0;
+            return 0.0; // can't find any neighbors, just set to zero
         }
         
         let dx, dy, theta;
-        dx = 0;
-        dy = 0;
-        for(let i = 0; i < node_list.length; i++) {
-            dx += node_list[i].x;
-            dy += node_list[i].y;
-        }
-        dx = dx/node_list.length - node.x;
-        dy = dy/node_list.length - node.y;
-
-        theta = Math.atan2(dy, dx);
+        dx = n5.x - n3.x;
+        dy = n5.y - n3.y;
+        theta = Math.atan2(dy, dx) + offset;
         if (theta < 0) {
-            return 360 + 180 * Math.atan2(dy, dx) / Math.PI;
+            //return 360 + 180 * Math.atan2(dy, dx) / Math.PI;
+            return 360 + 180 * theta / Math.PI;
         } else {
-            return 180 * Math.atan2(dy, dx) / Math.PI;
+            //return 180 * Math.atan2(dy, dx) / Math.PI;
+            return 180 * theta / Math.PI;
         }
     }
 
