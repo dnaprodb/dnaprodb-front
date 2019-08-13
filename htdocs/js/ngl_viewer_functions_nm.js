@@ -1,5 +1,5 @@
 //Author: Nicholas Markarian
-//Last updated: 8/8/2019 at 11:09 am
+//Last updated: 8/12/2019 at 5:14 pm
 var stage_nm1;
 var ballStick_list_nm1 = [] //list of index values for ballStick representations... used to dispose of them after use
 var chain_set_nm1 = new Set();
@@ -104,22 +104,9 @@ function selectModel(model_number_)
 }
 
 function loadStructure(structure_url) {
-  console.log("08/08/2019")
+  console.log("08/12/2019")
   stage_nm1 = new NGL.Stage("viewport", {backgroundColor: "white", opacity: 0});
 
-  var tooltip = document.createElement("div");
-  Object.assign(tooltip.style, { //copied code from NGL gallery
-    display: "none",
-    position: "fixed",
-    zIndex: 10,
-    pointerEvents: "none",
-    backgroundColor: "rgba( 0, 0, 0, 0.6 )",
-    color: "lightgrey",
-    padding: "8px",
-    fontFamily: "sans-serif"
-  });
-  
-  document.body.appendChild(tooltip);
   
   return stage_nm1.loadFile(structure_url, {name: "my_structure"}).then(function (init_component) 
   { 
@@ -380,28 +367,42 @@ function loadStructure(structure_url) {
     //console.log(deleteLater)
     cleanupDeleteLater(deleteLater);
     stage_nm1.mouseControls.remove("hoverPick"); //copied code from NGL gallery
-    stage_nm1.signals.hovered.add(function (pickingProxy) 
-    {    //copied and modified code from NGL gallery
-      if (pickingProxy && (pickingProxy.atom || pickingProxy.bond)) 
-      {
+
+    //tooltip
+    var tooltip = document.createElement("div");
+    Object.assign(tooltip.style, {
+      display: "none",
+      position: "fixed",
+      zIndex: 10,
+      pointerEvents: "none",
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      color: "lightgrey",
+      padding: "0.5em",
+      fontFamily: "sans-serif"
+    });
+    stage_nm1.viewer.container.appendChild(tooltip);
+
+    // listen to `hovered` signal to move tooltip around and change its text
+    stage_nm1.signals.hovered.add(function (pickingProxy) {
+      if (pickingProxy && (pickingProxy.atom || pickingProxy.bond)){
         var atom = pickingProxy.atom || pickingProxy.closestBondAtom
-        var mp = pickingProxy.mouse.position
-        var full_atom_name = atom.qualifiedName()
-        var end_res_name = full_atom_name.indexOf(":")
-        tooltip.innerText = full_atom_name.substring(0, end_res_name) //displays just residue name and number
-        tooltip.style.bottom = window.innerHeight - mp.y + 3 + "px"
-        tooltip.style.left = mp.x + 3 + "px"
-        tooltip.style.display = "block"
-      } 
-      else 
-      {
-          tooltip.style.display = "none"
+            var mp = pickingProxy.mouse.position
+            var full_atom_name = atom.qualifiedName()
+            var end_res_name = full_atom_name.indexOf(":")
+            tooltip.innerText = full_atom_name.substring(0, end_res_name) //displays just residue name and number
+            tooltip.style.bottom = window.innerHeight - mp.y + 3 + "px"
+            tooltip.style.left = mp.x + 3 + "px"
+            tooltip.style.display = "block"
+      }
+      else{
+        tooltip.style.display = "none";
       }
     });
-          stage_nm1.handleResize()
-          init_component.autoView()
-          var principleAxes = stage_nm1.getComponentsByName("my_structure").list[0].structure.getPrincipalAxes();
-          stage_nm1.animationControls.rotate(principleAxes.getRotationQuaternion(), 0);
+    document.getElementById('viewport').onmouseleave = function(){tooltip.style.display = "none";};
+    stage_nm1.handleResize()
+    init_component.autoView()
+    var principleAxes = stage_nm1.getComponentsByName("my_structure").list[0].structure.getPrincipalAxes();
+    stage_nm1.animationControls.rotate(principleAxes.getRotationQuaternion(), 0);
     
   }); 
   
@@ -409,7 +410,8 @@ function loadStructure(structure_url) {
 
 function log() {
 
-  stage_nm1.getComponentsByName("my_structure").addRepresentation("cartoon")
+  //console.log(stage_nm1.getComponentsByName("my_structure").list[0].structure.getStructure())
+
   
   console.log("stage");
   console.log(stage_nm1);
@@ -670,7 +672,7 @@ function addBallStick(residue_list)
   }
   //unlike in selectResidues3D, the modified chains are not stored. The only color change imposed here is the yellow highlighting,
   //which is not permanent and will be reset by selectResidues3D when a new selection is made
-  
+  stage_nm1.getComponentsByName("my_structure").autoView(processed_residue_list)
 } 
 
 /*
@@ -710,7 +712,7 @@ function selectResidues3D(residue_list)
   }
 
   //console.log(processed_residue_list)
-  stage_nm1.getComponentsByName("my_structure").autoView(processed_residue_list)
+  
   var chain_colors = NGL.ColormakerRegistry.addScheme(function (params) 
   {
     this.atomColor = function (atom) 
