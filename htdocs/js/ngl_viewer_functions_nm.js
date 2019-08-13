@@ -672,7 +672,7 @@ function addBallStick(residue_list)
   }
   //unlike in selectResidues3D, the modified chains are not stored. The only color change imposed here is the yellow highlighting,
   //which is not permanent and will be reset by selectResidues3D when a new selection is made
-  
+  stage_nm1.getComponentsByName("my_structure").autoView(processed_residue_list)
 } 
 
 /*
@@ -712,7 +712,7 @@ function selectResidues3D(residue_list)
   }
 
   //console.log(processed_residue_list)
-  stage_nm1.getComponentsByName("my_structure").autoView(processed_residue_list)
+  
   var chain_colors = NGL.ColormakerRegistry.addScheme(function (params) 
   {
     this.atomColor = function (atom) 
