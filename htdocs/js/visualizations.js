@@ -2144,31 +2144,40 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
 function makeLCM(mi, dna_entity_id, interfaces) {
     /* called functions */
     function getNucleotideAngle(node) {
-        let n1, n2, dx, dy, theta;
-        if (node.data.id in PAIRS[mi] && PAIRS[mi][node.data.id].length == 1 && LCM.layout_type == "radial") {
-            /* use pair neighbor to define angle */
-            n1 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id1];
-            n2 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id2];
-        } else if (node.data.id in LINKS[mi] && LINKS[mi][node.data.id].p5 && LINKS[mi][node.data.id].p3) {
-            /* use link neighbors to define angle */
-            n1 = LCM.node_lookup[LINKS[mi][node.data.id].p5];
-            n2 = LCM.node_lookup[LINKS[mi][node.data.id].p3];
-        } else if (node.data.id in LINKS[mi] && Object.keys(LINKS[mi]).length > 2) {
-            /* use linked neighbor for angle */
-            if (LINKS[mi][node.data.id].p3) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p3]);
-            if (LINKS[mi][node.data.id].p5) return getNucleotideAngle(LCM.node_lookup[LINKS[mi][node.data.id].p5]);
+        let n3, n5, offset;
+        if (node.data.id in LINKS[mi] ) {
+            // set 3' node
+            if(LINKS[mi][node.data.id].p3) {
+                n3 = LCM.node_lookup[LINKS[mi][node.data.id].p3];
+            } else {
+                n3 = node;
+            }
+            
+            // set 5' node
+            if(LINKS[mi][node.data.id].p5) {
+                n5 = LCM.node_lookup[LINKS[mi][node.data.id].p5];
+            } else {
+                n5 = node;
+            }
+            offset = Math.PI/2;
+        } else if ((node.data.id in PAIRS[mi]) && (PAIRS[mi][node.data.id].length == 1) && (LCM.layout_type == "radial")) {
+            n5 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id1];
+            n3 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id2];
+            offset = 0;
         } else {
-            return 0.0;
+            return 0.0; // can't find any neighbors, just set to zero
         }
-
-        dx = (n1.x + n2.x) / 2 - node.x;
-        dy = (n1.y + n2.y) / 2 - node.y;
-
-        theta = Math.atan2(dy, dx);
+        
+        let dx, dy, theta;
+        dx = n5.x - n3.x;
+        dy = n5.y - n3.y;
+        theta = Math.atan2(dy, dx) + offset;
         if (theta < 0) {
-            return 360 + 180 * Math.atan2(dy, dx) / Math.PI;
+            //return 360 + 180 * Math.atan2(dy, dx) / Math.PI;
+            return 360 + 180 * theta / Math.PI;
         } else {
-            return 180 * Math.atan2(dy, dx) / Math.PI;
+            //return 180 * Math.atan2(dy, dx) / Math.PI;
+            return 180 * theta / Math.PI;
         }
     }
 

@@ -7,6 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css" integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/sumoselect.css" type="text/css" />
+    <link rel="stylesheet" href="/css/font-awesome-4.7.0/css/font-awesome.min.css">
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="/css/main.css?v=1488920049">
@@ -160,6 +161,9 @@
                     <button type="button" class="btn btn-danger btn-xs pull-right" onclick={{remove_click}} data-number="{{num}}">remove</button>
                     {{/if}}
                 </div>
+                {{#if blinker}}
+                <div id="prompt_selection" class="text-center"><span class="blink" style="color:red;">select an option to begin</span></div>
+                {{/if}}
             </div>
             <fieldset class="form-group feature-input" data-number="{{num}}"></fieldset>
         </div>
@@ -179,7 +183,7 @@
     <script id="dna_properties_template" type="text/x-handlebars-template">
         <legend class="menu-header">DNA Features</legend>
         <div class="form-inline mb-2">
-            <label class="control-label mr-2">Match on:</label>
+            <label class="control-label mr-2"><i class="fa fa-info-circle" onclick="glossary('category_logic')"></i>&nbsp;Match on:</label>
             <div class="form-check form-check-inline">
                 <input type="radio" name="logic{{num}}" value="all" data-number="{{num}}" checked="checked">
                 <label class="form-check-label">ALL DNA features</label>
@@ -192,103 +196,17 @@
         <div class="row">
             <div class="col-sm-6">
                 <div class="card panel-dna">
-                    <div class="card-header"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_features')"></span>Sequence Features</div>
+                    <div class="card-header py-4"></div>
                     <div class="card-body">
-                        <!-- Sequence Length -->
-                        <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-4 text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_length')"></span>Strand Length:</label>
-                            <div class="col-sm-8">
-                                <div class="validated">
-                                    <div class="input-group" style="max-width: 300px;">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">min</span>
-                                        </div>
-                                        <input name="min_seq_length" type="text" class="form-control" style="width:50px;">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
-                                        </div>
-                                        <input name="max_seq_length" type="text" class="form-control" style="width:50px;">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- Sequence Motif -->
-                        <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-4 text-right">
-                                <span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_motif')"></span>Sequence Motif(s):
-                            </label>
-                            <div class="col-sm-8">
-                                <div class="validated">
-                                    <input name="seq_motif" class="form-control" type="text" placeholder="e.g. TATA, TAAT (IUPAC alphabet)">
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" name="reverse_seq_motif" value="true" type="checkbox">
-                                    <label class="form-check-label">search for reverse compliment</label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" name="negate_seq_motif" value="true" type="checkbox">
-                                    <label class="form-check-label">does not contain motif</label>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- GC Content -->
-                        <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-4 text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_gc_content')"></span> GC Content:</label>
-                            <div class="col-sm-8">
-                                <div class="validated">
-                                    <div class="input-group" style="max-width: 300px;">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">min</span>
-                                        </div>
-                                        <input name="min_gc_content" type="text" class="form-control">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
-                                        </div>
-                                        <input name="max_gc_content" type="text" class="form-control">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-4 text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_gc_content')"></span>Number of Strands:</label>
-                            <div class="col-sm-8">
-                                <div class="validated">
-                                    <div class="input-group" style="max-width: 300px;">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">min</span>
-                                        </div>
-                                        <input name="min_strand_count" type="text" class="form-control" />
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
-                                        </div>
-                                        <input name="max_strand_count" type="text" class="form-control" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <hr class="feature-separator">
-                        <!-- Restrict to Binding Site -->
-                        <div class="form-group">
-                            <div class="col-sm-offset-4 col-sm-8">
-                                <div class="form-check">
-                                    <input class="form-check-input" name="binding_site" type="checkbox" value="true">
-                                    <label class="form-check-label">matching strands are protein bound</label>
-                                    <span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_binding_site')"></span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <!-- Structural and Nucleotide Features-->
-            <div class="col-sm-6">
-                <div class="card panel-dna">
-                    <div class="card-header"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_structural_features')"></span> Structural Features</div>
-                    <div class="card-body form-horizontal">
-                        <p class="text-center font-weight-bold">Entity-level Features</p>
+
+                        <p class="text-center font-weight-bold">
+                            <i class="fa fa-info-circle" onclick="glossary('dna_structure_features')"></i>&nbsp; Structure-level Features
+                        </p>
                         <!-- Entity Count -->
                         <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-5 text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_gc_content')"></span>Number of entities:</label>
+                            <label class="col-form-label font-weight-bold col-sm-5 text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_entity_count')"></i>&nbsp;Number of DNA Entities:
+                            </label>
                             <div class="col-sm-7">
                                 <div class="validated">
                                     <div class="input-group" style="max-width: 300px;">
@@ -304,9 +222,55 @@
                                 </div>
                             </div>
                         </div>
+                        <hr class="feature-separator">
+                        <p class="text-center font-weight-bold">
+                            <i class="fa fa-info-circle" onclick="glossary('dna_entity_features')"></i>&nbsp; DNA Entity-level Features
+                        </p>
+                        <!-- Strand Count -->
+                        <div class="form-row form-group">
+                            <label class="col-form-label font-weight-bold col-sm-5 text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_strand_count')"></i>&nbsp;Number of Strands:
+                            </label>
+                            <div class="col-sm-7">
+                                <div class="validated">
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <input name="min_strand_count" type="text" class="form-control" />
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
+                                        </div>
+                                        <input name="max_strand_count" type="text" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Helix Count -->
+                        <div class="form-row form-group">
+                            <label class="col-form-label font-weight-bold col-sm-5 text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_helix_count')"></i>&nbsp;Number of Helices:
+                            </label>
+                            <div class="col-sm-7">
+                                <div class="validated">
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <input name="min_helix_count" type="text" class="form-control" />
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
+                                        </div>
+                                        <input name="max_helix_count" type="text" class="form-control" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <!-- Entity Type -->
                         <div class="form-row form-group">
-                            <label class="col-form-label col-sm-5 font-weight-bold text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_conformation')"></span>DNA Entity Type:</label>
+                            <label class="col-form-label col-sm-5 font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_entity_type')"></i>&nbsp;DNA Entity Type:
+                            </label>
                             <div class="col-sm-7">
                                 <select name="entity_type" class="form-control" multiple>
                                     <option value="perfect_helix">perfect helix</option>
@@ -322,7 +286,9 @@
                         </div>
                         <!-- Chemical Modifications -->
                         <div class="form-row form-group">
-                            <label class="col-form-label col-sm-5 font-weight-bold text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_chemical_modifications')"></span> Chemical Modificiations: </label>
+                            <label class="col-form-label col-sm-5 font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_chemical_modifications')"></i>&nbsp;Chemical Modificiations:
+                            </label>
                             <div class="col-sm-7">
                                 <div class="form-check">
                                     <input class="form-check-input" name="entity_chemical_modification" type="checkbox" value="5_methylated_cytosine">
@@ -339,11 +305,95 @@
                                 </div>
                             </div>
                         </div>
-                        <hr>
-                        <p class="text-center font-weight-bold">Helix-level Features</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-6">
+                <div class="card panel-dna">
+                    <div class="card-header py-4"></div>
+                    <div class="card-body">
+
+                        <!-- Sequence Length -->
+                        <p class="text-center font-weight-bold">
+                            <i class="fa fa-info-circle" onclick="glossary('dna_strand_features')"></i>&nbsp;Strand-level Features
+                        </p>
+                        <div class="form-row form-group">
+                            <label class="col-form-label font-weight-bold col-sm-5 text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_seq_length')"></i>&nbsp;Strand Length:
+                            </label>
+                            <div class="col-sm-7">
+                                <div class="validated">
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <input name="min_seq_length" type="text" class="form-control" style="width:50px;">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
+                                        </div>
+                                        <input name="max_seq_length" type="text" class="form-control" style="width:50px;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Sequence Motif -->
+                        <div class="form-row form-group">
+                            <label class="col-form-label font-weight-bold col-sm-5 text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_seq_motif')"></i>&nbsp;Sequence Motif(s):
+                            </label>
+                            <div class="col-sm-7">
+                                <div class="validated">
+                                    <input name="seq_motif" class="form-control" type="text" placeholder="e.g. TATA, TAAT (IUPAC alphabet)">
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" name="reverse_seq_motif" value="true" type="checkbox">
+                                    <label class="form-check-label">search for reverse compliment</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" name="negate_seq_motif" value="true" type="checkbox">
+                                    <label class="form-check-label">does not contain motif</label>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- GC Content -->
+                        <div class="form-row form-group">
+                            <label class="col-form-label font-weight-bold col-sm-5 text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('dna_seq_gc_content')"></i>&nbsp;GC Content:
+                            </label>
+                            <div class="col-sm-7">
+                                <div class="validated">
+                                    <div class="input-group" style="max-width: 300px;">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <input name="min_gc_content" type="text" class="form-control">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
+                                        </div>
+                                        <input name="max_gc_content" type="text" class="form-control">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Restrict to Binding Site -->
+                        <div class="form-group">
+                            <div class="col-sm-offset-4 col-sm-8">
+                                <div class="form-check">
+                                    <input class="form-check-input" name="binding_site" type="checkbox" value="true">
+                                    <label class="form-check-label">matching strands are protein bound&nbsp;<i class="fa fa-info-circle" onclick="glossary('dna_interacts_protein')"></i></label>
+                                    <span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_binding_site')"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <hr class="feature-separator">
+                        <p class="text-center font-weight-bold">
+                            <i class="fa fa-info-circle" onclick="glossary('dna_helix_features')"></i>&nbsp;Helix-level Features
+                        </p>
                         <!-- Helical Axis Curvature -->
                         <div class="form-row form-group">
-                            <label class="col-form-label col-sm-5 font-weight-bold text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('helical_axis_curvature')"></span>Helical Axis Curvature:</label>
+                            <label class="col-form-label col-sm-5 font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('helical_axis_curvature')"></i>&nbsp;Helical Axis Curvature:
+                            </label>
                             <div class="col-sm-7">
                                 <div class="form-check">
                                     <input class="form-check-input" name="axis_curvature" type="checkbox" value="linear">
@@ -361,7 +411,9 @@
                         </div>
                         <!-- DNA Conformation -->
                         <div class="form-row form-group">
-                            <label class="col-form-label col-sm-5 font-weight-bold text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_conformation')"></span>Helical Conformation: </label>
+                            <label class="col-form-label col-sm-5 font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('helical_conformation')"></i>&nbsp;Helical Conformation:
+                            </label>
                             <div class="col-sm-7">
                                 <select name="dna_form" class="form-control" multiple>
                                     <option value="B-DNA">B-DNA</option>
@@ -373,7 +425,9 @@
                         </div>
                         <!-- Base-pair information -->
                         <div class="form-row form-group">
-                            <label class="col-form-label col-sm-5 font-weight-bold text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_base_pairing')"></span> Base Pairing: </label>
+                            <label class="col-form-label col-sm-5 font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('helical_base_pairing')"></i>&nbsp;Base Pairing:
+                            </label>
                             <div class="col-sm-7">
                                 <div class="form-check">
                                     <input class="form-check-input" name="base_pairing" type="checkbox" value="contains_hoogsteen_pairs">
@@ -390,35 +444,19 @@
                                 </div>
                             </div>
                         </div>
-                        <!-- Helix Count -->
-                        <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-5 text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_gc_content')"></span>Number of helices:</label>
-                            <div class="col-sm-7">
-                                <div class="validated">
-                                    <div class="input-group" style="max-width: 300px;">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">min</span>
-                                        </div>
-                                        <input name="min_helix_count" type="text" class="form-control" />
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
-                                        </div>
-                                        <input name="max_helix_count" type="text" class="form-control" />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
+
+
     </script>
 
     <!-- Protein Properties Template -->
     <script id="protein_properties_template" type="text/x-handlebars-template">
         <legend class="menu-header">Protein Features</legend>
         <div class="form-inline mb-2">
-            <label class="control-label mr-2">Match on:</label>
+            <label class="control-label mr-2"><i class="fa fa-info-circle" onclick="glossary('category_logic')"></i>&nbsp;Match on:</label>
             <div class="form-check form-check-inline">
                 <input type="radio" name="logic{{num}}" value="all" data-number="{{num}}" checked="checked">
                 <label class="form-check-label">ALL protein features</label>
@@ -429,10 +467,12 @@
             </div>
         </div>
         <div class="card panel-protein">
-            <div class="card-header">Chain Features</div>
+            <div class="card-header"><i class="fa fa-info-circle" onclick="glossary('chain_features')"></i>&nbsp;Chain Features</div>
             <div class="card-body">
                 <div class="form-row">
-                    <label class="col-sm-4 col-form-label font-weight-bold text-right">Sequence Similarity:</label>
+                    <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                        <i class="fa fa-info-circle" onclick="glossary('protein_seq_similarity')"></i>&nbsp;Sequence Similarity:
+                    </label>
                     <div class="col-sm-8">
                         <div class="form-group">
                             <div class="validated">
@@ -461,7 +501,9 @@
                 </div>
                 <!-- UniProt Input -->
                 <div class="form-row">
-                    <label class="col-sm-4 col-form-label font-weight-bold text-right">UniProt Identifiers:</label>
+                    <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                        <i class="fa fa-info-circle" onclick="glossary('protein_uniprot')"></i>&nbsp;UniProt Identifiers:
+                    </label>
                     <div class="form-group col-sm-8">
                         <input name="uniprot_id" type="text" class="form-control" placeholder="e.g. 'P28359'">
                         <div class="form-check">
@@ -472,7 +514,9 @@
                 </div>
                 <!-- Cath Input -->
                 <div class="form-row">
-                    <label class="col-sm-4 col-form-label font-weight-bold text-right">CATH Identifiers:</label>
+                    <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                        <i class="fa fa-info-circle" onclick="glossary('protein_cath_id')"></i>&nbsp;CATH Identifiers:
+                    </label>
                     <div class="form-group col-sm-8">
                         <div class="validated">
                             <input name="cath_id" type="text" class="form-control" placeholder="e.g. '1.10.10.60, 2.40'">
@@ -485,7 +529,9 @@
                 </div>
                 <!-- Gene Ontology -->
                 <div class="form-row">
-                    <label class="col-sm-4 col-form-label font-weight-bold text-right">GO Term Identifiers:</label>
+                    <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                        <i class="fa fa-info-circle" onclick="glossary('protein_go_term')"></i>&nbsp;GO Term Identifiers:
+                    </label>
                     <div class="form-group col-sm-8">
                         <div class="validated">
                             <input name="go_terms" type="text" class="form-control" placeholder="e.g. '0003677, 0005634'" id="{{cath_input}}">
@@ -498,7 +544,9 @@
                 </div>
                 <!-- Chain length -->
                 <div class="form-row form-group">
-                    <label class="col-form-label font-weight-bold col-sm-4 text-right"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('dna_seq_length')"></span>Chain Length:</label>
+                    <label class="col-form-label font-weight-bold col-sm-4 text-right">
+                        <i class="fa fa-info-circle" onclick="glossary('protein_chain_length')"></i>&nbsp;Chain Length:
+                    </label>
                     <div class="col-sm-8">
                         <div class="validated">
                             <div class="input-group" style="max-width: 300px;">
@@ -520,7 +568,9 @@
                     <div class="offset-sm-4 col-sm-8">
                         <div class="form-check">
                             <input name="interacts" value="true" type="checkbox" id="{{interacts_checkbox}}" class="form-check-input">
-                            <label class="form-check-label">include only chains interacting with DNA</label>
+                            <label class="form-check-label">
+                                include only chains interacting with DNA&nbsp;<i class="fa fa-info-circle" onclick="glossary('protein_interacts_dna')"></i>
+                            </label>
                         </div>
                     </div>
                 </div>
@@ -532,7 +582,7 @@
     <script id="interactions_template" type="text/x-handlebars-template">
         <legend class="menu-header">DNA-Protein Interaction Features</legend>
         <div class="form-inline mb-2">
-            <label class="control-label mr-2">Match on:</label>
+            <label class="control-label mr-2"><i class="fa fa-info-circle" onclick="glossary('category_logic')"></i>&nbsp;Match on:</label>
             <div class="form-check form-check-inline">
                 <input type="radio" name="logic{{num}}" data-number="{{num}}" value="all" checked="checked">
                 <label class="form-check-label">ALL interaction features</label>
@@ -545,11 +595,13 @@
         <div class="row">
             <div class="col-sm-6">
                 <div class="card panel-interaction">
-                    <div class="card-header">Global Interface Features</div>
+                    <div class="card-header"><i class="fa fa-info-circle" onclick="glossary('interface_features')"></i>&nbsp;Global Interface Features</div>
                     <div class="card-body">
                         {{#each contact_items}}
                         <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-5"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('{{glossary_id}}')"></span> {{label}} interactions:</label>
+                            <label class="col-form-label font-weight-bold col-sm-5">
+                                <i class="fa fa-info-circle" onclick="glossary('{{glossary_id}}')"></i>&nbsp;{{label}} Interactions:
+                            </label>
                             <div class="col-sm-7">
                                 {{>ss_ms_none }}
                                 <div class="form-inline">
@@ -571,7 +623,7 @@
                         </div>
                         {{/each}}
                         <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-5"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('ss_composition')"></span> Secondary Structure Composition:</label>
+                            <label class="col-form-label font-weight-bold col-sm-5"><i class="fa fa-info-circle" onclick="glossary('ss_composition')"></i>&nbsp;Secondary Structure Composition:</label>
                             <div class="col-sm-7">
                                 <select name="ss_composition" class="form-control col-sm-6" multiple>
                                     <option value="helix">mainly helix</option>
@@ -582,7 +634,7 @@
                             </div>
                         </div>
                         <div class="form-row form-group">
-                            <label class="col-form-label font-weight-bold col-sm-5"><span class="glyphicon glyphicon-question-sign gloss-icon" onclick="glossary('propensities')"></span> Residue Propensities:</label>
+                            <label class="col-form-label font-weight-bold col-sm-5"><i class="fa fa-info-circle" onclick="glossary('propensities')"></i>&nbsp; Residue Propensities:</label>
                             <div class="col-sm-7">
                                 <div class="dropdown">
                                     <button class="btn btn-sm btn-outline-dark dropdown-toggle" type="button" data-toggle="dropdown">residue propensities <span class="glyphicon glyphicon-triangle-bottom"></span></button>
@@ -615,24 +667,32 @@
             </div>
             <div class="col-sm-6">
                 <div class="card panel-interaction">
-                    <div class="card-header">Nucleotide-Residue Interaction Features</div>
+                    <div class="card-header"><i class="fa fa-info-circle" onclick="glossary('nuc-res_interactions')"></i>&nbsp;Nucleotide-Residue Interaction Features</div>
                     <div class="card-body">
                         <div class="form-row form-group">
-                            <label class="col-sm-4 col-form-label font-weight-bold text-right">Nucleotide Base(s):</label>
+                            <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('nuc_name')"></i>&nbsp;Nucleotide Base(s):
+                            </label>
                             <div class="col-sm-8">{{>nucname_ms }}</div>
                         </div>
                         <div class="form-row form-group">
-                            <label class="col-sm-4 col-form-label font-weight-bold text-right">Protein Residue(s):</label>
+                            <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('res_name')"></i>&nbsp;Protein Residue(s):
+                            </label>
                             <div class="col-sm-8">{{>resname_ms }}</div>
                         </div>
                         <div class="form-row form-group">
-                            <label class="col-sm-4 col-form-label font-weight-bold text-right">Residue Sec. Structure:</label>
+                            <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('res_ss')"></i>&nbsp;Residue Sec. Structure:
+                            </label>
                             <div class="col-sm-8">
                                 {{>ss_ms_none name=res_ss_ms}}
                             </div>
                         </div>
                         <div class="form-row form-group">
-                            <label class="col-sm-4 col-form-label font-weight-bold text-right">Interaction Geometry:</label>
+                            <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('interaction_geometry')"></i>&nbsp;Interaction Geometry:
+                            </label>
                             <div class="col-sm-8">
                                 <div class="form-check">
                                     <input name="geometry" type="checkbox" value='pseudo_stack' class="form-check-input">
@@ -651,7 +711,9 @@
                             </div>
                         </div>
                         <div class="form-row form-group">
-                            <label class="col-sm-4 col-form-label font-weight-bold text-right">Interaction Groove:</label>
+                            <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('interaction_moiety')"></i>&nbsp;Interaction Moiety:
+                            </label>
                             <div class="col-sm-8">
                                 {{>dna_moiety_ms name=int_groove_ms}}
                                 <div class="form-check">
@@ -661,7 +723,9 @@
                             </div>
                         </div>
                         <div class="form-row form-group">
-                            <label class="col-sm-4 col-form-label font-weight-bold text-right">Hydrogen Bonds:</label>
+                            <label class="col-sm-4 col-form-label font-weight-bold text-right">
+                                <i class="fa fa-info-circle" onclick="glossary('interaction_hbonds')"></i>&nbsp;Hydrogen Bonds:
+                            </label>
                             <div class="col-sm-8">
                                 {{>dna_moiety_ms name=hb_ms}}
                                 <div class="form-inline">
@@ -686,7 +750,7 @@
             </div>
         </div>
     </script>
-    
+
     <script src="/js/search.js?v=1500751991" type="text/javascript"></script>
 </body>
 

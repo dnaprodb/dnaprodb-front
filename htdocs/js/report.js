@@ -13,6 +13,7 @@
 #  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #  GNU General Public License for more details.
 */
+
 // Useful extentions to builtin prototypes
 Array.prototype.unique = function () {
     var n = {},
@@ -192,8 +193,24 @@ function makeOverviewTable(mi) {
         if (!(segment["chain"] in segments)) {
             segments[segment["chain"]] = [];
         }
-        N = RESIDUES[segment.residue_ids[0]];
-        C = RESIDUES[segment.residue_ids[segment.residue_ids.length - 1]];
+        if (segment.residue_ids[0] in RESIDUES) {
+            N = RESIDUES[segment.residue_ids[0]];
+        } else {
+            N = {
+                name: "",
+                number: segment.residue_ids[0].split('.')[1],
+                ins_code: segment.residue_ids[0].split('.')[2]
+            };
+        }
+        if (segment.residue_ids[segment.residue_ids.length - 1] in RESIDUES) {
+            C = RESIDUES[segment.residue_ids[segment.residue_ids.length - 1]];
+        } else {
+            C = {
+                name: "",
+                number: segment.residue_ids[segment.residue_ids.length - 1].split('.')[1],
+                ins_code: segment.residue_ids[segment.residue_ids.length - 1].split('.')[2]
+            };
+        }
         info = {
             id: segment.id,
             length: segment.length,
@@ -389,29 +406,46 @@ $(document).ready(function () {
         var val = $(this).text();
         if (val == "Hide Cartoon") {
             $(this).text("Show Cartoon");
-            cartoonInvisible ();
+            cartoonInvisible();
         } else {
             $(this).text("Hide Cartoon");
-            cartoonVisible ()
+            cartoonVisible();
+        }
+    });
+    
+    $("#hydrogen_toggle_button").click(function () {
+        var val = $(this).text();
+        if (val == "Hide Hydrogens") {
+            $(this).text("Show Hydrogens");
+            hydrogen_toggle();
+        } else {
+            $(this).text("Hide Hydrogens");
+            hydrogen_toggle();
         }
     });
 
     $("#json_download_link").prop("href", JSON_URL).prop("download", `${STRUCTURE_ID}.json`);
+    
     $("#download_pdb").prop("href", PDB_URL).prop("download", `${STRUCTURE_ID}.pdb`);
+    
     $('#image_export').click(function (){
         saveViewerAsImage().then(function(blob) {
           saveAs(blob, `${STRUCTURE_ID}_3d.png`); 
         });
     });
+    
     $("#lcm_link").click(function () {
         $("#lcm_console_link").tab("show");
     });
+    
     $("#pcm_link").click(function () {
         $("#pcm_console_link").tab("show");
     });
+    
     $("#sop_link").click(function () {
         $("#sop_console_link").tab("show");
     });
+    
     loadStructure(PDB_URL).then(setTimeout(initializeVisualizations, 500));
 });
 

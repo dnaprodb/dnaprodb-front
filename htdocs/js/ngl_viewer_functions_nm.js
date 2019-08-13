@@ -1,5 +1,5 @@
 //Author: Nicholas Markarian
-//Last updated: 6/16/2019 at 9:49 am
+//Last updated: 8/12/2019 at 5:14 pm
 var stage_nm1;
 var ballStick_list_nm1 = [] //list of index values for ballStick representations... used to dispose of them after use
 var chain_set_nm1 = new Set();
@@ -10,8 +10,50 @@ var model_number_nm1 = 0;
 var number_of_models_nm1 = 0;
 var multi_nm1 = new Map();
 var index_nm1 = 0;
+var hydrogen_setting_nm1 = "and not hydrogen";
+var nuc_repr_type_nm1 = "tube";
 
+//************************FIX BUG in ADD MISSING REPRESENTATION TO CHECK IF ACTUALLY NUCLEIC... IMPORTANT TO CARTOON VS TUBE*****************************
+function change_nuc_repr_type(new_type)
+{
+  nuc_repr_type_nm1 = new_type;
+}
+function hydrogen_toggle()
+{
+  var sel_list = [];
+  if (hydrogen_setting_nm1 == "")
+  {
+    hydrogen_setting_nm1 = "and not hydrogen";
+  }
+  else
+  {
+    hydrogen_setting_nm1 = "";
+  }
+  for (var i = 0; i<ballStick_list_nm1.length;) //iterate through list of prev selections, popping them from the list afterwards
+  { 
+    var prev_selection_index = ballStick_list_nm1.pop()
+    //console.log(ballStick_list_nm1.length+" items after pop")
+    //stage_nm1.getComponentsByName("my_structure").removeRepresentation(prev_selection)
+    //console.log(prev_selection_index)
+    if (prev_selection_index ==  undefined) {}
+    else
+    {
+      var sel = stage_nm1.getComponentsByName("my_structure").list[0].reprList[prev_selection_index].name;
+      sel_list.push(sel);
+      stage_nm1.getComponentsByName("my_structure").list[0].reprList[prev_selection_index]._disposeRepresentation();
+      
+    }
+    
+  }
+  for (var i = 0; i < sel_list.length; i++)
+  {
+      var sel = sel_list[i];
+      var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: sel, sele: sel + hydrogen_setting_nm1})
+      ballStick_list_nm1.push(index_nm1);
+      index_nm1++;
+  }
 
+}
 
 
 /*loadStructure() must be called first. takes in a string, loads file onto stage. Everything gets added as a representation to the component "init_component." For each
@@ -30,8 +72,10 @@ function selectModel(model_number_)
 {
   selectResidues3D([]); //clear with empty list
   //turn off visibility of layer 0 for old model
-  var old_cartoon_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon"+"/"+model_number_nm1).index;
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_cartoon_reprList_index].setVisibility(false);
+  var old_cartoon_nuc_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon_nuc"+"/"+model_number_nm1).index;
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_cartoon_nuc_reprList_index].setVisibility(false);
+  var old_cartoon_prot_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon_prot"+"/"+model_number_nm1).index;
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_cartoon_prot_reprList_index].setVisibility(false);
   var old_base_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_base"+"/"+model_number_nm1).index;
   stage_nm1.getComponentsByName("my_structure").list[0].reprList[old_base_reprList_index].setVisibility(false);
   var old_hetero_reprList_index = model_list_nm1[model_number_nm1].get("/"+model_number_nm1+"_hetero").index;
@@ -41,9 +85,12 @@ function selectModel(model_number_)
   model_number_nm1 = model_number_;
 
   //turn on visiblity of layer 0 for new model
-  var new_cartoon_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon"+"/"+model_number_nm1).index;
+  var new_cartoon_nuc_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon_nuc"+"/"+model_number_nm1).index;
   //console.log(stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_reprList_index])
-  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_reprList_index].setVisibility(true);
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_nuc_reprList_index].setVisibility(true);
+  var new_cartoon_prot_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_cartoon_prot"+"/"+model_number_nm1).index;
+  //console.log(stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_reprList_index])
+  stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_cartoon_prot_reprList_index].setVisibility(true);
   var new_base_reprList_index = model_list_nm1[model_number_nm1].get("_layer_0_base"+"/"+model_number_nm1).index;
   //console.log(stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_base_reprList_index])
   stage_nm1.getComponentsByName("my_structure").list[0].reprList[new_base_reprList_index].setVisibility(true);
@@ -57,22 +104,9 @@ function selectModel(model_number_)
 }
 
 function loadStructure(structure_url) {
-  console.log("6/16/2019 9:49 am")
+  console.log("08/12/2019")
   stage_nm1 = new NGL.Stage("viewport", {backgroundColor: "white", opacity: 0});
 
-  var tooltip = document.createElement("div");
-  Object.assign(tooltip.style, { //copied code from NGL gallery
-    display: "none",
-    position: "fixed",
-    zIndex: 10,
-    pointerEvents: "none",
-    backgroundColor: "rgba( 0, 0, 0, 0.6 )",
-    color: "lightgrey",
-    padding: "8px",
-    fontFamily: "sans-serif"
-  });
-  
-  document.body.appendChild(tooltip);
   
   return stage_nm1.loadFile(structure_url, {name: "my_structure"}).then(function (init_component) 
   { 
@@ -99,27 +133,36 @@ function loadStructure(structure_url) {
         }
       };
     });
-
+    
     //dispose of rocking and turning with keyboard controls
     stage_nm1.animationControls.dispose();
     
     var deleteLater = new Set();
-  
+    
     init_component.structure.eachModel( function (modelProxy)
     {
       number_of_models_nm1++;
       model_list_nm1.push(new Map())
       var model_name = modelProxy.qualifiedName();
+      //console.log("nucleic and " +model_name)
       var model_number = model_name.substring(1, model_name.length)
-      var cart = init_component.addRepresentation("cartoon", {name: "_layer_0_cartoon"+ model_name, sele: model_name+"/", color: "lightgray", opacity: 0.2}) //layer 0: transparent baselayer
-      var repr_info = {index: index_nm1, nucleic: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
-      model_list_nm1[model_number].set(cart.name, repr_info);
-      cart.setVisibility(false);
+      //nucleic acids and proteins are represented separately so DNA can be represented as a tube if desired
+      var cart_nuc = init_component.addRepresentation(nuc_repr_type_nm1, {name: "_layer_0_cartoon_nuc"+ model_name, sele: "nucleic and " +model_name, color: "lightgray", opacity: 0.2}) //layer 0: transparent baselayer
+      var repr_info_nuc = {index: index_nm1, nucleic: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
+      model_list_nm1[model_number].set(cart_nuc.name, repr_info_nuc);
+      index_nm1++;
+      var cart_prot = init_component.addRepresentation("cartoon", {name: "_layer_0_cartoon_prot"+ model_name, sele: "(not nucleic) and " +model_name, color: "lightgray", opacity: 0.2}) //layer 0: transparent baselayer
+      var repr_info_prot = {index: index_nm1, nucleic: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
+      model_list_nm1[model_number].set(cart_prot.name, repr_info_prot);
+      index_nm1++;
+      cart_nuc.setVisibility(false);
+      cart_prot.setVisibility(false);
       if (model_number == "0") //model 0 visible by default
       {
-        cart.setVisibility(true);
+        cart_nuc.setVisibility(true);
+        cart_prot.setVisibility(true);
       }
-      index_nm1++;
+      
       var base = init_component.addRepresentation("base", {name: "_layer_0_base" + model_name , color: "lightgray", sele: model_name+"/", opacity: 0.2, cylinderOnly: 1}) //adds nucleotides as sticks
       var repr_info = {index: index_nm1, nucleic: 0, DNA: 0xd3d3d3, RNA: 0xd3d3d3, helix: 0xd3d3d3, turn: 0xd3d3d3, sheet: 0xd3d3d3}
       model_list_nm1[model_number].set(base.name, repr_info);
@@ -188,7 +231,16 @@ function loadStructure(structure_url) {
             }
           }
           //console.log(chainName_noRange + " and " + range_)
-          var new_rep = init_component.addRepresentation("cartoon", {name: chainName, sele: chainName_noRange + " and " + range_, color: mySstrucColors});
+          var new_rep;
+          if (nucleic_)
+          {
+            new_rep = init_component.addRepresentation(nuc_repr_type_nm1, {name: chainName, sele: chainName_noRange + " and " + range_, color: mySstrucColors});
+          }
+          else
+          {
+            new_rep = init_component.addRepresentation("cartoon", {name: chainName, sele: chainName_noRange + " and " + range_, color: mySstrucColors});
+
+          }
           new_rep.setVisibility(false); //sets the colored chains as invisible
           
           var repr_info = {index: index_nm1, name: chainName, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
@@ -211,7 +263,6 @@ function loadStructure(structure_url) {
         });
         if (!hasPolymer)
         {
-          
           var resProxy;
           var first = true;
           var start_ = -1;
@@ -270,8 +321,15 @@ function loadStructure(structure_url) {
               deleteLater.add(temp_base_name);
             }
           }
-          
-          var new_rep = init_component.addRepresentation("cartoon", {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
+          var new_rep;
+          if (nucleic_)
+          {
+            new_rep = init_component.addRepresentation(nuc_repr_type_nm1, {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
+          }
+          else
+          {
+            new_rep = init_component.addRepresentation("cartoon", {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
+          }
           new_rep.setVisibility(false); //sets the colored chains as invisible
           
           var repr_info = {index: index_nm1, name: chainName+range_, range: range_, nucleic: nucleic_, visibility: 0, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
@@ -309,34 +367,52 @@ function loadStructure(structure_url) {
     //console.log(deleteLater)
     cleanupDeleteLater(deleteLater);
     stage_nm1.mouseControls.remove("hoverPick"); //copied code from NGL gallery
-    stage_nm1.signals.hovered.add(function (pickingProxy) 
-    {    //copied and modified code from NGL gallery
-      if (pickingProxy && (pickingProxy.atom || pickingProxy.bond)) 
-      {
+
+    //tooltip
+    var tooltip = document.createElement("div");
+    Object.assign(tooltip.style, {
+      display: "none",
+      position: "fixed",
+      zIndex: 10,
+      pointerEvents: "none",
+      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      color: "lightgrey",
+      padding: "0.5em",
+      fontFamily: "sans-serif"
+    });
+    stage_nm1.viewer.container.appendChild(tooltip);
+
+    // listen to `hovered` signal to move tooltip around and change its text
+    stage_nm1.signals.hovered.add(function (pickingProxy) {
+      if (pickingProxy && (pickingProxy.atom || pickingProxy.bond)){
         var atom = pickingProxy.atom || pickingProxy.closestBondAtom
-        var mp = pickingProxy.mouse.position
-        var full_atom_name = atom.qualifiedName()
-        var end_res_name = full_atom_name.indexOf(":")
-        tooltip.innerText = full_atom_name.substring(0, end_res_name) //displays just residue name and number
-        tooltip.style.bottom = window.innerHeight - mp.y + 3 + "px"
-        tooltip.style.left = mp.x + 3 + "px"
-        tooltip.style.display = "block"
-      } 
-      else 
-      {
-          tooltip.style.display = "none"
+            var mp = pickingProxy.mouse.position
+            var full_atom_name = atom.qualifiedName()
+            var end_res_name = full_atom_name.indexOf(":")
+            tooltip.innerText = full_atom_name.substring(0, end_res_name) //displays just residue name and number
+            tooltip.style.bottom = window.innerHeight - mp.y + 3 + "px"
+            tooltip.style.left = mp.x + 3 + "px"
+            tooltip.style.display = "block"
+      }
+      else{
+        tooltip.style.display = "none";
       }
     });
-          stage_nm1.handleResize()
-          init_component.autoView()
-          var principleAxes = stage_nm1.getComponentsByName("my_structure").list[0].structure.getPrincipalAxes();
-          stage_nm1.animationControls.rotate(principleAxes.getRotationQuaternion(), 0);
+    document.getElementById('viewport').onmouseleave = function(){tooltip.style.display = "none";};
+    stage_nm1.handleResize()
+    init_component.autoView()
+    var principleAxes = stage_nm1.getComponentsByName("my_structure").list[0].structure.getPrincipalAxes();
+    stage_nm1.animationControls.rotate(principleAxes.getRotationQuaternion(), 0);
     
   }); 
   
 };
 
 function log() {
+
+  //console.log(stage_nm1.getComponentsByName("my_structure").list[0].structure.getStructure())
+
+  
   console.log("stage");
   console.log(stage_nm1);
   console.log("models")
@@ -480,7 +556,7 @@ Passing an empty array clears the ball+stick represntation and unhiglights resid
 function addBallStick(residue_list)
 {
   //console.log(ballStick_list_nm1)
-  
+  var processed_residue_list;
   for (var i = 0; i<ballStick_list_nm1.length;) //iterate through list of prev selections, popping them from the list afterwards
   { 
     var prev_selection_index = ballStick_list_nm1.pop()
@@ -503,7 +579,7 @@ function addBallStick(residue_list)
   { 
     processed_residue_list = " ".concat(residue_list)
     processed_residue_list = processed_residue_list.concat(" ")
-    console.log("Error. String passed into selectResidues3D. Causes issue with clearing previous selection")
+    //console.log("Error. String passed into selectResidues3D. Causes issue with clearing previous selection")
   }
   var valid = false;
   if (processed_residue_list.length > 2) //2 spaces are concatenated already, prevents empty list from being used for selection (will make entire structure ball+stick)
@@ -515,7 +591,7 @@ function addBallStick(residue_list)
   //console.log(processed_residue_list)
   if (valid == true)
   {
-    var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: "("+processed_residue_list +") and /"+ model_number_nm1, sele: "("+processed_residue_list +") and /"+ model_number_nm1})
+    var ballstick_Rep = stage_nm1.getComponentsByName("my_structure").addRepresentation("ball+stick", {name: "("+processed_residue_list +") and /"+ model_number_nm1, sele: "("+processed_residue_list +") and /"+ model_number_nm1 + hydrogen_setting_nm1})
     ballStick_list_nm1.push(index_nm1);
     index_nm1++;
     //console.log(ballstick_Rep)
@@ -596,7 +672,7 @@ function addBallStick(residue_list)
   }
   //unlike in selectResidues3D, the modified chains are not stored. The only color change imposed here is the yellow highlighting,
   //which is not permanent and will be reset by selectResidues3D when a new selection is made
-  
+  stage_nm1.getComponentsByName("my_structure").autoView(processed_residue_list)
 } 
 
 /*
@@ -812,7 +888,7 @@ function process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
             range_ = "("+item.start+"-"+item.end+")";
           }
         });
-        if (range_ == "") //not normal, chain was highly broken up, iterators messed up. need to add representation and a new entry for multi_nm1
+        if (range_ == "") //not normal, chain was probably highly broken up and iterators messed up. need to add representation and a new entry for multi_nm1
         {
           var temp_range = "("+res_number+"-"+res_number+")";
           //console.log("multi defined, no range found for: " + temp_range)
@@ -855,6 +931,7 @@ function process_residue_list(residue_list, temp_chain_set_nm1, chain_set_nm1)
 function addMissingRepresentation(range_, res_number, chainName, deleteLater)
 {
   console.log("making new representation for: " + range_ +"" +chainName)
+
   nucleic_ = true; //not always the case, but it shoudnt cause problems besides wasted memory. an empty representation would be created if it is non-nucleic
   if (model_list_nm1[model_number_nm1].has(chainName))
   {
@@ -959,7 +1036,16 @@ function addMissingRepresentation(range_, res_number, chainName, deleteLater)
       };
     });
   }
-  var new_rep = stage_nm1.getComponentsByName("my_structure").list[0].addRepresentation("cartoon", {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
+  var new_rep;
+  if (nucleic_)
+  {
+    new_rep = stage_nm1.getComponentsByName("my_structure").list[0].addRepresentation(nuc_repr_type_nm1, {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
+  }
+  else
+  {
+    new_rep = stage_nm1.getComponentsByName("my_structure").list[0].addRepresentation("cartoon", {name: chainName+range_, sele: chainName+ " and "+ range_, color: mySstrucColors});
+
+  }
   new_rep.setVisibility(false); //sets the colored chains as invisible
   
   var repr_info = {index: index_nm1, name: chainName+range_, range: range_, nucleic: nucleic_, DNA: 0xFFA500, RNA: 0xF45C42, helix: 0xFF0000, turn: 0x437FF9, sheet: 0x43F970}
