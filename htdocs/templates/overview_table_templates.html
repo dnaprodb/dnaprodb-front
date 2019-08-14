@@ -190,16 +190,17 @@
                 <th>DOI</th>
                 <th>PubMed</th>
                 <th>RCSB PDB</th>
+                <th>NDB</th>
             </thead>
             <tbody>
                 <tr>
-                    <!--<td><div class="scroll-y">{{{authors}}}</div></td>-->
                     <td>{{{authors}}}</td>
                     <td>{{year}}</td>
                     <td>{{title}}</td>
                     <td>{{{doi}}}</td>
                     <td>{{{pubmed}}}</td>
                     <td><a href="http://www.rcsb.org/pdb/explore/explore.do?structureId={{pdbid}}">{{pdbid}}</a></td>
+                    <td><a href="http://ndbserver.rutgers.edu/service/ndb/atlas/summary?searchTarget={{pdbid}}">{{pdbid}}</a></td>
                 </tr>
             </tbody>
         </table>
