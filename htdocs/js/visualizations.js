@@ -43,8 +43,8 @@ var LCM = {
         interaction: 75
     },
     glyph_size: {
-        rect_w: 15,
-        rect_h: 10,
+        rect_w: 18,
+        rect_h: 12,
         sugar: 5,
         sugar_c: null,
         phosphate: 5,
