@@ -2,7 +2,7 @@
 <html lang="en">
 
 <head>
-    {% if jobready %} {% if pdb_structure %}
+    {% if jobready %} {% if pdb_structure == "true" %}
     <title>Report for PDB Structure {{structure_title}}</title>
     {% else %}
     <title>Report for Uploaded Structure {{structure_title}}</title>
@@ -715,6 +715,7 @@
             <h4 class="text-center">Protein Chain Information</h4>
             <div class="table-responsive">
                 <table class="table table-sm nw">
+                    {% if pdb_structure == "true" %}
                     <thead class="pro">
                         <th class="align-middle">Chain ID</th>
                         <th class="align-middle">A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span></th>
@@ -738,6 +739,20 @@
                         <th class="align-middle">Chain
                             <br>Segments</th>
                     </thead>
+                    {% else  %}
+                    <thead class="pro">
+                        <th class="align-middle">Chain ID</th>
+                        <th class="align-middle">A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span></th>
+                        <th class="align-middle">Sequence</th>
+                        <th class="align-middle">Sequence
+                            <br>Length</th>
+                        <th class="align-middle">Secondary
+                            <br>Structure </th>
+                        <th class="align-middle">Chain
+                            <br>Segments</th>
+                    </thead>
+                    {% endif %}
+                    
                     <tbody id="protein_chain_table">
                     </tbody>
                 </table>
