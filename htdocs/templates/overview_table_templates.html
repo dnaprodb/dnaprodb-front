@@ -56,7 +56,7 @@
 </style>
 
 <!-- Protein Table Row Template -->
-<script id="protein_chain_table_row" type="text/x-handlebars-template">
+<script id="protein_chain_table_pdb" type="text/x-handlebars-template">
     <tr>
         <td>{{chain_id}}</td>
         <td>{{au_id}}</td>
@@ -73,7 +73,19 @@
         <td><div class="scroll-y">{{{segments}}}</div></td>
     </tr>
 </script>
-                            
+                  
+
+<script id="protein_chain_table_upload" type="text/x-handlebars-template">
+    <tr>
+        <td>{{chain_id}}</td>
+        <td>{{au_id}}</td>
+        <td><div class="scroll-x mono">{{{sequence}}}</div></td>
+        <td>{{length}}</td>
+        <td>{{{ss}}}</td>
+        <td><div class="scroll-y">{{{segments}}}</div></td>
+    </tr>
+</script>
+
 <script id="protein_segment_table_row" type="text/x-handlebars-template">
     <tr>
         <td>{{id}}</td>

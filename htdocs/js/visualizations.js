@@ -140,7 +140,7 @@ var PLOT_DATA = {
     },
     dna_moieties: [],
     sst_selection: [],
-    moiety_labels: {
+    dna_moiety_labels: {
         wg: "Major Groove",
         sg: "Minor Groove",
         bs: "Base",
@@ -148,6 +148,15 @@ var PLOT_DATA = {
         pp: "Phosphate",
         sc: "Side Chain",
         mc: "Main Chain"
+    },
+    dna_moiety_labels_short: {
+        wg: "Mjr Grv",
+        sg: "Mnr Grv",
+        bs: "Base",
+        sr: "Sugar",
+        pp: "Phsph",
+        sc: "Side Ch",
+        mc: "Main Ch"
     },
     secondary_structure_labels: {
         H: "helix",
@@ -186,7 +195,7 @@ var PLOT_DATA = {
         yscale: null,
         name: null
     },
-    tooltips: "on",
+    tooltips: null,
     idMap: {}, // maps DNAproDB id format to html friendly format,
     excluded_ids: new Set(),
     interface_string: "", // string representation of the currently visualizaed interface
@@ -287,7 +296,7 @@ function toolTipIn(d) {
                         continue;
                     }
                     mtyItems.push({
-                        moiety: PLOT_DATA.moiety_labels[mty],
+                        moiety: PLOT_DATA.dna_moiety_labels[mty],
                         hbond: NUCLEOTIDE_INTERFACE_DATA[mi][ent][d.data.id].hbond_sum[mty].mc + NUCLEOTIDE_INTERFACE_DATA[mi][ent][d.data.id].hbond_sum[mty].sc,
                         vdw: NUCLEOTIDE_INTERFACE_DATA[mi][ent][d.data.id].vdw_interaction_sum[mty].mc + NUCLEOTIDE_INTERFACE_DATA[mi][ent][d.data.id].vdw_interaction_sum[mty].sc,
                         basa: NUCLEOTIDE_INTERFACE_DATA[mi][ent][d.data.id].basa_sum[mty],
@@ -340,7 +349,7 @@ function toolTipIn(d) {
                 for (let i = 0; i < mtyList.length; i++) {
                     mty = mtyList[i];
                     mtyItems.push({
-                        moiety: PLOT_DATA.moiety_labels[mty],
+                        moiety: PLOT_DATA.dna_moiety_labels[mty],
                         hbond: item.hbond_sum[mty].mc + item.hbond_sum[mty].sc,
                         vdw: item.vdw_interaction_sum[mty].mc + item.vdw_interaction_sum[mty].sc,
                         int_count: d.data.interaction_count[mty]
@@ -370,7 +379,7 @@ function toolTipIn(d) {
             for (let i = 0; i < mtyList.length; i++) {
                 mty = mtyList[i];
                 mtyItems.push({
-                    moiety: PLOT_DATA.moiety_labels[mty],
+                    moiety: PLOT_DATA.dna_moiety_labels[mty],
                     hbond: item.hbond_sum[mty].mc + item.hbond_sum[mty].sc,
                     vdw: item.vdw_interaction_sum[mty].mc + item.vdw_interaction_sum[mty].sc,
                     basa: item.basa_sum.total,
@@ -418,7 +427,7 @@ function toolTipIn(d) {
                     basa: d.data.basa[d.source_mty].mc + d.data.basa[d.source_mty].sc,
                     hbond: d.data.hbond_sum[d.source_mty].mc + d.data.hbond_sum[d.source_mty].sc,
                     vdw: d.data.vdw_sum[d.source_mty].mc + d.data.vdw_sum[d.source_mty].sc,
-                    mty: PLOT_DATA.moiety_labels[d.source_mty],
+                    mty: PLOT_DATA.dna_moiety_labels[d.source_mty],
                     res_label: PLOT_DATA.labels[d.data.res_id],
                     nuc_label: PLOT_DATA.labels[d.data.nuc_id]
             }));
@@ -879,9 +888,8 @@ function makePlots(mi, dna_entity_id, pro_chains) {
         PLOT_DATA.helical_moieties.splice(index, 1); 
     }
     
-    // reset UI elements
-    PLOT_DATA.tooltips = "on";
-    $('input[type=radio][name="tooltip_toggle"]').val(["on"]);
+    PLOT_DATA.tooltips = $('input[type=radio][name="tooltip_toggle"]:checked').val();
+    
     
     /* get DNA chains corresponding to the selected entity */
     PLOT_DATA.dna_chains = [];
@@ -905,6 +913,11 @@ function makePlots(mi, dna_entity_id, pro_chains) {
         $("#current_protein_chains").text("none selected");
     }
     
+    /* show interface options */
+    $('#dna_moiety_selection').text(PLOT_DATA.dna_moieties.map(x => PLOT_DATA.dna_moiety_labels_short[x]).join(', '));
+    $('#protein_sst_selection').text(PLOT_DATA.sst_selection.join(', '));
+    $('#interaction_criteria_selection').text($('input[type=radio][name="interaction_criteria"]:checked').val());
+
     /* Decide whether to rebuild any necessary UI components or simply apply updates */
     var ifs = getInterfaceString();
     if (ifs == PLOT_DATA.interface_string) {
@@ -2916,7 +2929,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         var mty_data = d3.range(cy + 30, cy + 30 + 5 * 1.5 * lh, 1.5 * lh).map(function (d, i) {
             return {
                 fill: PLOT_DATA.colors[PLOT_DATA.dna_moiety_keys[i]],
-                label: PLOT_DATA.moiety_labels[PLOT_DATA.dna_moiety_keys[i]],
+                label: PLOT_DATA.dna_moiety_labels[PLOT_DATA.dna_moiety_keys[i]],
                 y: d
             };
         });
@@ -3824,7 +3837,7 @@ function makePCM(helix, mi, ent_id) {
         .attr("class", "sm")
         .style("text-anchor", "middle")
         .text(function (d, i) {
-            return PLOT_DATA.moiety_labels[PLOT_DATA.helical_moieties[i]];
+            return PLOT_DATA.dna_moiety_labels[PLOT_DATA.helical_moieties[i]];
         });
 
     tr.append("text")
@@ -3834,7 +3847,7 @@ function makePCM(helix, mi, ent_id) {
         .attr("class", "sm")
         .style("text-anchor", "middle")
         .text(function (d, i) {
-            return PLOT_DATA.moiety_labels[PLOT_DATA.helical_moieties[i]];
+            return PLOT_DATA.dna_moiety_labels[PLOT_DATA.helical_moieties[i]];
         });
 
     var ga = g.append("g")
@@ -3864,7 +3877,7 @@ function makePCM(helix, mi, ent_id) {
         });
     
     PCM.theta_grid = ga;
-    PCM.moiety_labels = tr;
+    PCM.dna_moiety_labels = tr;
     
     /* make SSE nodes */
     var s = d3.scaleLinear()
@@ -3951,7 +3964,6 @@ function initializeVisualizations() {
         res_tooltip: Handlebars.compile($("#residue_tooltip").html()),
         nuc_tooltip: Handlebars.compile($("#nucleotide_tooltip").html()),
         res_int_tooltip: Handlebars.compile($("#residue_interaction_tooltip").html()),
-        pro_chain_table_row: Handlebars.compile($("#protein_chain_table_row").html()),
         pro_entity_table_row: Handlebars.compile($("#protein_entity_table_row").html()),
         pro_segment_table_row: Handlebars.compile($("#protein_segment_table_row").html()),
         dna_entity_table_row: Handlebars.compile($("#dna_entity_table_row").html()),
@@ -3963,6 +3975,11 @@ function initializeVisualizations() {
         sse_labels_row: Handlebars.compile($("#labels_sse_format_row").html()),
         pro_color_row: Handlebars.compile($("#pro_color_input_row").html())
     };
+    if(PDB_STRUCTURE) {
+        HB_TEMPLATES.pro_chain_table_row = Handlebars.compile($("#protein_chain_table_pdb").html());
+    } else {
+        HB_TEMPLATES.pro_chain_table_row = Handlebars.compile($("#protein_chain_table_upload").html());
+    }
     Handlebars.registerPartial('resFieldPartial', $("#labels_residue_format_input").html());
     Handlebars.registerPartial('sseFieldPartial', $("#labels_sse_format_input").html());
     Handlebars.registerPartial('colorPartial', $("#color_input_partial").html());
@@ -4629,11 +4646,11 @@ function initializeVisualizations() {
     $("#pcm_grid_button").click(function () {
         var val = $(this).text();
         if (val == "hide grid") {
-            PCM.moiety_labels.attr("visibility", "hidden");
+            PCM.dna_moiety_labels.attr("visibility", "hidden");
             PCM.theta_grid.attr("visibility", "hidden");
             $(this).text("show grid");
         } else {
-            PCM.moiety_labels.attr("visibility", "visible");
+            PCM.dna_moiety_labels.attr("visibility", "visible");
             PCM.theta_grid.attr("visibility", "visible");
             $(this).text("hide grid");
         }
