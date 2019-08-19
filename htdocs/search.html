@@ -119,18 +119,6 @@
             $("#nav_search").addClass("active");
         });
         $("#foot-wrapper").load("/templates/foot.html");
-
-        var glossary_window = {
-            closed: true
-        };
-
-        function glossary(id) {
-            var opts = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,height=400,width=800';
-            if (!glossary_window.closed) {
-                glossary_window.close();
-            }
-            glossary_window = window.open(`/cgi-bin/glossary?id=${id}#${id}`, 'targetWindow', opts);
-        }
     </script>
 
     <!-- Handlebar HTML templates go here. -->

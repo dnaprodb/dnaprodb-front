@@ -51,6 +51,10 @@
                         <a href="#data-parse" class="list-group-item list-group-item-action">Parsing A Data File</a>
                     </div>
                     <a href="#searching" class="list-group-item list-group-item-action">Searching The Database</a>
+                    <div class="list-group pl-3 mt-1">
+                        <a href="#search_form" class="list-group-item list-group-item-action">Search Form</a>
+                        <a href="#search_api" class="list-group-item list-group-item-action">Search API</a>
+                    </div>
                     <!--
                     <a href="#report" class="list-group-item list-group-item-action">Report Pages</a>
                     <a href="#links" class="list-group-item list-group-item-action">Links and References</a>
@@ -148,8 +152,9 @@ for interface in dnaprodb_data["interfaces"]["models"][model_num]:             #
                     </div>
                 </div>
                 <h2 id="searching">Searching DNAproDB</h2>
-                <p>DNAproDB's database has powerful search capabilities that allow users to search for structures based on characteristics of the DNA, the protein, or the DNA-protein interface. Multiple criteria can be combined using different selection logic. In addition, you can search for structures with their PDB identifier, or supply a list of PDB identifiers in combination with additional criteria, which act as a filter. This search capability is unique to DNAproDB, and can be used to generate data sets, or find structures for which you do not know the PDB identifier of. The easiest way to search the database is through the search-page, where you can construct a query using a simple expandable form. The database can also be searched using a RESTful API, but requires one to be familiar with the mongoDB query syntax - this feature is intentionally undocumented, but interested users should contact us using the <a href="/cgi-bin/contact">contact page</a> for instructions.</p>
-                <legend>The Search Form</legend>
+                <p>DNAproDB's database has powerful search capabilities that allow users to search for structures based on characteristics of the DNA, the protein, or the DNA-protein interface. Multiple criteria can be combined using different selection logic. In addition, you can search for structures with their PDB identifier, or supply a list of PDB identifiers in combination with additional criteria, which act as a filter. This search capability is unique to DNAproDB, and can be used to generate data sets, or find structures for which you do not know the PDB identifier of. The easiest way to search the database is through the search-page, where you can construct a query using a simple expandable form.</p>
+                
+                <legend id="search_form">The Search Form</legend>
                 <p>The search form can be accessed from the <a href="/search.html">search page</a>. When first presented, the form will be empty and contain no fields. Choose from one of the criteria and you'll be presented with different fields you can fill in which correspond to the different aspects of a DNA-protein complex (protein properties, DNA properties, or DNA-protein interaction properties).</p>
                 <img src="/images/documentation/search1.png" class="img-responsive">
                 <p> Choosing one of the criteria will update the form with a panel which shows different fields corresponding to that criteria. Additionally, you may choose to add more criteria, or clear all the criteria with the "add another criteria" and "clear all criteria" buttons, remove an individual criteria using the "remove" button, and choose how different criteria are combined logically.</p>
@@ -163,7 +168,86 @@ for interface in dnaprodb_data["interfaces"]["models"][model_num]:             #
                 <h2 id="links">Links and References</h2>
                 <p>Tools, libraries and references.</p>
                 -->
-
+                
+                <legend id="search_api">Search API</legend>
+                <p>
+                    Our database can be searched using a web API, but requires one to be familiar with both the MongoDB query syntax and the DNAproDB data file structure. DNAproDB is built using MongoDB version 3.4, and the documentation for their query language is available <a href="https://docs.mongodb.com/v3.4/reference/operator/query/">here</a>. We provide options to search the database by passing a JSON query string to our API with an optional projection string, or to retrieve data for an individual entry by its PDB identifier. We also provide some convienence options such as getting the total number of entries in the database. All data is returned in JSON - either a single document or an array of documents. Note that the use of the <code>$where</code> operator in queries is forbidden - any query using this operator will be rejected. See the table below for information about using our API.
+                    
+                    <table class="table">
+                        <tr>
+                            <th valign="top"> URL </th>
+                            <td> 
+                                <b><code>/cgi-bin/request-data</code></b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th valign="top">HTTP Method</th>
+                            <td><b><code>GET</code> | <code>POST</code></b></td>
+                        </tr>
+                        <tr>
+                            <th valign="top">URL Params</th>
+                            <td>
+                                <br>
+                                <br> <b>Querying</b>
+                                <br> <code>query=[JSON string] (required)</code>
+                                <br> example: <code>query={"protein.chains.organism": {"$regex": "homo sapiens", "$options": "i"}}</code>
+                                <br>
+                                <br> <code>projection=[JSON string] (optional)</code>
+                                <br> example: <code>projection={"structure_id":1, "protein.chains": 1}</code>
+                                <br>
+                                <br> <b>Retrieve a single entry</b>
+                                <br> <code>pdbid_id=[four character PDB identifier]</code>
+                                <br> example: <code>pdb_id=1jgg</code>
+                                <br>
+                                <br> <b>Get the number of entries</b>
+                                <br> <code>count=[boolean]</code>
+                                <br> example: <code>count=true</code>
+                                <br>
+                                <br> <b>Get last time the database was updated</b>
+                                <br> <code>last-updated=[boolean]</code>
+                                <br> example: <code>last-updated=true</code>
+                                <br>
+                                <br> <b>Get list of all PDB identifiers</b>
+                                <br> <code>pdbid-list=[boolean]</code>
+                                <br> example: <code>pdbid-list=true </code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th valign="top">Examples</th>
+                            <td> 
+                                Here we use jQuery to make a POST request using the 'query' parameter to find all entries with a human protein chain. We use the <code>$regex</code> operator to look for protein chains where the 'organism' feature matches "homo sapiens", case-insensitive. 
+                                <br>
+                                <br>
+                                <pre>
+$.ajax({
+  url: "http://dnaprodb.usc.edu:/cgi-bin/request-data",
+  dataType: "json",
+  data : { 
+    'query': '{"protein.chains.organism": {"$regex": "homo sapiens", "$options": "i"}}',
+  },
+  type : "POST",
+  success : function(result) {
+    console.log(result);
+  }
+});
+                                </pre>
+                                Here we sent a GET request with wget to retrieve the number of entries in the database.
+                                <br>
+                                <br>
+                                <pre>
+wget -O count.json http://dnaprodb.usc.edu/cgi-bin/request-data?count=1
+cat count.json
+                                </pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th valign="top">Notes </th>
+                            <td>
+                                The use of the <code>$where</code> operator is not allowed. Queries using this operator will be automatically rejected. When using regular expression please use the <code>{"$regex": pattern, "$options": [options]}</code> syntax. If you require to use regular expressions inside of an <code>$in</code> expression, please convert this to an a single regular expression instead. For example, rather than using <code>{"$in": [\pattern1\, \pattern2\, exact3]}</code>, convert this to <code>{"$regex": "pattern1|pattern2|^exact3$"}</code>.
+                            </td>
+                        </tr>
+                    </table>
+                </p>
             </div>
         </div>
     </div>

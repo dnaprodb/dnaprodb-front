@@ -30,20 +30,20 @@ class JSONEncoder(json.JSONEncoder):
             return str(o)
         return json.JSONEncoder.default(self, o)
 
-def compile_regex(search_dict, field):
-    # compile any regex expressions found in search query string
-    for key, value in search_dict.iteritems():
-        if key == field:
-            search_dict[key] = re.compile(value.strip('/'))
-        elif isinstance(value, dict):
-            compile_regex(value,field)
-        elif isinstance(value, list):
-            for item in value:
-                if isinstance(item, dict):
-                    compile_regex(item, field)
-        elif(key == "$not" and isinstance(value, basestring)):
-            if(re.search('^/.*/$', value)):
-                search_dict[key] = re.compile(value.strip('/'))
+#def compile_regex(search_dict, field):
+    ## compile any regex expressions found in search query string
+    #for key, value in search_dict.iteritems():
+        #if key == field:
+            #search_dict[key] = re.compile(value.strip('/'))
+        #elif isinstance(value, dict):
+            #compile_regex(value,field)
+        #elif isinstance(value, list):
+            #for item in value:
+                #if isinstance(item, dict):
+                    #compile_regex(item, field)
+        #elif(key == "$not" and isinstance(value, basestring)):
+            #if(re.search('^/.*/$', value)):
+                #search_dict[key] = re.compile(value.strip('/'))
 
 def containsKey(query, key_name):
     # return true if dict contains a specified key
@@ -110,8 +110,13 @@ except pymongo.errors.CollectionInvalid:
 
 # Decide what to do. 
 if("query" in REQUEST):
-    query = REQUEST.getvalue("query")
+    query = REQUEST.getvalue("query", None)
     projection = REQUEST.getvalue("projection", '{"_id": false}')
+    if(query is None):
+        printOutput({
+            'return_status': 'error', 
+            'message': "No query provided."
+        }, indent=2)
     try:
         query_d = json.loads(query)
         # check for $where operator - do not proceed if found
@@ -123,7 +128,7 @@ if("query" in REQUEST):
             }, indent=2)
         projection_d = json.loads(projection)
         projection_d.update({"_id": 0})
-        compile_regex(query_d, "$regex")
+        #compile_regex(query_d, "$regex")
         OUTPUT = []
         results = client[db][collection].find(query_d, projection_d)
         for result in results:
