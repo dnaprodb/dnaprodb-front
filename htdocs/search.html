@@ -35,13 +35,13 @@
     <div id="nav-wrapper"></div>
     <div class="container">
         <h1>Search DNAproDB</h1>
-        <p>Use the form below to search DNAproDB. You can search on features of the Protein, DNA, DNA-Protein Interface, Nucleotide-Residue Interactions or any combination of these. You can also search directly for specific PDB entries, or enter a list of PDB IDs and additional criteria to select a subset of structures from the supplied list of IDs. When using the form, blank or empty fields will be ignored, so If you don't care about a particular feature then feel free ignore it.</p>
+        <p>Use the form below to search DNAproDB. You can search on features of the Protein, DNA, DNA-Protein Interface, Nucleotide-Residue Interactions or any combination of these. You can also search directly for specific PDB entries, or enter a list of PDB IDs and additional criteria to select a subset of structures from the supplied list of IDs. When using the form, blank or empty fields will be ignored, so If you don't care about a particular feature then feel free ignore it. Click on the <i class="fa fa-info-circle"></i> icon near any field for additional information.</p>
         <hr>
         <form id="search_form">
             <div class="form-inline" id="add-clear-div">
                 <div class="form-group">
-                    <input type="button" id="btnAdd" class="btn btn-success btn-sm mr-2" value="add another criteria" />
-                    <input type="button" id="btnClr" class="btn btn-danger btn-sm" value="clear all criteria" />
+                    <input type="button" id="btnAdd" class="btn btn-success btn-sm mr-2" value="add another category" />
+                    <input type="button" id="btnClr" class="btn btn-danger btn-sm" value="clear all categories" />
                 </div>
             </div>
             <hr style="border-color: #aaa;">
@@ -184,7 +184,7 @@
         <div class="row">
             <div class="col-sm-6">
                 <div class="card panel-dna">
-                    <div class="card-header py-4"></div>
+                    <div class="card-header"></div>
                     <div class="card-body">
 
                         <p class="text-center font-weight-bold">
@@ -298,7 +298,7 @@
             </div>
             <div class="col-sm-6">
                 <div class="card panel-dna">
-                    <div class="card-header py-4"></div>
+                    <div class="card-header"></div>
                     <div class="card-body">
 
                         <!-- Sequence Length -->
@@ -455,8 +455,9 @@
             </div>
         </div>
         <div class="card panel-protein">
-            <div class="card-header"><i class="fa fa-info-circle" onclick="glossary('chain_features')"></i>&nbsp;Chain Features</div>
+            <div class="card-header"></div>
             <div class="card-body">
+                <p class="text-center font-weight-bold"><i class="fa fa-info-circle" onclick="glossary('chain_features')"></i>&nbsp;Chain Features</p>
                 <div class="form-row">
                     <label class="col-sm-4 col-form-label font-weight-bold text-right">
                         <i class="fa fa-info-circle" onclick="glossary('protein_seq_similarity')"></i>&nbsp;Sequence Similarity:
@@ -583,8 +584,9 @@
         <div class="row">
             <div class="col-sm-6">
                 <div class="card panel-interaction">
-                    <div class="card-header"><i class="fa fa-info-circle" onclick="glossary('interface_features')"></i>&nbsp;Global Interface Features</div>
+                    <div class="card-header"></div>
                     <div class="card-body">
+                        <p class="text-center font-weight-bold"><i class="fa fa-info-circle" onclick="glossary('interface_features')"></i>&nbsp;Global Interface Features</p>
                         {{#each contact_items}}
                         <div class="form-row form-group">
                             <label class="col-form-label font-weight-bold col-sm-5">
@@ -655,8 +657,9 @@
             </div>
             <div class="col-sm-6">
                 <div class="card panel-interaction">
-                    <div class="card-header"><i class="fa fa-info-circle" onclick="glossary('nuc-res_interactions')"></i>&nbsp;Nucleotide-Residue Interaction Features</div>
+                    <div class="card-header"></div>
                     <div class="card-body">
+                        <p class="text-center font-weight-bold"><i class="fa fa-info-circle" onclick="glossary('nuc-res_interactions')"></i>&nbsp;Nucleotide-Residue Interaction Features</p>
                         <div class="form-row form-group">
                             <label class="col-sm-4 col-form-label font-weight-bold text-right">
                                 <i class="fa fa-info-circle" onclick="glossary('nuc_name')"></i>&nbsp;Nucleotide Base(s):
