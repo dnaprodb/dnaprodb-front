@@ -382,8 +382,201 @@ function makeOverviewTable(mi) {
     }
 }
 
+function dataItemUpdate(val) {
+    $("#data_item_search_group").empty();
+    $("#data_item_label").empty();
+    $('#data_item_search_button').prop("disabled", false);
+    $("#data_search_error").text("");
+    switch(val) {
+        case "nuc":
+            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+                ph1: "nucleotide ID",
+                name1: "nid",
+                style1: "width:110px;",
+            }));
+            $("#data_item_label").html('enter nucleotide ID using: <code>chain</code>.<code>number</code>.<code>ins_code</code>');
+            break;
+        case "res":
+            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+                ph1: "residue ID",
+                name1: "rid",
+                style1: "width:100px;",
+            }));
+            $("#data_item_label").html('enter residue ID using: <code>chain</code>.<code>number</code>.<code>ins_code</code>');
+            break;
+        case "int":
+            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+                models: JSON_VIEWER.models_array,
+                ph1: "nucleotide ID",
+                name1: "nid",
+                style1: "width:110px;",
+                ph2: "residue ID",
+                name2: "rid",
+                style2: "width:100px;",
+            }));
+            $("#data_item_label").html('choose model then enter nuc/res ID using: <code>chain</code>.<code>number</code>.<code>ins_code</code>');
+            // preset values
+            $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
+            break;
+        case "ent":
+            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+                models: JSON_VIEWER.models_array,
+                ph1: "DNA entity ID",
+                name1: "entity_id"
+            }));
+            $("#data_item_label").html('choose a model then enter a DNA entity ID');
+            // preset values
+            $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
+            $("#data_item_search_group input[name='entity_id']").val(PLOT_DATA.dna_entity_id);
+            break;
+        case "helix":
+            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+                models: JSON_VIEWER.models_array,
+                ph1: "helix ID",
+                name1: "helix_id"
+            }));
+            $("#data_item_label").html('choose a model then enter a helix ID');
+            // preset values
+            $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
+            if(ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]['helical_segments'].length > 0) {
+                $("#data_item_search_group input[name='helix_id']").val(ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]['helical_segments'][0]['helix_id']);
+            }
+            break;
+        case "pro_chain":
+            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+                ph1: "chain ID",
+                name1: "chain_id",
+                style1: "width:80px;",
+                max1: 1
+            }));
+            $("#data_item_label").html('enter protein chain ID (single character)');
+            break;
+        default:
+            $("#data_item_label").html('to search for a data item use the select below');
+            $('#data_item_search_button').prop("disabled", true);
+            break;
+    }
+}
+
+function dataItemSearch() {
+    let val = $("#data_item_select").val();
+    let path, index, nid, rid, mi, ind1, ind2;
+    switch(val) {
+        case "nuc":
+            nid = $("#data_item_search_group input[name='nid']").val();
+            // loop over nucleotides to find a match
+            for(let i = 0; i < DATA['dna']['nucleotides'].length; i++) {
+                if(DATA['dna']['nucleotides'][i]['id'] == nid) {
+                    index = i;
+                    break;
+                }
+            }
+            // generate the path if we found a match
+            if(typeof(index) != 'undefined') {
+                path = ['dna', 'nucleotides', index+''];
+            }
+            break;
+        case "res":
+            rid = $("#data_item_search_group input[name='rid']").val();
+            // loop over residues to find a match
+            for(let i = 0; i < DATA['protein']['residues'].length; i++) {
+                if(DATA['protein']['residues'][i]['id'] == rid) {
+                    index = i;
+                    break;
+                }
+            }
+            // generate the path if we found a match
+            if(typeof(index) != 'undefined') {
+                path = ['protein', 'residues', index+''];
+            }
+            break;
+        case "int":
+            nid = $("#data_item_search_group input[name='nid']").val();
+            rid = $("#data_item_search_group input[name='rid']").val();
+            mi = Number($("#data_item_search_group select[name='data_item_model']").val());
+            let int;
+
+            for (let i = 0; i < DATA['interfaces']['models'][mi].length; i++) {
+                for (let j = 0; j < DATA['interfaces']['models'][mi][i]['nucleotide-residue_interactions'].length; j++) {
+                    int = DATA['interfaces']['models'][mi][i]['nucleotide-residue_interactions'][j];
+                    if(int['nuc_id'] == nid && int['res_id'] == rid) {
+                        ind1 = i;
+                        ind2 = j;
+                        break;
+                    }
+                }
+                if(typeof(ind1) != "undefined" && typeof(ind2) != "undefined") {
+                    break;
+                }
+            }
+            if(typeof(ind1) != "undefined" && typeof(ind2) != "undefined") {
+                path = ['interfaces', 'models', mi+'', ind1+'', 'nucleotide-residue_interactions', ind2+''];
+            }
+            break;
+        case "ent":
+            let eid = $("#data_item_search_group input[name='entity_id']").val();
+            mi = Number($("#data_item_search_group select[name='data_item_model']").val());
+            
+            for (let i = 0; i < DATA['dna']['models'][mi]['entities'].length; i++) {
+                if(DATA['dna']['models'][mi]['entities'][i]['id'] == eid) {
+                    index = i;
+                    break;
+                }
+            }
+            if(typeof(index) != "undefined") {
+                path = ['dna', 'models', mi+'', 'entities', index+''];
+            }
+            break;
+        case "helix":
+            let hid = $("#data_item_search_group input[name='helix_id']").val();
+            mi = Number($("#data_item_search_group select[name='data_item_model']").val());
+
+            for (let i = 0; i < DATA['dna']['models'][mi]['entities'].length; i++) {
+                for (let j = 0; j < DATA['dna']['models'][mi]['entities'][i]['helical_segments'].length; j++) {
+                    if(DATA['dna']['models'][mi]['entities'][i]['helical_segments'][j]['helix_id'] == hid) {
+                        ind1 = i;
+                        ind2 = j;
+                        break;
+                    }
+                }
+                if(typeof(ind1) != "undefined" && typeof(ind2) != "undefined") {
+                    break;
+                }
+            }
+            if(typeof(ind1) != "undefined" && typeof(ind2) != "undefined") {
+                path = ['dna', 'models', mi+'', 'entities', ind1+'', 'helical_segments', ind2+''];
+            }
+            break;
+        case "pro_chain":
+            let cid = $("#data_item_search_group input[name='chain_id']").val();
+            
+            // loop over chains to find a match
+            for(let i = 0; i < DATA['protein']['chains'].length; i++) {
+                if(DATA['protein']['chains'][i]['id'] == cid) {
+                    index = i;
+                    break;
+                }
+            }
+            // generate the path if we found a match
+            if(typeof(index) != 'undefined') {
+                path = ['protein', 'chains', index+''];
+            }
+            break;
+    }
+    
+    // open the path if defined
+    if(typeof(path) != "undefined") {
+        JSON_VIEWER.root.closeNode();
+        JSON_VIEWER.root.openPath(path);
+    } else {
+        $("#data_search_error").text("no matching item found");
+    }
+}
+
 var resizeTimer;
+var DATA_SEARCH_TEMPLATE = Handlebars.compile($("#data_fields_template").html());
 $(document).ready(function () {
+    
     $('#ngl_controls_button').click(function () {
         var val = $(this).text();
         if (val == "Show Controls") {
@@ -445,6 +638,18 @@ $(document).ready(function () {
     $("#sop_link").click(function () {
         $("#sop_console_link").tab("show");
     });
+    
+    $('#data_item_select').change(function () {
+        dataItemUpdate(this.value);
+    });
+    
+    $('#data_item_search_button').click(dataItemSearch);
+    
+    // reset UI elements
+    $('#data_item_select').val("");
+    $('#data_item_search_button').prop("disabled", true);
+    $("#data_item_label").html('to search for a data item use the select below');
+    $("#data_search_error").text("");
     
     loadStructure(PDB_URL).then(setTimeout(initializeVisualizations, 500));
 });

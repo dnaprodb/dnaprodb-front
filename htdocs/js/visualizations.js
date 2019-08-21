@@ -207,6 +207,11 @@ var PLOT_DATA = {
     }
 };
 
+var JSON_VIEWER = {
+    viewer: null,
+    root: null,
+    models_array: null,
+}
 /* add a container for tooltips */
 var tooltip = d3.select("body div.tooltip");
 
@@ -4186,15 +4191,17 @@ function initializeVisualizations() {
             captionFormatAllSelected: 'all chains selected',
         });
         item = "";
+        JSON_VIEWER.models_array = [];
         for (i = 0; i < data.num_models; i++) {
             item += `<option value="${i}">${i}</option>`;
+            JSON_VIEWER.models_array.push(i);
         }
         $('#model_select').append(item);
         $('#model_select').change(function () {
             entitySelectSetup(this.value);
         });
         entitySelectSetup(0);
-
+        
 
         /* make plots */
         mi = 0;
@@ -4206,6 +4213,8 @@ function initializeVisualizations() {
             const node = viewer.getRootElement();
             document.getElementById("json_data_explorer").appendChild(node);
             node.openAll(1);
+            JSON_VIEWER.root = node;
+            JSON_VIEWER.viewer = viewer;
         });
 
         /* make citation table */
