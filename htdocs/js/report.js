@@ -382,6 +382,14 @@ function makeOverviewTable(mi) {
     }
 }
 
+function checkID(id) {
+    if(/^[A-Za-z0-9]\.[+-]?[0-9]+$/.test(id)){
+        id = id + '. ';
+    }
+    
+    return id;
+}
+
 function dataItemUpdate(val) {
     $("#data_item_search_group").empty();
     $("#data_item_label").empty();
@@ -394,7 +402,7 @@ function dataItemUpdate(val) {
                 name1: "nid",
                 style1: "width:110px;",
             }));
-            $("#data_item_label").html('enter nucleotide ID using: <code>chain</code>.<code>number</code>.<code>ins_code</code>');
+            $("#data_item_label").html('enter nucleotide ID using: <code>chain</code>.<code>number</code> OR <code>chain</code>.<code>number</code>.<code>ins_code</code>');
             break;
         case "res":
             $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
@@ -402,7 +410,7 @@ function dataItemUpdate(val) {
                 name1: "rid",
                 style1: "width:100px;",
             }));
-            $("#data_item_label").html('enter residue ID using: <code>chain</code>.<code>number</code>.<code>ins_code</code>');
+            $("#data_item_label").html('enter residue ID using: <code>chain</code>.<code>number</code> OR <code>chain</code>.<code>number</code>.<code>ins_code</code>');
             break;
         case "int":
             $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
@@ -414,7 +422,7 @@ function dataItemUpdate(val) {
                 name2: "rid",
                 style2: "width:100px;",
             }));
-            $("#data_item_label").html('choose model then enter nuc/res ID using: <code>chain</code>.<code>number</code>.<code>ins_code</code>');
+            $("#data_item_label").html('choose model then enter nuc/res ID using: <code>chain</code>.<code>number</code> OR <code>chain</code>.<code>number</code>.<code>ins_code</code>');
             // preset values
             $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
             break;
@@ -464,6 +472,7 @@ function dataItemSearch() {
     switch(val) {
         case "nuc":
             nid = $("#data_item_search_group input[name='nid']").val();
+            nid = checkID(nid);
             // loop over nucleotides to find a match
             for(let i = 0; i < DATA['dna']['nucleotides'].length; i++) {
                 if(DATA['dna']['nucleotides'][i]['id'] == nid) {
@@ -478,6 +487,7 @@ function dataItemSearch() {
             break;
         case "res":
             rid = $("#data_item_search_group input[name='rid']").val();
+            rid = checkID(rid);
             // loop over residues to find a match
             for(let i = 0; i < DATA['protein']['residues'].length; i++) {
                 if(DATA['protein']['residues'][i]['id'] == rid) {
@@ -493,6 +503,8 @@ function dataItemSearch() {
         case "int":
             nid = $("#data_item_search_group input[name='nid']").val();
             rid = $("#data_item_search_group input[name='rid']").val();
+            nid = checkID(nid);
+            rid = checkID(rid);
             mi = Number($("#data_item_search_group select[name='data_item_model']").val());
             let int;
 
