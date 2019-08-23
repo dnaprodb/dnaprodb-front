@@ -181,13 +181,6 @@ function makeOverviewTable(mi) {
             $("#protein_chain_table").append(HB_TEMPLATES.pro_chain_table_row({
                 chain_id: chains[i]["id"],
                 au_id: chains[i]["au_chain_id"],
-                names: 'N/A',
-                organism: 'N/A',
-                uniprot: 'N/A',
-                cath: 'N/A',
-                go_function: 'N/A',
-                go_process: 'N/A',
-                go_component: 'N/A',
                 sequence: seq_html,
                 ss: `${hcount}% Helix, ${scount}% Strand`,
                 length: seq.length,
@@ -307,6 +300,50 @@ function makeOverviewTable(mi) {
     }
 }
 
+// makes the DNA entity select
+function entitySelectSetup(mi) {
+    let item = "";
+    let id;
+    mi = Number(mi);
+    for (let i = 0; i < DATA.dna.models[mi].entities.length; i++) {
+        id = DATA.dna.models[mi].entities[i].id;
+        item += `<option value="${id}">${id}</option>`;
+    }
+    $('#entity_select').html(item);
+    $('#entity_select').change(function () {
+        proteinChainsSelectSetup($("#model_select").val(), this.value);
+    });
+    proteinChainsSelectSetup(mi, DATA.dna.models[mi].entities[0].id);
+}
+
+// makes the protein chains select
+function proteinChainsSelectSetup(mi, dna_ent_id) {
+    let item = "";
+    let chain;
+    let chains = [];
+    mi = Number(mi);
+    /* empty current select */
+    $('#protein_chains_select').html('');
+    $('#protein_chains_select')[0].sumo.reload();
+    
+    // gather all protein chains involved with dna_ent_id */
+    for (let i = 0; i < INTERFACES[mi][dna_ent_id].length; i++){
+        for (let j = 0; j < INTERFACES[mi][dna_ent_id][i].protein_chains.length; j++) {
+            chain = INTERFACES[mi][dna_ent_id][i].protein_chains[j];
+            chains.push(chain);
+        }
+    }
+    
+    // ensure we have a unique list
+    chains = chains.unique().sort();
+    
+    // add each chain to the select
+    for (let i = 0; i < chains.length; i++) {
+        $('#protein_chains_select')[0].sumo.add(chains[i], i);
+    }
+    $('#protein_chains_select')[0].sumo.selectAll();
+}
+
 // functions for data explorer search
 function checkID(id) {
     /*
@@ -358,7 +395,7 @@ function dataItemUpdate(val) {
             }));
             $("#data_item_label").html('choose model then enter nuc/res ID using: <code>chain</code>.<code>number</code> OR <code>chain</code>.<code>number</code>.<code>ins_code</code>');
             // preset values
-            $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
+            $("#data_item_search_group select[name='data_item_model']").val(SELECTION.model);
             break;
         case "ent":
             $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
@@ -368,8 +405,8 @@ function dataItemUpdate(val) {
             }));
             $("#data_item_label").html('choose a model then enter a DNA entity ID');
             // preset values
-            $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
-            $("#data_item_search_group input[name='entity_id']").val(PLOT_DATA.dna_entity_id);
+            $("#data_item_search_group select[name='data_item_model']").val(SELECTION.model);
+            $("#data_item_search_group input[name='entity_id']").val(SELECTION.dna_entity_id);
             break;
         case "helix":
             $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
@@ -379,9 +416,9 @@ function dataItemUpdate(val) {
             }));
             $("#data_item_label").html('choose a model then enter a helix ID');
             // preset values
-            $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
-            if(ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]['helical_segments'].length > 0) {
-                $("#data_item_search_group input[name='helix_id']").val(ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]['helical_segments'][0]['helix_id']);
+            $("#data_item_search_group select[name='data_item_model']").val(SELECTION.model);
+            if(DNA_ENTITIES[SELECTION.model][SELECTION.dna_entity_id]['helical_segments'].length > 0) {
+                $("#data_item_search_group input[name='helix_id']").val(DNA_ENTITIES[SELECTION.model][SELECTION.dna_entity_id]['helical_segments'][0]['helix_id']);
             }
             break;
         case "pro_chain":
@@ -523,12 +560,14 @@ function dataItemSearch() {
     }
 }
 
-function updateProteinColors(pro_chains) {
+// functions for updating protein colors
+function updateProteinColors() {
     /* 
     This function updates protein color scheme based on values in
     the color inputs and stores these colors in a more convienient 
     data structure and calls the NGL_VIEWER color update function
     */
+    let pro_chains = SELECTION.protein_chains;
     if($('input[name="all_chain_colors"]:checked').val() == "on") {
         $("#protein_all_color_row input[type=color]").each(function(n) {
             let val = $(this).val();
@@ -582,7 +621,528 @@ function applyProteinColors(){
             $(`path.${sst}[data-chain=${chain}]`).css("fill", PROTEIN_COLORS[sst][chain]);
         }
     }
-    selectResidues3D(PLOT_DATA.interface_residue_ids);
+    selectResidues3D(SELECTION.included_component_ids);
+}
+
+function makeColorFormatInputs(dna_chains, pro_chains) {
+    $("#dna_color_rows").empty();
+    $("#protein_color_rows").empty();
+    
+    /* add chain color inputs */
+    for (let i = 0; i < pro_chains.length; i++) {
+        $("#protein_color_rows").append(HB_TEMPLATES.pro_color_row({
+            colors: [
+                {
+                    color: PROTEIN_COLORS.default['H'],
+                    name: 'H',
+                    chain: pro_chains[i]
+                },
+                {
+                    color: PROTEIN_COLORS.default['S'],
+                    name: 'S',
+                    chain: pro_chains[i]
+                },
+                {
+                    color: PROTEIN_COLORS.default['L'],
+                    name: 'L',
+                    chain: pro_chains[i]
+                },
+            ],
+            text: `Chain ${pro_chains[i]} colors:`,
+        }));
+    }
+    
+}
+
+// functions for dealing with label formats
+function makeLabelFormatInputs(dna_chains, pro_chains) {
+    /* clear out any previous rows */
+    $("#nucleotide_label_rows").empty();
+    $("#residue_label_rows").empty();
+    $("#sse_label_rows").empty();
+    
+    /* add all chain specs */
+    $("#nucleotide_label_rows").append(HB_TEMPLATES.res_labels_row({
+        fields: [
+            {
+                number: 1,
+                chain: '_',
+                default_text: "Name(1)",
+                default_value: "name_short"
+            },
+            {
+                number: 2,
+                chain: '_',
+                default_value: "blank"
+            },
+            {
+                number: 3,
+                chain: '_',
+                default_value: "blank"
+            }/*,
+            {
+                number: 4,
+                chain: '_'
+            }*/
+        ],
+        text: "All chains format:",
+        chain: '_'
+    }));
+    $("#nucleotide_label_rows").append("<hr>");
+        
+    $("#residue_label_rows").append(HB_TEMPLATES.res_labels_row({
+        fields: [
+            {
+                number: 1,
+                chain: '_',
+                default_text: "Name(1)",
+                default_value: "name_short"
+            },
+            {
+                number: 2,
+                chain: '_',
+                default_text: "number",
+                default_value: "number"
+            },
+            {
+                number: 3,
+                chain: '_',
+                default_text: "chain",
+                default_value: "chain"
+            }/*,
+            {
+                number: 4,
+                chain: '_'
+            }*/
+        ],
+        text: "All chains format:",
+        chain: '_'
+    }));
+    $("#residue_label_rows").append("<hr>");
+    
+    $("#sse_label_rows").append(HB_TEMPLATES.sse_labels_row({
+        fields: [
+            {
+                number: 1,
+                chain: '_',
+                default_text: "sec. structure",
+                default_value: "secondary_structure"
+            },
+            {
+                number: 2,
+                chain: '_',
+                default_text: "chain",
+                default_value: "chain"
+            },
+            {
+                number: 3,
+                chain: '_',
+                default_text: "number",
+                default_value: "number"
+            }/*,
+            {
+                number: 4,
+                chain: '_'
+            }*/
+        ],
+        text: "All chains format:",
+        chain: '_'
+    }));
+    $("#sse_label_rows").append("<hr>");
+    
+    /* add per-chain specs */
+    for (let i = 0; i < dna_chains.length; i++) {
+        $("#nucleotide_label_rows").append(HB_TEMPLATES.res_labels_row({
+            fields: [
+                {
+                    number: 1,
+                    chain: dna_chains[i],
+                    default_value: "blank"
+                },
+                {
+                    number: 2,
+                    chain: dna_chains[i],
+                    default_value: "blank"
+                },
+                {
+                    number: 3,
+                    chain: dna_chains[i],
+                    default_value: "blank"
+                }/*,
+                {
+                    number: 4,
+                    chain: dna_chains[i]
+                }*/
+            ],
+            text: `Chain ${dna_chains[i]} format:`,
+            chain: dna_chains[i]
+        }));
+    }
+    
+    for (let i = 0; i < pro_chains.length; i++) {
+        $("#residue_label_rows").append(HB_TEMPLATES.res_labels_row({
+            fields: [
+                {
+                    number: 1,
+                    chain: pro_chains[i],
+                    default_value: "blank"
+                },
+                {
+                    number: 2,
+                    chain: pro_chains[i],
+                    default_value: "blank"
+                },
+                {
+                    number: 3,
+                    chain: pro_chains[i],
+                    default_value: "blank"
+                }/*,
+                {
+                    number: 4,
+                    chain: pro_chains[i]
+                }*/
+            ],
+            text: `Chain ${pro_chains[i]} format:`,
+            chain: pro_chains[i]
+        }));
+    }
+    
+    for (let i = 0; i < pro_chains.length; i++) {
+        $("#sse_label_rows").append(HB_TEMPLATES.sse_labels_row({
+            fields: [
+                {
+                    number: 1,
+                    chain: pro_chains[i],
+                    default_value: "blank"
+                },
+                {
+                    number: 2,
+                    chain: pro_chains[i],
+                    default_value: "blank"
+                },
+                {
+                    number: 3,
+                    chain: pro_chains[i],
+                    default_value: "blank"
+                }/*,
+                {
+                    number: 4,
+                    chain: pro_chains[i]
+                }*/
+            ],
+            text: `Chain ${pro_chains[i]} format:`,
+            chain: pro_chains[i]
+        }));
+    }
+}
+
+function updateNGLViewerSelection(){
+    // Set the NGL model
+    selectModel(SELECTION.model);
+    
+    // Set the colored residues
+    let component_ids = new Set();
+    let sse_ids = new Set();
+    let chain_ids = new Set();
+    let rid;
+    for(let i = 0; i < SELECTION.included_component_ids.length; i++) {
+        // add the ID to the set
+        component_ids.add(SELECTION.included_component_ids[i]);
+        
+        // check if residue
+        if (SELECTION.included_component_ids[i] in RESIDUES) {
+            rid = SELECTION.included_component_ids[i];
+            sse_ids.add(SSE[SELECTION.model][rid]['id']);
+            chain_ids.add(RESIDUES[rid]['chain']);
+        }
+    }
+    
+    // get value of NGL color option input
+    let opt = $("input[type=radio][name=ngl_color_option]:checked").val();
+    if(opt == 'sse') {
+        for (let id of sse_ids) {
+            for(let i = 0; i < SSE[SELECTION.model][id]['residue_ids'].length; i++) {
+                component_ids.add(SSE[SELECTION.model][id]['residue_ids'][i]);
+            }
+        }
+    }
+    else if(opt == 'chain') {
+        for (let id of chain_ids) {
+            for(let i = 0; i < PROTEIN_CHAINS[id]['residue_ids'].length; i++) {
+                component_ids.add(PROTEIN_CHAINS[id]['residue_ids'][i]);
+            }
+        }
+    }
+    selectResidues3D(Array.from(component_ids));
+}
+
+function makeExcludeSelects() {
+    let pc = SELECTION.protein_chains;
+    let dc = SELECTION.dna_chains;
+    let dna_id = SELECTION.dna_entity_id;
+    let mi = SELECTION.model;
+    
+    let nuc_list = [];
+    let res_list = [];
+    let sse_list = [];
+    
+    let nuc, res, sse;
+    // Make Nucleotide select
+    for (let nid in NUCLEOTIDE_INTERFACE_DATA[mi][dna_id]) {
+        if (dc.includes(NUCLEOTIDES[nid].chain)) {
+            nuc_list.push(nid);
+        }
+    }
+    nuc_list.sort();
+    $('#exclude_nucleotide_select').html('');
+    $('#exclude_nucleotide_select')[0].sumo.reload();
+    for (let i = 0; i < nuc_list.length; i++) {
+        nuc = NUCLEOTIDES[nuc_list[i]];
+        $('#exclude_nucleotide_select')[0].sumo.add(nuc_list[i], `${nuc.name} ${nuc.number}${nuc.ins_code.trim()} ${nuc.chain}`);
+    }
+    
+    for (let rid in RESIDUE_INTERFACE_DATA[mi][dna_id]) {
+        if (pc.includes(RESIDUES[rid].chain)) {
+            res_list.push(rid);
+        }
+    }
+    res_list.sort();
+    $('#exclude_residue_select').html('');
+    $('#exclude_residue_select')[0].sumo.reload();
+    for (let i = 0; i < res_list.length; i++) {
+        res = RESIDUES[res_list[i]];
+        $('#exclude_residue_select')[0].sumo.add(res_list[i], `${res.name} ${res.number}${res.ins_code.trim()} ${res.chain}`);
+    }
+    
+    for (let sid in SSE_INTERFACE_DATA[mi][dna_id]) {
+        if (pc.includes(SSE[mi][sid].chain)) {
+            sse_list.push(sid);
+        }
+    }
+    sse_list.sort();
+    $('#exclude_sse_select').html('');
+    $('#exclude_sse_select')[0].sumo.reload();
+    for (let i = 0; i < sse_list.length; i++) {
+        sse = SSE[mi][sse_list[i]];
+        if(sse.secondary_structure == 'L') {
+            continue;
+        }
+        $('#exclude_sse_select')[0].sumo.add(sse_list[i], `${sse.secondary_structure}${sse.number} ${sse.chain}`);
+    }
+}
+
+function setExcludes() {
+    let res_list = $('#exclude_residue_select').val();
+    let nuc_list = $('#exclude_nucleotide_select').val();
+    let sse_list = $('#exclude_sse_select').val();
+    let mi = SELECTION.model;
+    
+    let excluded_component_ids = new Set(res_list.concat(nuc_list));
+    
+    for (let i = 0; i < sse_list.length; i++) {
+        for (let j = 0; j < SSE[mi][sse_list[i]].residue_ids.length; j ++) {
+            excluded_component_ids.add(SSE[mi][sse_list[i]].residue_ids[j]);
+        }
+    }
+    SELECTION.excluded_component_ids = excluded_component_ids;
+}
+
+function setIncludes() {
+    let nr, ns, mty, id, interface, geo, field, val, criteria, passed, exclude_weak, match_all;
+    
+    let mi = SELECTION.model;
+    let dna_ent_id = SELECTION.dna_entity_id;
+    let pro_chains = SELECTION.protein_chains;
+    
+    /* Get input values from submit form */
+    var default_criteria = $('input[type=radio][name="interaction_criteria"]:checked').val() == "default";
+    if(! default_criteria) {
+        geo = $("input[type=checkbox][name=geometry]:checked")
+            .map( function() {
+            return this.value;
+            })
+            .toArray();
+        exclude_weak = $('input[type=radio][name="weak_interactions"]:checked').val() == "no";
+        match_all = $('input[type=radio][name="interaction_logic"]:checked').val() == "all";
+    }
+    
+    /* reset everything */
+    let included_component_ids = [];
+    for (let key in NUCLEOTIDES) {
+        // used for LCM
+        NUCLEOTIDES[key].interacts = {
+            wg: false,
+            sg: false,
+            sr: false,
+            pp: false,
+            bs: false
+        };
+        NUCLEOTIDES.include = false;
+    }
+    
+    for (let key in SSE[mi]) {
+        SSE[mi][key].include = false;
+        
+        // used for PCM
+        SSE[mi][key].interacts = {
+            wg: false,
+            sg: false,
+            sr: false,
+            pp: false,
+            bs: false
+        };
+        
+        SSE[mi][key].interaction_count = {
+            wg: 0,
+            sg: 0,
+            sr: 0,
+            pp: 0,
+            bs: 0
+        };
+    }
+    
+    for (let key in RESIDUES) {
+        RESIDUES[key].include = false;
+        RESIDUES[key].interaction_count = {
+            wg: 0,
+            sg: 0,
+            sr: 0,
+            pp: 0,
+            bs: 0,
+            total: 0
+        };
+        RESIDUES[key].active_interactions = 0.0;
+    }
+    
+    /* loop over nucleotide-residue interactions */
+    for (let k = 0; k < INTERFACES[mi][dna_ent_id].length; k++) {
+        interface = INTERFACES[mi][dna_ent_id][k];
+        for (let i = 0; i < interface["nucleotide-residue_interactions"].length; i++) {
+            nr = interface["nucleotide-residue_interactions"][i];
+            nr.include = false; // reset include field
+            
+            // check if this chain is included
+            if (! pro_chains.includes(nr.res_chain) ) {
+                continue;
+            }
+            
+            // check SST
+            if (! SELECTION.protein_sst_selection.includes(RESIDUES[nr.res_id]['secondary_structure'][mi]) ) {
+                continue;
+            }
+            
+            // check for excluded residue
+            if(SELECTION.excluded_component_ids.has(nr.res_id) || SELECTION.excluded_component_ids.has(nr.nuc_id)){
+                continue;
+            }
+            
+            // get interactiing moieties
+            mty = nr.nucleotide_interaction_moieties.filter(n => SELECTION.dna_moieties_selection.includes(n));
+            if(mty.length == 0) {
+                // We must enforce that a nucleotide-residue interaction can only interact
+                // with the dna moieties specified in the .nucleotide_interaction_moieties
+                // field, despite whatever custom criteria we define. This means that very
+                // low cut-off values are going to be ignored in some cases.
+                continue;
+            }
+            
+            // check whether to use default or custom criteria
+            if(default_criteria) {
+                if(nr.weak_interaction){
+                    continue;
+                }
+            } else {
+                // check for weak interactions if selected
+                if(exclude_weak) {
+                    if(nr.weak_interaction) {
+                        continue;
+                    }
+                }
+                
+                passed = {};
+                // need to parse all the interaction criteria input
+                for (let j = 0; j < mty.length; j++) {
+                    // get all moiety-based inputs
+                    $(`input[data-mty=${mty[j]}]`).each(function(n){
+                        field = this.name.split('.');
+                        val = this.value;
+                        criteria = this.dataset.criteria;
+                        if ($.isNumeric(val) && val > 0.0) {
+                            if(! (criteria in passed)) {
+                                passed[criteria] = [];
+                            }
+                            passed[criteria].push(checkCriteria(nr, field, val, false));
+                        }
+                    });
+                }
+                
+                // get distance based inputs
+                $("input[data-criteria='distance'").each(function(n) {
+                        field = this.name.split('.');
+                        val = this.value;
+                        criteria = this.dataset.criteria;
+                        if ($.isNumeric(val) && val > 0.0) {
+                            if(! (criteria in passed)) {
+                                passed[criteria] = [];
+                            }
+                            passed[criteria].push(checkCriteria(nr, field, val, true));
+                        }
+                });
+                
+                // get geometry based inputs
+                if(geo.length > 0 && geo.length < 3) {
+                    passed["geometry"] = [geo.includes(nr.geometry)];
+                }
+                
+                // combine tests
+                for(let key in passed){
+                    passed[key] = passed[key].some(e => e);
+                }
+                if(match_all){
+                    if(! Object.values(passed).every(e => e)){
+                        continue;
+                    }
+                } else {
+                    if(! Object.values(passed).some(e => e)){
+                        continue;
+                    }
+                }
+            }
+            
+            // passed all the tests - include it!
+            NR_INTERACTIONS[mi][dna_ent_id][getHash(nr.nuc_id, nr.res_id)].include = true;
+            RESIDUES[nr.res_id].include = true;
+            NUCLEOTIDES[nr.nuc_id].include = true;
+            SSE[mi][nr.res_id].include = true;
+            for (let j = 0; j < mty.length; j++) {
+                NUCLEOTIDES[nr.nuc_id].interacts[mty[j]] = true;
+                SSE[mi][nr.res_id].interaction_count[mty[j]] += 1;
+                RESIDUES[nr.res_id].interaction_count[mty[j]] += 1;
+            }
+            RESIDUES[nr.res_id].interaction_count["total"] += 1;
+            RESIDUES[nr.res_id].active_interactions += 1;
+            included_component_ids.push(nr.res_id);
+        }
+    }
+    
+    /* set up SSE interactions */
+    for (let k = 0; k < INTERFACES[mi][dna_ent_id].length; k++) {
+        interface = INTERFACES[mi][dna_ent_id][k]
+        for (let i = 0; i < interface["sse_data"].length; i++) {
+            id = interface["sse_data"][i].sse_id;
+            if (SSE[mi][id].include) {
+                for (let j = 0; j < interface["sse_data"][i].interacts_with.length; j++) {
+                    SSE[mi][id].interacts[interface["sse_data"][i].interacts_with[j]] = true;
+                }
+            }
+        }
+    }
+    
+    for (let i = 0; i < DNA_ENTITIES[mi][dna_ent_id].nucleotides.length; i++) {
+        included_component_ids.push(DNA_ENTITIES[mi][dna_ent_id].nucleotides[i]);
+    }
+    SELECTION.included_component_ids = included_component_ids.unique();
+    
 }
 
 function updateSelection(mi, dna_id, pro_chains) {
@@ -595,46 +1155,64 @@ function updateSelection(mi, dna_id, pro_chains) {
     SELECTION.dna_entity_id = dna_id;
     SELECTION.protein_chains = pro_chains;
     
-    /* get DNA chains corresponding to the selected entity */
+    // get DNA chains corresponding to the selected entity
     SELECTION.dna_chains = [];
-    for(let i = 0; i < ENTITIES[mi][dna_id].strands.length; i++) {
-        SELECTION.dna_chains.push(ENTITIES[mi][dna_id].strands[i].chain_id);
+    for(let i = 0; i < DNA_ENTITIES[mi][dna_id].strands.length; i++) {
+        SELECTION.dna_chains.push(DNA_ENTITIES[mi][dna_id].strands[i].chain_id);
     }
     SELECTION.dna_chains = SELECTION.dna_chains.unique();
     
-    /* Show current selection */
-    $("#current_model").text(mi);
-    $("#current_model2").text(mi);
-    $("#current_dna_entity").text(dna_id);
-    if(pro_chains.length > 0) {
-        $("#current_protein_chains").text(pro_chains.join(','));
-    } else {
-        $("#current_protein_chains").text("none selected");
-    }
+    // get selected DNA moieties
+    SELECTION.dna_moieties_selection = $("input[type=checkbox][name=dna_moiety_selection]:checked")
+        .map( function() {
+           return this.value;
+        })
+        .toArray();
     
-    // update NGL viewer
-    selectModel(mi);
+    // get selected SST
+    SELECTION.protein_sst_selection = $("input[type=checkbox][name=sst_selection]:checked")
+        .map( function() {
+           return this.value;
+        })
+        .toArray();
+    
     
     /* Decide whether to rebuild any necessary UI components or simply apply updates */
     let ifs = getInterfaceString();
     if (ifs != SELECTION.interface_string) {
+        SELECTION.interface_string = ifs;
         // we are visualizing a new interface, start from scratch
         makeExcludeSelects();
-        makeLabelFormatInputs(SELECTION.dna_chains, pro_chains);
-        makeColorFormatInputs(SELECTION.dna_chains, pro_chains);
-        SELECTION.interface_string = ifs;
+        makeLabelFormatInputs(SELECTION.dna_chains, SELECTION.protein_chains);
+        makeColorFormatInputs(SELECTION.dna_chains, SELECTION.protein_chains);
         resetLabels();
     }
     
     // update colors
-    updateProteinColors(pro_chains);
+    updateProteinColors();
+    
+    // set included and excluded components
+    setExcludes();
+    setIncludes();
     
     // make 2D visualizations
-    makePlots(mi, dna_id, pro_chains);
-    selectResidues3D(PLOT_DATA.interface_residue_ids);
+    makePlots(SELECTION, PROTEIN_COLORS);
+    
+    // update NGL viewer with selection
+    updateNGLViewerSelection();
     
     // reset various UI elements
     $("#cartoon_toggle_button").text("Hide Cartoon");
+    
+    /* Show current selection */
+    $("#current_model").text(SELECTION.model);
+    $("#current_model2").text(SELECTION.model);
+    $("#current_dna_entity").text(SELECTION.dna_entity_id);
+    if(pro_chains.length > 0) {
+        $("#current_protein_chains").text(SELECTION.protein_chains.join(','));
+    } else {
+        $("#current_protein_chains").text("none selected");
+    }
 }
 
 function getInterfaceString(chains) {
@@ -668,15 +1246,24 @@ var SELECTION = {
     model: null,
     dna_entity_id: null,
     protein_chains: null,
-    interface_string: null,
-    dna_chains: null
+    dna_chains: null,
+    included_component_ids: null,
+    excluded_component_ids: null,
+    protein_sst_selection: null,
+    dna_moieties_selection: null,
+    interface_string: null
 }
 
 // Store colors of each current protein chain by SST
 var PROTEIN_COLORS = {
     H: null,
     S: null,
-    L: null
+    L: null,
+    default:{
+        H: "#ff0000",
+        S: "#49e20e",
+        L: "#003eff"
+    }
 }
 
 
@@ -689,7 +1276,8 @@ var DATA,
     LINKS,
     STRANDS,
     SSE,
-    ENTITIES,
+    DNA_ENTITIES,
+    PROTEIN_CHAINS,
     INTERFACES,
     NR_INTERACTIONS,
     NS_INTERACTIONS,
@@ -770,14 +1358,9 @@ $(document).ready(function(){
         captionFormatAllSelected: 'all chains selected',
     });
     
-    /** NGL viewer button setups **/
-    $('#ngl_controls_button').click(function () {
-        var val = $(this).text();
-        if (val == "Show Controls") {
-            $(this).text("Hide Controls");
-        } else {
-            $(this).text("Show Controls");
-        }
+    /** NGL viewer inputs **/
+    $('input[type=radio][name="ngl_color_option"]').change(function() {
+         updateNGLViewerSelection();
     });
     
     $("#cartoon_toggle_button").click(function () {
@@ -1184,7 +1767,7 @@ $(document).ready(function(){
         PLOT_DATA.selected.residue_ids = [];
         addBallStick(PLOT_DATA.selected.residue_ids);
         
-        makeShapeOverlay(ENTITIES[mi][entity_id].helical_segments[hi], shape_name, mi, entity_id);
+        makeShapeOverlay(DNA_ENTITIES[mi][entity_id].helical_segments[hi], shape_name, mi, entity_id);
     });
 
     // bind flip strands button event
@@ -1272,7 +1855,7 @@ $(document).ready(function(){
         PLOT_DATA.selected.residue_ids = [];
         addBallStick(PLOT_DATA.selected.residue_ids);
         
-        makePCM(ENTITIES[mi][entity_id].helical_segments[hi], mi, entity_id);
+        makePCM(DNA_ENTITIES[mi][entity_id].helical_segments[hi], mi, entity_id);
     });
 
     // bind hide/show grid event
@@ -1361,13 +1944,14 @@ $(document).ready(function(){
             // immutable lookup objects
             NUCLEOTIDES = {};
             RESIDUES = {};
+            PROTEIN_CHAINS = {};
 
             // list of lookup objects for each model */
             PAIRS = [];
             LINKS = [];
             STACKS = [];
             STRANDS = [];
-            ENTITIES = [];
+            DNA_ENTITIES = [];
             INTERFACES = [];
             SSE = [];
             NR_INTERACTIONS = [];
@@ -1379,13 +1963,16 @@ $(document).ready(function(){
             // Add nucleotide data
             for (let i = 0; i < data.dna.nucleotides.length; i++) {
                 NUCLEOTIDES[data.dna.nucleotides[i].id] = data.dna.nucleotides[i];
-                //escapeID(data.dna.nucleotides[i].id);
             }
 
             // Add residue data
             for (let i = 0; i < data.protein.residues.length; i++) {
                 RESIDUES[data.protein.residues[i].id] = data.protein.residues[i];
-                //escapeID(data.protein.residues[i].id);
+            }
+        
+            // Add protein chains
+            for (let i = 0; i < data.protein.chains.length; i++) {
+                PROTEIN_CHAINS[data.protein.chains[i].id] = data.protein.chains[i];
             }
 
             // Model-level data structures
@@ -1394,7 +1981,7 @@ $(document).ready(function(){
                 STACKS.push({});
                 LINKS.push({});
                 STRANDS.push({});
-                ENTITIES.push({});
+                DNA_ENTITIES.push({});
                 INTERFACES.push({});
                 SSE.push({});
                 NR_INTERACTIONS.push({});
@@ -1458,7 +2045,7 @@ $(document).ready(function(){
                 // add DNA entitiy data
                 for (let i = 0; i < data.dna.models[mi].entities.length; i++) {
                     item = data.dna.models[mi].entities[i];
-                    ENTITIES[mi][item.id] = item;
+                    DNA_ENTITIES[mi][item.id] = item;
                 }
 
                 // add sse data 

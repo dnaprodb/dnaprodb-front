@@ -77,18 +77,35 @@
                                     <div id="viewport"></div>
                                 </div>
                             </div>
-                            <div class="form-inline justify-content-center mt-2 mb-2">
-                                <button type="button" id="ngl_controls_button" class="btn btn-sm btn-info mr-2 my-1" data-toggle="collapse" data-target="#ngl_controls">Show Controls</button>
-                                <button type="button" id="cartoon_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Hide Cartoon</button>
-                                <button type="button" id="hydrogen_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Show Hydrogens</button>
-                                <button type="button" id="image_export" class="btn btn-sm btn-success mr-2 my-1">Save as Image</button>
-                                <a id="download_pdb" class="btn btn-sm btn-success my-1">Download Structure File</a>
+                            <div>
+                                <strong>Rotate:</strong> drag + left click &nbsp;
+                                <strong>Translate:</strong> drag + right click &nbsp;
+                                <strong>Zoom:</strong> scroll
                             </div>
-                            <div id="ngl_controls" class="collapse text-left mt-2">
-                                <p><strong>Rotate: </strong>drag + left click</p>
-                                <p><strong>Translate: </strong>drag + right click</p>
-                                <p><strong>Zoom: </strong>scroll wheel</p>
-                                <p>The current DNA-protein interface, as chosen by the user, is shown as opaque and colored by secondary structure. The rest of the structure is rendered transparent.</p>
+                            <div class="form-inline justify-content-center mt-2 mb-2">
+                                <div class="form-group">
+                                    <button type="button" id="cartoon_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Hide Cartoon</button>
+                                    <button type="button" id="hydrogen_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Show Hydrogens</button>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" id="image_export" class="btn btn-sm btn-success mr-2 my-1">Save as Image</button>
+                                    <a id="download_pdb" class="btn btn-sm btn-success my-1">Download Structure File</a>
+                                </div>
+                            </div>
+                            <div class="form-inline justify-content-center mt-2 mb-2">
+                                    <label class="mr-2">color by:</label>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ngl_color_option" value="residues" checked>
+                                        <label class="form-check-label">residues</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ngl_color_option" value="sse">
+                                        <label class="form-check-label">SSE</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ngl_color_option" value="chain">
+                                        <label class="form-check-label">chain</label>
+                                    </div>
                             </div>
                         </div>
                     </div>
@@ -354,8 +371,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <h4 class="text-center my-2">Component Exclusions</h4>
-                                <p>Use the checklists below to select individual residues, nucleotides or SSEs you wish to exclude from the current visualizations. Note: nucleotides will still be drawn, but any interactions with exlcuded nucleotides will be ignored, which may remove additional residues.</p>
+                                <h4 class="text-center my-2">Exclude Componenents</h4>
+                                <p>Use the lists below to select individual residues, nucleotides or SSEs you wish to exclude from the current visualizations. Note: nucleotides will still be drawn, but any interactions with exlcuded nucleotides will be ignored, this may remove additional residues.</p>
                                 <div class="form-inline justify-content-center">
                                     <div class="form-group my-1">
                                         <label class="mr-2">Nucleotides:</label>

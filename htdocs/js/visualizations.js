@@ -148,8 +148,7 @@ var PLOT_DATA = {
         element_ids: [],
         residue_ids: []
     },
-    interface_residue_ids: [],
-    element_lookup: {}, // keyed by residue or sse identifer
+    included_component_ids: null,
     dna_shape_labels: {
         buckle: ["Buckle", "[°]"],
         opening: ["Opening", "[°]"],
@@ -177,7 +176,7 @@ var PLOT_DATA = {
     },
     tooltips: null,
     idMap: {}, // maps DNAproDB id format to html friendly format,
-    excluded_ids: new Set(),
+    excluded_component_ids: null,
     interface_string: "", // string representation of the currently visualizaed interface
     marker_size_represents: null,
     scale_factor: {
@@ -515,269 +514,6 @@ function getHash() {
     return args.sort().join("@");
 }
 
-function setExcludes() {
-    var res_list = $('#exclude_residue_select').val();
-    var nuc_list = $('#exclude_nucleotide_select').val();
-    var sse_list = $('#exclude_sse_select').val();
-    var mi = PLOT_DATA.model;
-    
-    PLOT_DATA.excluded_ids = new Set(res_list.concat(nuc_list));
-    
-    for (let i = 0; i < sse_list.length; i++) {
-        for (let j = 0; j < SSE[mi][sse_list[i]].residue_ids.length; j ++) {
-            PLOT_DATA.excluded_ids.add(SSE[mi][sse_list[i]].residue_ids[j]);
-        }
-    }
-}
-
-function makeExcludeSelects() {
-    var pc = PLOT_DATA.protein_chains;
-    var dc = SELECTION.dna_chains;
-    var dna_id = PLOT_DATA.dna_entity_id;
-    var mi = PLOT_DATA.model;
-    
-    var nuc_list = [];
-    var res_list = [];
-    var sse_list = [];
-    
-    var nuc, res, sse;
-    // Make Nucleotide select
-    for (let nid in NUCLEOTIDE_INTERFACE_DATA[mi][dna_id]) {
-        if (dc.includes(NUCLEOTIDES[nid].chain)) {
-            nuc_list.push(nid);
-        }
-    }
-    nuc_list.sort();
-    $('#exclude_nucleotide_select').html('');
-    $('#exclude_nucleotide_select')[0].sumo.reload();
-    for (let i = 0; i < nuc_list.length; i++) {
-        nuc = NUCLEOTIDES[nuc_list[i]];
-        $('#exclude_nucleotide_select')[0].sumo.add(nuc_list[i], `${nuc.name} ${nuc.number}${nuc.ins_code.trim()} ${nuc.chain}`);
-    }
-    
-    for (let rid in RESIDUE_INTERFACE_DATA[mi][dna_id]) {
-        if (pc.includes(RESIDUES[rid].chain)) {
-            res_list.push(rid);
-        }
-    }
-    res_list.sort();
-    $('#exclude_residue_select').html('');
-    $('#exclude_residue_select')[0].sumo.reload();
-    for (let i = 0; i < res_list.length; i++) {
-        res = RESIDUES[res_list[i]];
-        $('#exclude_residue_select')[0].sumo.add(res_list[i], `${res.name} ${res.number}${res.ins_code.trim()} ${res.chain}`);
-    }
-    
-    for (let sid in SSE_INTERFACE_DATA[mi][dna_id]) {
-        if (pc.includes(SSE[mi][sid].chain)) {
-            sse_list.push(sid);
-        }
-    }
-    sse_list.sort();
-    $('#exclude_sse_select').html('');
-    $('#exclude_sse_select')[0].sumo.reload();
-    for (let i = 0; i < sse_list.length; i++) {
-        sse = SSE[mi][sse_list[i]];
-        if(sse.secondary_structure == 'L') {
-            continue;
-        }
-        $('#exclude_sse_select')[0].sumo.add(sse_list[i], `${sse.secondary_structure}${sse.number} ${sse.chain}`);
-    }
-}
-
-function setIncludes(mi, dna_ent_id, pro_chains) {
-    var nr, ns, mty, id, interface, geo, field, val, criteria, passed, exclude_weak, match_all;
-    
-    /* Get input values from submit form */
-    var default_criteria = $('input[type=radio][name="interaction_criteria"]:checked').val() == "default";
-    if(! default_criteria) {
-        geo = $("input[type=checkbox][name=geometry]:checked")
-            .map( function() {
-            return this.value;
-            })
-            .toArray();
-        exclude_weak = $('input[type=radio][name="weak_interactions"]:checked').val() == "no";
-        match_all = $('input[type=radio][name="interaction_logic"]:checked').val() == "all";
-    }
-    
-    /* reset everything */
-    PLOT_DATA.interface_residue_ids = [];
-    for (let key in NUCLEOTIDES) {
-        // used for LCM
-        NUCLEOTIDES[key].interacts = {
-            wg: false,
-            sg: false,
-            sr: false,
-            pp: false,
-            bs: false
-        };
-        NUCLEOTIDES.include = false;
-    }
-    
-    for (let key in SSE[mi]) {
-        SSE[mi][key].include = false;
-        
-        // used for PCM
-        SSE[mi][key].interacts = {
-            wg: false,
-            sg: false,
-            sr: false,
-            pp: false,
-            bs: false
-        };
-        
-        SSE[mi][key].interaction_count = {
-            wg: 0,
-            sg: 0,
-            sr: 0,
-            pp: 0,
-            bs: 0
-        };
-    }
-    
-    for (let key in RESIDUES) {
-        RESIDUES[key].include = false;
-        RESIDUES[key].interaction_count = {
-            wg: 0,
-            sg: 0,
-            sr: 0,
-            pp: 0,
-            bs: 0,
-            total: 0
-        };
-        RESIDUES[key].active_interactions = 0.0;
-    }
-    
-    /* loop over nucleotide-residue interactions */
-    for (let k = 0; k < INTERFACES[mi][dna_ent_id].length; k++) {
-        interface = INTERFACES[mi][dna_ent_id][k];
-        for (let i = 0; i < interface["nucleotide-residue_interactions"].length; i++) {
-            nr = interface["nucleotide-residue_interactions"][i];
-            nr.include = false; // reset include field
-            
-            // check if this chain is included
-            if (! pro_chains.includes(nr.res_chain) ) {
-                continue;
-            }
-            
-            // check SST
-            if (! PLOT_DATA.sst_selection.includes(RESIDUES[nr.res_id]['secondary_structure'][mi]) ) {
-                continue;
-            }
-            
-            // check for excluded residue
-            if(PLOT_DATA.excluded_ids.has(nr.res_id) || PLOT_DATA.excluded_ids.has(nr.nuc_id)){
-                continue;
-            }
-            
-            // get interactiing moieties
-            mty = nr.nucleotide_interaction_moieties.filter(n => PLOT_DATA.dna_moieties.includes(n));
-            if(mty.length == 0) {
-                // We must enforce that a nucleotide-residue interaction can only interact
-                // with the dna moieties specified in the .nucleotide_interaction_moieties
-                // field, despite whatever custom criteria we define. This means that very
-                // low cut-off values are going to be ignored in some cases.
-                continue;
-            }
-            
-            // check whether to use default or custom criteria
-            if(default_criteria) {
-                if(nr.weak_interaction){
-                    continue;
-                }
-            } else {
-                // check for weak interactions if selected
-                if(exclude_weak) {
-                    if(nr.weak_interaction) {
-                        continue;
-                    }
-                }
-                
-                passed = {};
-                // need to parse all the interaction criteria input
-                for (let j = 0; j < mty.length; j++) {
-                    // get all moiety-based inputs
-                    $(`input[data-mty=${mty[j]}]`).each(function(n){
-                        field = this.name.split('.');
-                        val = this.value;
-                        criteria = this.dataset.criteria;
-                        if ($.isNumeric(val) && val > 0.0) {
-                            if(! (criteria in passed)) {
-                                passed[criteria] = [];
-                            }
-                            passed[criteria].push(checkCriteria(nr, field, val, false));
-                        }
-                    });
-                }
-                
-                // get distance based inputs
-                $("input[data-criteria='distance'").each(function(n) {
-                        field = this.name.split('.');
-                        val = this.value;
-                        criteria = this.dataset.criteria;
-                        if ($.isNumeric(val) && val > 0.0) {
-                            if(! (criteria in passed)) {
-                                passed[criteria] = [];
-                            }
-                            passed[criteria].push(checkCriteria(nr, field, val, true));
-                        }
-                });
-                
-                // get geometry based inputs
-                if(geo.length > 0 && geo.length < 3) {
-                    passed["geometry"] = [geo.includes(nr.geometry)];
-                }
-                
-                // combine tests
-                for(let key in passed){
-                    passed[key] = passed[key].some(e => e);
-                }
-                if(match_all){
-                    if(! Object.values(passed).every(e => e)){
-                        continue;
-                    }
-                } else {
-                    if(! Object.values(passed).some(e => e)){
-                        continue;
-                    }
-                }
-            }
-            
-            // passed all the tests - include it!
-            NR_INTERACTIONS[mi][dna_ent_id][getHash(nr.nuc_id, nr.res_id)].include = true;
-            RESIDUES[nr.res_id].include = true;
-            NUCLEOTIDES[nr.nuc_id].include = true;
-            SSE[mi][nr.res_id].include = true;
-            for (let j = 0; j < mty.length; j++) {
-                NUCLEOTIDES[nr.nuc_id].interacts[mty[j]] = true;
-                SSE[mi][nr.res_id].interaction_count[mty[j]] += 1;
-                RESIDUES[nr.res_id].interaction_count[mty[j]] += 1;
-            }
-            RESIDUES[nr.res_id].interaction_count["total"] += 1;
-            RESIDUES[nr.res_id].active_interactions += 1;
-            PLOT_DATA.interface_residue_ids.push(nr.res_id);
-        }
-    }
-    
-    /* set up SSE interactions */
-    for (let k = 0; k < INTERFACES[mi][dna_ent_id].length; k++) {
-        interface = INTERFACES[mi][dna_ent_id][k]
-        for (let i = 0; i < interface["sse_data"].length; i++) {
-            id = interface["sse_data"][i].sse_id;
-            if (SSE[mi][id].include) {
-                for (let j = 0; j < interface["sse_data"][i].interacts_with.length; j++) {
-                    SSE[mi][id].interacts[interface["sse_data"][i].interacts_with[j]] = true;
-                }
-            }
-        }
-    }
-    
-    for (let i = 0; i < ENTITIES[mi][dna_ent_id].nucleotides.length; i++) {
-        PLOT_DATA.interface_residue_ids.push(ENTITIES[mi][dna_ent_id].nucleotides[i]);
-    }
-    PLOT_DATA.interface_residue_ids = PLOT_DATA.interface_residue_ids.unique();
-}
-
 function checkCriteria(nr, field, value, reverse) {
     if(field.length == 1) {
         if(typeof nr[field[0]] === "object") {
@@ -793,72 +529,20 @@ function checkCriteria(nr, field, value, reverse) {
     }
 }
 
-function entitySelectSetup(mi) {
-    let item = "";
-    let id;
-    mi = Number(mi);
-    for (let i = 0; i < DATA.dna.models[mi].entities.length; i++) {
-        id = DATA.dna.models[mi].entities[i].id;
-        item += `<option value="${id}">${id}</option>`;
-    }
-    $('#entity_select').html(item);
-    $('#entity_select').change(function () {
-        proteinChainsSelectSetup($("#model_select").val(), this.value);
-    });
-    proteinChainsSelectSetup(mi, DATA.dna.models[mi].entities[0].id);
-}
-
-function proteinChainsSelectSetup(mi, dna_ent_id) {
-    let item = "";
-    let chain;
-    let chains = [];
-    mi = Number(mi);
-    /* empty current select */
-    $('#protein_chains_select').html('');
-    $('#protein_chains_select')[0].sumo.reload();
-    
-    // gather all protein chains involved with dna_ent_id */
-    for (let i = 0; i < INTERFACES[mi][dna_ent_id].length; i++){
-        for (let j = 0; j < INTERFACES[mi][dna_ent_id][i].protein_chains.length; j++) {
-            chain = INTERFACES[mi][dna_ent_id][i].protein_chains[j];
-            chains.push(chain);
-        }
-    }
-    
-    // ensure we have a unique list
-    chains = chains.unique().sort();
-    
-    // add each chain to the select
-    for (let i = 0; i < chains.length; i++) {
-        $('#protein_chains_select')[0].sumo.add(chains[i], i);
-    }
-    $('#protein_chains_select')[0].sumo.selectAll();
-}
-
-function makePlots(mi, dna_entity_id, pro_chains) {
+function makePlots(selection, colors) {
     /* This function is called whenever the "update plots" button
     is pressed, and draws plots for a particular model and interface */
     
-    /* set various user-defined variables */
-    PLOT_DATA.model = Number(mi);
-    PLOT_DATA.dna_entity_id = dna_entity_id;
-    PLOT_DATA.protein_chains = pro_chains;
+    /* set selection variables */
+    PLOT_DATA.model = selection.model;
+    PLOT_DATA.dna_entity_id = selection.dna_entity_id;
+    PLOT_DATA.protein_chains = selection.protein_chains;
+    PLOT_DATA.dna_moieties = selection.dna_moieties_selection;
+    PLOT_DATA.sst_selection = selection.protein_sst_selection;
+    PLOT_DATA.included_component_ids = selection.included_component_ids;
+    PLOT_DATA.excluded_component_ids = selection.excluded_component_ids;
     
-    // get selected DNA moieties
-    PLOT_DATA.dna_moieties = $("input[type=checkbox][name=dna_moiety_selection]:checked")
-        .map( function() {
-           return this.value;
-        })
-        .toArray();
-    
-    // get selected SST
-    PLOT_DATA.sst_selection = $("input[type=checkbox][name=sst_selection]:checked")
-        .map( function() {
-           return this.value;
-        })
-        .toArray();
-    
-    // get marker size selection
+    // get marker size
     PLOT_DATA.marker_size_represents =  $("input[type=radio][name=marker_size]:checked").val();
     
     // update helical moieities
@@ -877,21 +561,16 @@ function makePlots(mi, dna_entity_id, pro_chains) {
     PLOT_DATA.label_font.yscale = 1.1*bbox.height;
     
     /* set colors */
-    PLOT_DATA.active_colors = PROTEIN_COLORS;
+    PLOT_DATA.active_colors = colors;
 
     /* show interface options */
     $('#dna_moiety_selection').text(PLOT_DATA.dna_moieties.map(x => PLOT_DATA.dna_moiety_labels_short[x]).join(', '));
     $('#protein_sst_selection').text(PLOT_DATA.sst_selection.join(', '));
     $('#interaction_criteria_selection').text($('input[type=radio][name="interaction_criteria"]:checked').val());
     
-    // get any excluded components
-    setExcludes();
-        
-    /* set included residues, nucleotides and sse */
-    setIncludes(PLOT_DATA.model, PLOT_DATA.dna_entity_id, PLOT_DATA.protein_chains);
     
     /* Check if DNA entitiy contains helices */
-    if(ENTITIES[mi][dna_entity_id].helical_segments.length == 0) {
+    if(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments.length == 0) {
         // disable PCM and SOP plots
         $("#pcm_link, #sop_link").addClass("disabled");
         $('.nav-tabs a[href="#lcm"]').tab('show');
@@ -905,13 +584,13 @@ function makePlots(mi, dna_entity_id, pro_chains) {
         $("#sop_legend_button").text("hide legend");
         $("#sop_helix_select").empty();
         let opts = ""
-        for (let i = 0; i < ENTITIES[mi][dna_entity_id].helical_segments.length; i++) {
-            opts += `<option value="${i}">${ENTITIES[mi][dna_entity_id].helical_segments[i].helix_id}</option>`;
+        for (let i = 0; i < DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments.length; i++) {
+            opts += `<option value="${i}">${DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[i].helix_id}</option>`;
         }
         $("#sop_helix_select").append(opts);
     
         let shape_name = $("#shape_parameter_select").val(); // shape selection
-        makeShapeOverlay(ENTITIES[mi][dna_entity_id].helical_segments[hi], shape_name, mi, dna_entity_id);
+        makeShapeOverlay(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], shape_name, PLOT_DATA.model, PLOT_DATA.dna_entity_id);
         
         /* Plot Polar Contact Map */
          // set up helix select
@@ -919,12 +598,12 @@ function makePlots(mi, dna_entity_id, pro_chains) {
         $("#pcm_legend_button").text("hide legend");
         $("#pcm_helix_select").empty();
         opts = ""
-        for (let i = 0; i < ENTITIES[mi][dna_entity_id].helical_segments.length; i++) {
-            opts += `<option value="${i}">${ENTITIES[mi][dna_entity_id].helical_segments[i].helix_id}</option>`;
+        for (let i = 0; i < DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments.length; i++) {
+            opts += `<option value="${i}">${DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[i].helix_id}</option>`;
         }
         $("#pcm_helix_select").append(opts);
         
-        makePCM(ENTITIES[mi][dna_entity_id].helical_segments[hi], mi, dna_entity_id);
+        makePCM(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], PLOT_DATA.model, PLOT_DATA.dna_entity_id);
     }
     
     /* Plot Linear Contact Map */
@@ -939,224 +618,13 @@ function makePlots(mi, dna_entity_id, pro_chains) {
     $("#lcm_plot_rotation_slider").val(0).trigger("input");
     $("#lcm_label_rotation_slider").val(0).trigger("input");
     $("#lcm_label_scale_slider").val(1.0).trigger("input");
-    makeLCM(mi, dna_entity_id, INTERFACES[mi][dna_entity_id]);
-}
-
-function makeLabelFormatInputs(dna_chains, pro_chains) {
-    /* clear out any previous rows */
-    $("#nucleotide_label_rows").empty();
-    $("#residue_label_rows").empty();
-    $("#sse_label_rows").empty();
-    
-    /* add all chain specs */
-    $("#nucleotide_label_rows").append(HB_TEMPLATES.res_labels_row({
-        fields: [
-            {
-                number: 1,
-                chain: '_',
-                default_text: "Name(1)",
-                default_value: "name_short"
-            },
-            {
-                number: 2,
-                chain: '_',
-                default_value: "blank"
-            },
-            {
-                number: 3,
-                chain: '_',
-                default_value: "blank"
-            }/*,
-            {
-                number: 4,
-                chain: '_'
-            }*/
-        ],
-        text: "All chains format:",
-        chain: '_'
-    }));
-    $("#nucleotide_label_rows").append("<hr>");
-        
-    $("#residue_label_rows").append(HB_TEMPLATES.res_labels_row({
-        fields: [
-            {
-                number: 1,
-                chain: '_',
-                default_text: "Name(1)",
-                default_value: "name_short"
-            },
-            {
-                number: 2,
-                chain: '_',
-                default_text: "number",
-                default_value: "number"
-            },
-            {
-                number: 3,
-                chain: '_',
-                default_text: "chain",
-                default_value: "chain"
-            }/*,
-            {
-                number: 4,
-                chain: '_'
-            }*/
-        ],
-        text: "All chains format:",
-        chain: '_'
-    }));
-    $("#residue_label_rows").append("<hr>");
-    
-    $("#sse_label_rows").append(HB_TEMPLATES.sse_labels_row({
-        fields: [
-            {
-                number: 1,
-                chain: '_',
-                default_text: "sec. structure",
-                default_value: "secondary_structure"
-            },
-            {
-                number: 2,
-                chain: '_',
-                default_text: "chain",
-                default_value: "chain"
-            },
-            {
-                number: 3,
-                chain: '_',
-                default_text: "number",
-                default_value: "number"
-            }/*,
-            {
-                number: 4,
-                chain: '_'
-            }*/
-        ],
-        text: "All chains format:",
-        chain: '_'
-    }));
-    $("#sse_label_rows").append("<hr>");
-    
-    /* add per-chain specs */
-    for (let i = 0; i < dna_chains.length; i++) {
-        $("#nucleotide_label_rows").append(HB_TEMPLATES.res_labels_row({
-            fields: [
-                {
-                    number: 1,
-                    chain: dna_chains[i],
-                    default_value: "blank"
-                },
-                {
-                    number: 2,
-                    chain: dna_chains[i],
-                    default_value: "blank"
-                },
-                {
-                    number: 3,
-                    chain: dna_chains[i],
-                    default_value: "blank"
-                }/*,
-                {
-                    number: 4,
-                    chain: dna_chains[i]
-                }*/
-            ],
-            text: `Chain ${dna_chains[i]} format:`,
-            chain: dna_chains[i]
-        }));
-    }
-    
-    for (let i = 0; i < pro_chains.length; i++) {
-        $("#residue_label_rows").append(HB_TEMPLATES.res_labels_row({
-            fields: [
-                {
-                    number: 1,
-                    chain: pro_chains[i],
-                    default_value: "blank"
-                },
-                {
-                    number: 2,
-                    chain: pro_chains[i],
-                    default_value: "blank"
-                },
-                {
-                    number: 3,
-                    chain: pro_chains[i],
-                    default_value: "blank"
-                }/*,
-                {
-                    number: 4,
-                    chain: pro_chains[i]
-                }*/
-            ],
-            text: `Chain ${pro_chains[i]} format:`,
-            chain: pro_chains[i]
-        }));
-    }
-    
-    for (let i = 0; i < pro_chains.length; i++) {
-        $("#sse_label_rows").append(HB_TEMPLATES.sse_labels_row({
-            fields: [
-                {
-                    number: 1,
-                    chain: pro_chains[i],
-                    default_value: "blank"
-                },
-                {
-                    number: 2,
-                    chain: pro_chains[i],
-                    default_value: "blank"
-                },
-                {
-                    number: 3,
-                    chain: pro_chains[i],
-                    default_value: "blank"
-                }/*,
-                {
-                    number: 4,
-                    chain: pro_chains[i]
-                }*/
-            ],
-            text: `Chain ${pro_chains[i]} format:`,
-            chain: pro_chains[i]
-        }));
-    }
+    makeLCM(PLOT_DATA.model, PLOT_DATA.dna_entity_id, INTERFACES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]);
 }
 
 function labelOptionClick(e) {
     let button = $(e).parent().siblings('button');
     button.attr("data-value", $(e).attr("data-value"));
     button.text($(e).attr("data-placeholder"));
-}
-
-function makeColorFormatInputs(dna_chains, pro_chains) {
-    $("#dna_color_rows").empty();
-    $("#protein_color_rows").empty();
-    
-    /* add chain color inputs */
-    for (let i = 0; i < pro_chains.length; i++) {
-        $("#protein_color_rows").append(HB_TEMPLATES.pro_color_row({
-            colors: [
-                {
-                    color: PLOT_DATA.colors['H'],
-                    name: 'H',
-                    chain: pro_chains[i]
-                },
-                {
-                    color: PLOT_DATA.colors['S'],
-                    name: 'S',
-                    chain: pro_chains[i]
-                },
-                {
-                    color: PLOT_DATA.colors['L'],
-                    name: 'L',
-                    chain: pro_chains[i]
-                },
-            ],
-            text: `Chain ${pro_chains[i]} colors:`,
-        }));
-    }
-    
 }
 
 function applyLabelFormats() {
@@ -3133,7 +2601,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         g_links;
 
     /* data structures */
-    var entity = ENTITIES[mi][dna_entity_id];
+    var entity = DNA_ENTITIES[mi][dna_entity_id];
     var scale;
     switch (LCM.layout_type) {
         case "radial":
