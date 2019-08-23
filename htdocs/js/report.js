@@ -14,23 +14,15 @@
 #  GNU General Public License for more details.
 */
 
-// Useful extentions to builtin prototypes
-Array.prototype.unique = function () {
-    var n = {},
-        r = [];
-    for (var i = 0; i < this.length; i++) {
-        if (!n[this[i]]) {
-            n[this[i]] = true;
-            r.push(this[i]);
-        }
-    }
-    return r;
-};
+/* 
+Dependencies:
+    jQuery - v3.3.1 
+    d3.js - v5
+    visualizations.js 
+    ngl_viewer.js
+*/
 
-var glossary_window = {
-    closed: true
-};
-
+// function to create glossary window
 function glossary(id) {
     var opts = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,height=400,width=800';
     if (!glossary_window.closed) {
@@ -39,74 +31,7 @@ function glossary(id) {
     glossary_window = window.open(`/cgi-bin/glossary?id=${id}#${id}`, 'targetWindow', opts);
 }
 
-/* Function Definitions */
-// Create a pymol script
-/*
-function exportPymol() {
-    var commands = [
-        `# This script is only guaranteed to work with the structure downloaded from the report page from which this script was generated (${STRUCTURE_ID}.pdb).`,
-        '# To run this script enter the following commands into the Pymol terminal (don\'t include the \'>\' character)',
-        '# > cd /dir/to/script/color_script.pym',
-        '# > @color_script.pym',
-        'color slate, (all)',
-    ];
-    // Define domain colors
-    for (var ss in report.plottingOptions.domain_colors) {
-        for (var i = 0; i < report.plottingOptions.domain_colors[ss].length; i++) {
-            color = report.hexToRGB(report.plottingOptions.domain_colors[ss][i]);
-            commands.push(`set_color ${ss}${i}=[${color.r}, ${color.g}, ${color.b}]`);
-        }
-    }
-
-    // Add DNA color
-    commands.push(`extract DNA, chain ${report.structureData.dna_chains.join('+')}`);
-    commands.push('color grey, DNA');
-
-    var sse_ids = [];
-    var sse, cname, di, gi, rnums, color;
-
-    for (var si in report.plottingOptions.interface_sse_ids) {
-        for (var i = 0; i < report.plottingOptions.grv_selection.length; i++) {
-            gi = report.plottingOptions.grv_selection[i];
-            sse_ids = sse_ids.concat(report.plottingOptions.interface_sse_ids[si][gi]);
-        }
-    }
-    sse_ids = sse_ids.unique();
-
-    for (var i = 0; i < sse_ids.length; i++) {
-        sse = report.structureData.sse[sse_ids[i]];
-        cname = sse.chain;
-        if (cname in report.plottingOptions.domain_map) {
-            di = report.plottingOptions.domain_map[cname];
-        } else {
-            continue;
-        }
-        rnums = [];
-        for (var j = 0; j < sse.res_ids.length; j++) {
-            rnums.push(sse.res_ids[j].split('.')[1]);
-        }
-        color = sse.secondary_structure + di;
-
-        commands.push(`create ${sse.label.replace(':', '_')}, ${STRUCTURE_ID}`);
-        commands.push(`select hide, not (chain ${cname} and resi ${rnums.join('+')})`);
-        commands.push(`cartoon skip, hide and ${sse.label.replace(':', '_')}`);
-        commands.push(`cartoon skip, (not hide) and ${STRUCTURE_ID}`);
-        commands.push(`color ${color}, ${sse.label.replace(':', '_')}`);
-    }
-    commands.push(`set cartoon_transparency, 0.75, ${STRUCTURE_ID}`);
-    commands.push('show_as cartoon');
-    commands.push('delete hide');
-    commands.push('bg_color white');
-
-    var text = commands.join("\n");
-    var filename = "color_script.pym";
-    var blob = new Blob([text], {
-        type: "text/plain;charset=utf-8"
-    });
-    saveAs(blob, filename);
-};
-*/
-
+// functions to create data tables
 function makeCitationTable() {
     // Add Citation Info
     if (PDB_STRUCTURE) {
@@ -382,22 +307,31 @@ function makeOverviewTable(mi) {
     }
 }
 
+// functions for data explorer search
 function checkID(id) {
-    if(/^[A-Za-z0-9]\.[+-]?[0-9]+$/.test(id)){
+    /*
+    Checks if ID is in chain.number format and if so
+    appends a blank insertion code
+    */
+    
+    if(/^[A-Za-z0-9]\.[+-]?[0-9]+$/.test(id)) {
         id = id + '. ';
     }
-    
     return id;
 }
 
 function dataItemUpdate(val) {
+    /* 
+    Updates the UI inputs when the data item select
+    is changed in the data explorer section
+    */
     $("#data_item_search_group").empty();
     $("#data_item_label").empty();
     $('#data_item_search_button').prop("disabled", false);
     $("#data_search_error").text("");
     switch(val) {
         case "nuc":
-            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+            $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
                 ph1: "nucleotide ID",
                 name1: "nid",
                 style1: "width:110px;",
@@ -405,7 +339,7 @@ function dataItemUpdate(val) {
             $("#data_item_label").html('enter nucleotide ID using: <code>chain</code>.<code>number</code> OR <code>chain</code>.<code>number</code>.<code>ins_code</code>');
             break;
         case "res":
-            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+            $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
                 ph1: "residue ID",
                 name1: "rid",
                 style1: "width:100px;",
@@ -413,7 +347,7 @@ function dataItemUpdate(val) {
             $("#data_item_label").html('enter residue ID using: <code>chain</code>.<code>number</code> OR <code>chain</code>.<code>number</code>.<code>ins_code</code>');
             break;
         case "int":
-            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+            $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
                 models: JSON_VIEWER.models_array,
                 ph1: "nucleotide ID",
                 name1: "nid",
@@ -427,7 +361,7 @@ function dataItemUpdate(val) {
             $("#data_item_search_group select[name='data_item_model']").val(PLOT_DATA.model);
             break;
         case "ent":
-            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+            $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
                 models: JSON_VIEWER.models_array,
                 ph1: "DNA entity ID",
                 name1: "entity_id"
@@ -438,7 +372,7 @@ function dataItemUpdate(val) {
             $("#data_item_search_group input[name='entity_id']").val(PLOT_DATA.dna_entity_id);
             break;
         case "helix":
-            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+            $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
                 models: JSON_VIEWER.models_array,
                 ph1: "helix ID",
                 name1: "helix_id"
@@ -451,7 +385,7 @@ function dataItemUpdate(val) {
             }
             break;
         case "pro_chain":
-            $("#data_item_search_group").html(DATA_SEARCH_TEMPLATE({
+            $("#data_item_search_group").html(HB_TEMPLATES.data_search_template({
                 ph1: "chain ID",
                 name1: "chain_id",
                 style1: "width:80px;",
@@ -467,6 +401,10 @@ function dataItemUpdate(val) {
 }
 
 function dataItemSearch() {
+    /* 
+    Searches the DATA data structure for a specified item and 
+    opens this path if found
+    */
     let val = $("#data_item_select").val();
     let path, index, nid, rid, mi, ind1, ind2;
     switch(val) {
@@ -585,25 +523,260 @@ function dataItemSearch() {
     }
 }
 
-var resizeTimer;
-var DATA_SEARCH_TEMPLATE = Handlebars.compile($("#data_fields_template").html());
-$(document).ready(function () {
+function updateProteinColors(pro_chains) {
+    /* 
+    This function updates protein color scheme based on values in
+    the color inputs and stores these colors in a more convienient 
+    data structure and calls the NGL_VIEWER color update function
+    */
+    if($('input[name="all_chain_colors"]:checked').val() == "on") {
+        $("#protein_all_color_row input[type=color]").each(function(n) {
+            let val = $(this).val();
+            let sst = $(this).attr("name");
+            PROTEIN_COLORS[sst] = {};
+            $.each(pro_chains, function(i, c) {
+                PROTEIN_COLORS[sst][c] = val;
+            });
+        });
+    } else {
+        for (let i = 0; i < pro_chains.length; i++) {
+            $(`#protein_color_rows input[data-chain=${pro_chains[i]}]`).each(function(n) {
+                let val = $(this).val();
+                let sst = $(this).attr("name");
+                let chain = $(this).attr("data-chain");
+                PROTEIN_COLORS[sst] = {};
+                PROTEIN_COLORS[sst][chain] = val;
+            });
+        }
+    }
     
+    let color_specs = {};
+    for(let sst in PROTEIN_COLORS) {
+        for (let chain in PROTEIN_COLORS[sst]) {
+            if (! (chain in color_specs) ) {
+                color_specs[chain] = {chain_name: ':'+chain}; 
+            }
+            switch (sst) {
+                case 'H':
+                    color_specs[chain]['helix'] = parseInt(PROTEIN_COLORS[sst][chain].substring(1), 16);
+                    break;
+                case 'S':
+                    color_specs[chain]['sheet'] = parseInt(PROTEIN_COLORS[sst][chain].substring(1), 16);
+                    break;
+                case 'L':
+                    color_specs[chain]['turn'] = parseInt(PROTEIN_COLORS[sst][chain].substring(1), 16);
+                    break;
+            }
+        }
+    }
+    changeColorScheme3D({chains: Object.values(color_specs)});
+}
+
+function applyProteinColors(){
+    /* 
+    This function applies the colors stored in PROTEIN_COLORS to
+    existing SVG elements and updates the NGL residue selection
+    */
+    for(let sst in PROTEIN_COLORS) {
+        for(let chain in PROTEIN_COLORS[sst]) {
+            $(`path.${sst}[data-chain=${chain}]`).css("fill", PROTEIN_COLORS[sst][chain]);
+        }
+    }
+    selectResidues3D(PLOT_DATA.interface_residue_ids);
+}
+
+function updateSelection(mi, dna_id, pro_chains) {
+    // update overview table
+    if  (mi != SELECTION.model) {
+        makeOverviewTable(mi)
+    }
+    // update selection variables
+    SELECTION.model = mi;
+    SELECTION.dna_entity_id = dna_id;
+    SELECTION.protein_chains = pro_chains;
+    
+    /* get DNA chains corresponding to the selected entity */
+    SELECTION.dna_chains = [];
+    for(let i = 0; i < ENTITIES[mi][dna_id].strands.length; i++) {
+        SELECTION.dna_chains.push(ENTITIES[mi][dna_id].strands[i].chain_id);
+    }
+    SELECTION.dna_chains = SELECTION.dna_chains.unique();
+    
+    /* Show current selection */
+    $("#current_model").text(mi);
+    $("#current_model2").text(mi);
+    $("#current_dna_entity").text(dna_id);
+    if(pro_chains.length > 0) {
+        $("#current_protein_chains").text(pro_chains.join(','));
+    } else {
+        $("#current_protein_chains").text("none selected");
+    }
+    
+    // update NGL viewer
+    selectModel(mi);
+    
+    /* Decide whether to rebuild any necessary UI components or simply apply updates */
+    let ifs = getInterfaceString();
+    if (ifs != SELECTION.interface_string) {
+        // we are visualizing a new interface, start from scratch
+        makeExcludeSelects();
+        makeLabelFormatInputs(SELECTION.dna_chains, pro_chains);
+        makeColorFormatInputs(SELECTION.dna_chains, pro_chains);
+        SELECTION.interface_string = ifs;
+        resetLabels();
+    }
+    
+    // update colors
+    updateProteinColors(pro_chains);
+    
+    // make 2D visualizations
+    makePlots(mi, dna_id, pro_chains);
+    selectResidues3D(PLOT_DATA.interface_residue_ids);
+    
+    // reset various UI elements
+    $("#cartoon_toggle_button").text("Hide Cartoon");
+}
+
+function getInterfaceString(chains) {
+    if(chains === undefined) {
+        return SELECTION.model + SELECTION.dna_entity_id + SELECTION.protein_chains.sort().join();
+    } else {
+        return SELECTION.model + SELECTION.dna_entity_id + chains.sort().join();
+    }
+}
+
+// Useful extentions to builtin prototypes
+Array.prototype.unique = function () {
+    var n = {},
+        r = [];
+    for (var i = 0; i < this.length; i++) {
+        if (!n[this[i]]) {
+            n[this[i]] = true;
+            r.push(this[i]);
+        }
+    }
+    return r;
+};
+
+// Used for displaying glossary
+var glossary_window = {
+    closed: true
+};
+
+// Stores the current user selection
+var SELECTION = {
+    model: null,
+    dna_entity_id: null,
+    protein_chains: null,
+    interface_string: null,
+    dna_chains: null
+}
+
+// Store colors of each current protein chain by SST
+var PROTEIN_COLORS = {
+    H: null,
+    S: null,
+    L: null
+}
+
+
+// Data structures for accessing DNAproDB data
+var DATA,
+    NUCLEOTIDES,
+    RESIDUES,
+    PAIRS,
+    STACKS,
+    LINKS,
+    STRANDS,
+    SSE,
+    ENTITIES,
+    INTERFACES,
+    NR_INTERACTIONS,
+    NS_INTERACTIONS,
+    NUCLEOTIDE_INTERFACE_DATA,
+    RESIDUE_INTERFACE_DATA,
+    SSE_INTERFACE_DATA;
+
+var HB_TEMPLATES; // stores handblebars templates
+
+// Store data for the Data Explorer viewe
+var JSON_VIEWER = {
+    viewer: null,
+    root: null,
+    models_array: null,
+}
+
+// Resize NGL viewer whenever window is resized
+var resizeTimer;
+$(window).resize(function () {
+    if(resizeTimer){
+        clearTimeout(resizeTimer);
+    }
+    resizeTimer = setTimeout(stage_nm1.handleResize(), 200);
+});
+
+// Begin when page is ready
+$(document).ready(function(){
+    /* Load and compile handlebars templates */
+    HB_TEMPLATES = {
+        sse_tooltip: Handlebars.compile($("#sse_tooltip").html()),
+        res_tooltip: Handlebars.compile($("#residue_tooltip").html()),
+        nuc_tooltip: Handlebars.compile($("#nucleotide_tooltip").html()),
+        res_int_tooltip: Handlebars.compile($("#residue_interaction_tooltip").html()),
+        pro_entity_table_row: Handlebars.compile($("#protein_entity_table_row").html()),
+        pro_segment_table_row: Handlebars.compile($("#protein_segment_table_row").html()),
+        dna_entity_table_row: Handlebars.compile($("#dna_entity_table_row").html()),
+        dna_strand_table_row: Handlebars.compile($("#dna_strand_table_row").html()),
+        dna_helix_table_row: Handlebars.compile($("#dna_helix_table_row").html()),
+        interface_table_row: Handlebars.compile($("#interface_table_row").html()),
+        citation_table: Handlebars.compile($("#citation_table").html()),
+        res_labels_row: Handlebars.compile($("#labels_res_format_row").html()),
+        sse_labels_row: Handlebars.compile($("#labels_sse_format_row").html()),
+        pro_color_row: Handlebars.compile($("#pro_color_input_row").html()),
+        data_search_template: Handlebars.compile($("#data_fields_template").html())
+    };
+    if(PDB_STRUCTURE) {
+        HB_TEMPLATES.pro_chain_table_row = Handlebars.compile($("#protein_chain_table_pdb").html());
+    } else {
+        HB_TEMPLATES.pro_chain_table_row = Handlebars.compile($("#protein_chain_table_upload").html());
+    }
+    Handlebars.registerPartial('resFieldPartial', $("#labels_residue_format_input").html());
+    Handlebars.registerPartial('sseFieldPartial', $("#labels_sse_format_input").html());
+    Handlebars.registerPartial('colorPartial', $("#color_input_partial").html());
+    
+    /* Set up and bind various UI elements to functions */
+    /** sumo_select inits **/
+    $('#exclude_nucleotide_select').SumoSelect({
+        csvDispCount: 1,
+        captionFormat: '{0} selected',
+        captionFormatAllSelected: '{0} selected'
+    });
+    
+    $('#exclude_residue_select').SumoSelect({
+        csvDispCount: 1,
+        captionFormat: '{0} selected',
+        captionFormatAllSelected: '{0} selected'
+    });
+    
+    $('#exclude_sse_select').SumoSelect({
+        csvDispCount: 1,
+        captionFormat: '{0} selected',
+        captionFormatAllSelected: '{0} selected'
+    });
+
+    $('#protein_chains_select').SumoSelect({
+        csvDispCount: 5,
+        captionFormat: '{0} selected',
+        captionFormatAllSelected: 'all chains selected',
+    });
+    
+    /** NGL viewer button setups **/
     $('#ngl_controls_button').click(function () {
         var val = $(this).text();
         if (val == "Show Controls") {
             $(this).text("Hide Controls");
         } else {
             $(this).text("Show Controls");
-        }
-    });
-
-    $('#advanced_options_button').click(function () {
-        var val = $(this).text();
-        if (val == "show advanced options") {
-            $(this).text("hide advanced options");
-        } else {
-            $(this).text("show advanced options");
         }
     });
     
@@ -629,8 +802,6 @@ $(document).ready(function () {
         }
     });
 
-    $("#json_download_link").prop("href", JSON_URL).prop("download", `${STRUCTURE_ID}.json`);
-    
     $("#download_pdb").prop("href", PDB_URL).prop("download", `${STRUCTURE_ID}.pdb`);
     
     $('#image_export').click(function (){
@@ -638,7 +809,58 @@ $(document).ready(function () {
           saveAs(blob, `${STRUCTURE_ID}_3d.png`); 
         });
     });
+        
+    /** Data Explorer UI setup */
+    $("#json_download_link").prop("href", JSON_URL).prop("download", `${STRUCTURE_ID}.json`);
     
+    $('#data_item_select').change(function () {
+        dataItemUpdate(this.value);
+    });
+    
+    $('#data_item_search_button').click(dataItemSearch);
+    
+    /*** reset UI elements ***/
+    $('#data_item_select').val("");
+    $('#data_item_search_button').prop("disabled", true);
+    $("#data_item_label").html('to search for a data item use the select below');
+    $("#data_search_error").text("");
+    
+    /* Set up interface select controls */
+    $('#advanced_options_button').click(function () {
+        var val = $(this).text();
+        if (val == "show advanced options") {
+            $(this).text("hide advanced options");
+        } else {
+            $(this).text("show advanced options");
+        }
+    });
+    
+    $("#plot_button").click(function() {
+        let mi = $("#model_select").val();
+        let id = $("#entity_select").val();
+        let pc = $("#protein_chains_select").val(); 
+        updateSelection(mi, id, pc);
+    });
+
+    $('input[type=radio][name="all_chain_colors"]').change(function() {
+        if (this.value == "off") {
+            $("input[type=color][data-chain='_']").prop("disabled", true);
+            $("#protein_color_rows input[type=color]").prop("disabled", false);
+        } else {
+            $("input[type=color][data-chain='_']").prop("disabled", false);
+            $("#protein_color_rows input[type=color]").prop("disabled", true);
+        }
+    });
+
+    $('input[type=radio][name="interaction_criteria"]').change(function() {
+        if (this.value == "default") {
+            $("#custom_interaction_inputs input").prop("disabled", true);
+        } else {
+            $("#custom_interaction_inputs input").prop("disabled", false);
+        }
+    });
+
+    /* Set up chart controls */
     $("#lcm_link").click(function () {
         $("#lcm_console_link").tab("show");
     });
@@ -651,24 +873,726 @@ $(document).ready(function () {
         $("#sop_console_link").tab("show");
     });
     
-    $('#data_item_select').change(function () {
-        dataItemUpdate(this.value);
+    $("#tooltip_on_button").change(function () { // bind a function to the change event
+        if ($(this).is(":checked")) { // check if the radio is checked
+            PLOT_DATA.tooltips = 'on';
+        }
+    });
+
+    $("#tooltip_off_button").change(function () { // bind a function to the change event
+        if ($(this).is(":checked")) { // check if the radio is checked
+            PLOT_DATA.tooltips = 'off';
+        }
+    });
+
+    $("#label_input_cancel_button").click(function () {
+        d3.select("#label_input_div")
+            .style("opacity", 0)
+            .style("right", null)
+            .style("top", null)
+            .style("bottom", null)
+            .style("left", null);
+    });
+
+    $("#label_input_submit_button").click(labelInputSubmit);
+
+    $("#label_input").on('keyup', function (e) {
+        if (e.keyCode == 13) {
+            labelInputSubmit();
+        }
+    });
+
+    $("#update_labels_button").click(applyLabelFormats);
+
+    $("#update_colors_button").click(function(){
+        updateProteinColors(SELECTION.protein_chains);
+        applyProteinColors();
     });
     
-    $('#data_item_search_button').click(dataItemSearch);
-    
-    // reset UI elements
-    $('#data_item_select').val("");
-    $('#data_item_search_button').prop("disabled", true);
-    $("#data_item_label").html('to search for a data item use the select below');
-    $("#data_search_error").text("");
-    
-    loadStructure(PDB_URL).then(setTimeout(initializeVisualizations, 500));
-});
+    /* LCM Setup */
+    // bind toggle button event
+    $("#lcm_on_button").change(function () { // bind a function to the change event
+        if ($(this).is(":checked")) { // check if the radio is checked
+            LCM.toggle = 'ON';
+        }
+    });
 
-$(window).resize(function () {
-    if(resizeTimer){
-        clearTimeout(resizeTimer);
-    }
-    resizeTimer = setTimeout(stage_nm1.handleResize(), 200);
+    $("#lcm_off_button").change(function () { // bind a function to the change event
+        if ($(this).is(":checked")) { // check if the radio is checked
+            LCM.toggle = 'OFF'
+        }
+    });
+
+    // bind hbond radio button event
+    $('input[type=radio][name=show_hbonds]').change(function() {
+        if (this.value == 'yes') {
+            LCM.svg.selectAll(".background")
+                .style("stroke", function(d) {
+                    if(d.data.hbond_sum[d.source_mty].sc || d.data.hbond_sum[d.source_mty].mc) {
+                        return "red";
+                    } else {
+                        return null;
+                    }
+            });
+        }
+        else if (this.value == 'no') {
+            LCM.svg.selectAll(".background")
+                .style("stroke", null);
+        }
+    });
+
+    // reset DNA postions
+    $("#lcm_reset_button").click(function () {
+        LCM.simulation.stop();
+        $.each(LCM.simulation.nodes(), function (i, d) {
+            if (d.fx) d.fx = d._fx;
+            if (d.fy) d.fy = d._fy;
+            if (d._x) d.x = d._x;
+            if (d._y) d.y = d._y;
+        });
+        LCM.simulation.alphaTarget(0.6).restart();
+        $("#lcm_plot_rotation_slider").val(0).trigger("input");
+        $("#lcm_label_rotation_slider").val(0).trigger("input");
+        $("#lcm_label_scale_slider").val(1.0).trigger("input");
+        $("input[type=radio][name=show_hbonds][value=no]").attr("checked", true).trigger("change");
+    });
+
+    // bind reflect x button event
+    $("#lcm_reflectX_button").click(function () {
+        LCM.simulation.stop();
+        $.each(LCM.simulation.nodes(), function (i, d) {
+            if (d.fx) d.fx += 2 * (LCM.cx - d.fx);
+            if (d.label_data) d.label_data.x += 2 * (LCM.cx - d.label_data.x);
+            d.x += 2 * (LCM.cx - d.x);
+            d._x = d.x;
+        });
+        LCM.simulation.alphaTarget(0.6).restart();
+    });
+
+    // bind reflect y button event
+    $("#lcm_reflectY_button").click(function () {
+        LCM.simulation.stop();
+        $.each(LCM.simulation.nodes(), function (i, d) {
+            if (d.fy) d.fy += 2 * (LCM.cy - d.fy);
+            if (d.label_data) d.label_data.y += 2 * (LCM.cy - d.label_data.y);
+            d.y += 2 * (LCM.cy - d.y);
+            d._y = d.y;
+        });
+        LCM.simulation.alphaTarget(0.6).restart();
+    });
+
+    // bind rotation range event
+    $("#lcm_plot_rotation_slider").on('input', function () {
+        if (!this.value) this.value = 0;
+        LCM.theta = this.value;
+        if(LCM.svg) {
+            LCM.svg.select(".rotate")
+                .attr("transform", `rotate(${LCM.theta}, ${LCM.cx}, ${LCM.cy})`);
+
+            LCM.svg.selectAll(".nodes text")
+                .attr("transform", transformTextLCM);
+            LCM.svg.selectAll(".label")
+                .attr("transform", transformTextLCM);
+            LCM.svg.selectAll(".residue path")
+                .attr("transform", `rotate(${-LCM.theta})`);
+        }
+    });
+
+    // bind label rotation range event
+    $("#lcm_label_rotation_slider").on('input', function () {
+        if (!this.value) this.value = 0;
+        LCM.label_theta = this.value;
+        
+        if(LCM.svg) {
+            LCM.svg.selectAll(".nodes text")
+                .attr("transform", transformTextLCM);
+            LCM.svg.selectAll(".label")
+                .attr("transform", transformTextLCM);
+        }
+    });
+
+    // bind label scale range event
+    $("#lcm_label_scale_slider").on('input', function () {
+        if (!this.value) this.value = 0;
+        LCM.label_scale = this.value;
+        
+        if(LCM.svg) {
+            LCM.svg.selectAll(".nodes text")
+                .attr("transform", transformTextLCM);
+            LCM.svg.selectAll(".label")
+                .attr("transform", transformTextLCM);
+        }
+    });
+
+    // bind hide/show legend button event
+    $("#lcm_legend_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide legend") {
+            $("#lcm_legend").attr("visibility", "hidden");
+            $(this).text("show legend");
+        } else {
+            $("#lcm_legend").attr("visibility", "visible");
+            $(this).text("hide legend");
+        }
+    });
+
+    // bind hide/show residues button event 
+    $("#lcm_residues_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide residues") {
+            LCM.svg.selectAll(".residue")
+                .each(function() {
+                    LCM.hidden_elements.push(this);
+                });
+            LCM.svg.selectAll(".label")
+                .each(function() {
+                    LCM.hidden_elements.push(this);
+                });
+            LCM.svg.selectAll("line.wg, line.sg, line.bs, line.sr, line.pp, line.background")
+                .each(function() {
+                    LCM.hidden_elements.push(this);
+                });
+            LCM.visifyComponents("hidden");
+            $(this).text("show residues");
+            $("#lcm_selected_button").prop("disabled", true);
+        } else {
+            $(this).text("hide residues");
+            LCM.visifyComponents("visible");
+            LCM.hidden_elements = [];
+            $("#lcm_selected_button").prop("disabled", false);
+        }
+    });
+
+    // bind hide/show selected button event 
+    $("#lcm_selected_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide selected components" && PLOT_DATA.selected.residue_ids.length > 0) {
+            LCM.svg.selectAll(".highlighted")
+                .each(function() {
+                    LCM.hidden_elements.push(this.closest("g"));
+                });
+            LCM.svg.selectAll(".label")
+                .each(function(d) {
+                     if (PLOT_DATA.selected.residue_ids.includes(d.node.data.id)) {
+                        LCM.hidden_elements.push(this);
+                     }
+                });
+            LCM.svg.selectAll("g.lines > line")
+                .each(function(d) {
+                    let id1, id2;
+                    if (d.type == "interaction" || d.type == "background") {
+                        id1 = d.data.res_id;
+                        id2 = d.data.nuc_id;
+                    } else {
+                        id1 = d.data.id1;
+                        id2 = d.data.id2;
+                    }
+                    if (PLOT_DATA.selected.residue_ids.includes(id1) || PLOT_DATA.selected.residue_ids.includes(id2)) {
+                        LCM.hidden_elements.push(this);
+                        if (d.type == "interaction") {
+                            LCM.node_lookup[d.target.id].active_interactions -= 1;
+                        }
+                    }
+                });
+            LCM.svg.selectAll(".residue")
+                .each(function(d) {
+                    if (d.active_interactions == 0) {
+                        LCM.hidden_elements.push(this);
+                        LCM.hidden_elements.push(
+                            LCM.svg.select(`g.label[data-node_id=${d.id}]`).node()
+                        );
+                    } else {
+                        d.active_interactions = d.total_interactions;
+                    }
+                });
+            $(this).text("show hidden components");
+            LCM.visifyComponents("hidden");
+            $("#lcm_residues_button").prop("disabled", true);
+        } else {
+            $(this).text("hide selected components");
+            LCM.visifyComponents("visible");
+            LCM.hidden_elements = [];
+            $("#lcm_residues_button").prop("disabled", false);
+        }
+    });
+
+    // bind the save button event
+    $("#lcm_save_button").click(function () {
+        saveSvgAsPng(document.getElementById("lcm_svg"), "lcm.png", {scale: 2.0});
+    });
+
+    // bind hide/show grid event
+    $("#lcm_grid_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide grid") {
+            $("#lcm_xgrid").attr("visibility", "hidden");
+            $("#lcm_ygrid").attr("visibility", "hidden");
+            $(this).text("show grid");
+        } else {
+            $("#lcm_xgrid").attr("visibility", "visible");
+            $("#lcm_ygrid").attr("visibility", "visible");
+            $(this).text("hide grid");
+        }
+    });
+
+    // bind layout radio button event
+    $('input[type=radio][name=layout_type]').change(function() {
+        LCM.layout_type = this.value;
+    });
+    
+    // bind layout change button event
+    $("#lcm_layout_button").click(function(){
+        let mi = PLOT_DATA.model;
+        let dna_entity_id = PLOT_DATA.dna_entity_id;
+        
+        // reset UI elements
+        LCM.svg = null;
+        $("#lcm_grid_button").text("show grid");
+        $("#lcm_legend_button").text("hide legend");
+        $("#lcm_selected_button").text("hide selected components");
+        $("#lcm_residues_button").text("hide residues");
+        $("#lcm_residues_button").prop("disabled", false);
+        $("#lcm_selected_button").prop("disabled", false);
+        $('input[type=radio][name="show_hbonds"]').val(["no"]);
+        $("#lcm_plot_rotation_slider").val(0).trigger("input");
+        $("#lcm_label_rotation_slider").val(0).trigger("input");
+        $("#lcm_label_scale_slider").val(1.0).trigger("input");
+        
+        // unselect all residues
+        d3.selectAll(".highlighted")
+            .classed("highlighted", false);
+        PLOT_DATA.selected.residue_ids = [];
+        addBallStick(PLOT_DATA.selected.residue_ids);
+        
+        // replot LCM
+        makeLCM(mi, dna_entity_id, INTERFACES[mi][dna_entity_id]);
+    });
+    
+    /* SOP Setup */
+    //bind update button event
+    $("#sop_plot_button").click(function (){
+        let mi = $("#model_select").val();
+        let entity_id = $("#entity_select").val();
+        let shape_name = $("#shape_parameter_select").val();
+        SOP.reverse = $("#reverse_strands_check").is(":checked");
+        let hi = $("#sop_helix_select").val();
+        $("#sop_grid_button").text("hide grid");
+        
+        // unselect all residues
+        d3.selectAll(".highlighted")
+            .classed("highlighted", false);
+        PLOT_DATA.selected.residue_ids = [];
+        addBallStick(PLOT_DATA.selected.residue_ids);
+        
+        makeShapeOverlay(ENTITIES[mi][entity_id].helical_segments[hi], shape_name, mi, entity_id);
+    });
+
+    // bind flip strands button event
+    $("#flip_strands_button").click(function () {
+        $("#sop_axis_x").find("text").each(function() {
+            let t = $(this).text().split("").reverse().join("");
+            $(this).text(t);
+        });
+    });
+
+    // bind hide/show grid event
+    $("#sop_grid_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide grid") {
+            $("#sop_grid").attr("visibility", "hidden");
+            $(this).text("show grid");
+        } else {
+            $("#sop_grid").attr("visibility", "visible");
+            $(this).text("hide grid");
+        }
+    });
+
+    $("#sop_legend_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide legend") {
+            $("#sop_legend").attr("visibility", "hidden");
+            $(this).text("show legend");
+        } else {
+            $("#sop_legend").attr("visibility", "visible");
+            $(this).text("hide legend");
+        }
+    });
+
+    // bind the save button event
+    $("#sop_save_button").click(function () {
+        saveSvgAsPng(document.getElementById("sop_svg"), "sop.png", {scale: 2.0});
+    });
+
+    // bind the label scale event
+    $("#sop_label_scale_slider").on('input', function () {
+        if (!this.value) this.value = 0;
+        SOP.label_scale = this.value;
+
+        SOP.svg.select(".labels")
+            .selectAll("text")
+            .attr("transform", function (d) {
+                return `scale(${SOP.label_scale})`;
+            });
+
+        SOP.svg.select(".labels")
+            .selectAll("rect.handle")
+            .attr("transform", function (d) {
+                return `scale(${SOP.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
+            });
+    });
+
+    // bind hide/show residues button event 
+    $("#sop_residues_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide residues") {
+            SOP.svg.selectAll(".residue")
+                .attr("visibility", "hidden");
+            SOP.svg.selectAll(".label")
+                .attr("visibility", "hidden");
+            $(this).text("show residues");
+        } else {
+            SOP.svg.selectAll(".residue")
+                .attr("visibility", "visible");
+            SOP.svg.selectAll(".label")
+                .attr("visibility", "visible");
+            $(this).text("hide residues");
+        }
+    });
+
+    /* PCM Setup */
+    $("#pcm_plot_button").click(function (){
+        let mi = $("#model_select").val();
+        let entity_id = $("#entity_select").val();
+        let hi = $("#pcm_helix_select").val();
+        $("#pcm_grid_button").text("hide grid");
+        
+        // unselect all residues
+        d3.selectAll(".highlighted")
+            .classed("highlighted", false);
+        PLOT_DATA.selected.residue_ids = [];
+        addBallStick(PLOT_DATA.selected.residue_ids);
+        
+        makePCM(ENTITIES[mi][entity_id].helical_segments[hi], mi, entity_id);
+    });
+
+    // bind hide/show grid event
+    $("#pcm_grid_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide grid") {
+            PCM.dna_moiety_labels.attr("visibility", "hidden");
+            PCM.theta_grid.attr("visibility", "hidden");
+            $(this).text("show grid");
+        } else {
+            PCM.dna_moiety_labels.attr("visibility", "visible");
+            PCM.theta_grid.attr("visibility", "visible");
+            $(this).text("hide grid");
+        }
+    });
+
+    $("#pcm_legend_button").click(function () {
+        var val = $(this).text();
+        if (val == "hide legend") {
+            $("#pcm_legend").attr("visibility", "hidden");
+            $(this).text("show legend");
+        } else {
+            $("#pcm_legend").attr("visibility", "visible");
+            $(this).text("hide legend");
+        }
+    });
+
+    // bind the save button event
+    $("#pcm_save_button").click(function () {
+        saveSvgAsPng(document.getElementById("pcm_svg"), "pcm.png", {scale: 2.0});
+    });
+
+    // bind rotation range event
+    $("#pcm_rotation_slider").on('input', function () {
+        if (!this.value) this.value = 0;
+        PCM.theta = this.value;
+        PCM.svg.select(".nodes")
+            .attr("transform", `rotate(${PCM.theta})`);
+        PCM.svg.selectAll(".sse path")
+            .attr("transform", `rotate(${-PCM.theta})`);
+        PCM.svg.select(".nodes")
+            .selectAll("text")
+            .attr("transform", function (d) {
+                return `rotate(${-PCM.theta}) scale(${PCM.label_scale})`;
+            });
+        PCM.svg.select(".nodes")
+            .selectAll("rect.handle")
+            .attr("transform", function (d) {
+                return `rotate(${-PCM.theta}) scale(${PCM.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
+            });
+    });
+
+    // bind the label scale event
+    $("#pcm_label_scale_slider").on('input', function () {
+        if (!this.value) this.value = 0;
+        PCM.label_scale = this.value;
+
+        PCM.svg.select(".nodes")
+            .selectAll("text")
+            .attr("transform", function (d) {
+                return `rotate(${-PCM.theta}) scale(${PCM.label_scale})`;
+            });
+        PCM.svg.select(".nodes")
+            .selectAll("rect.handle")
+            .attr("transform", function (d) {
+                return `rotate(${-PCM.theta}) scale(${PCM.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
+            });
+    });
+    
+    /* Asynchronously request DNAproDB data */
+    $.ajaxSetup({
+        beforeSend: function (xhr) {
+            if (xhr.overrideMimeType) {
+                xhr.overrideMimeType("application/json");
+            }
+        }
+    });
+
+    // retrieve JSON file and get rolling
+    $.getJSON(JSON_URL)
+        .done(function (data) {
+            /* set up global data structures */
+            DATA = data;
+            let item, id;
+
+            // immutable lookup objects
+            NUCLEOTIDES = {};
+            RESIDUES = {};
+
+            // list of lookup objects for each model */
+            PAIRS = [];
+            LINKS = [];
+            STACKS = [];
+            STRANDS = [];
+            ENTITIES = [];
+            INTERFACES = [];
+            SSE = [];
+            NR_INTERACTIONS = [];
+            NS_INTERACTIONS = [];
+            NUCLEOTIDE_INTERFACE_DATA = [];
+            RESIDUE_INTERFACE_DATA = [];
+            SSE_INTERFACE_DATA = [];
+
+            // Add nucleotide data
+            for (let i = 0; i < data.dna.nucleotides.length; i++) {
+                NUCLEOTIDES[data.dna.nucleotides[i].id] = data.dna.nucleotides[i];
+                //escapeID(data.dna.nucleotides[i].id);
+            }
+
+            // Add residue data
+            for (let i = 0; i < data.protein.residues.length; i++) {
+                RESIDUES[data.protein.residues[i].id] = data.protein.residues[i];
+                //escapeID(data.protein.residues[i].id);
+            }
+
+            // Model-level data structures
+            for (let mi = 0; mi < data.num_models; mi++) {
+                PAIRS.push({});
+                STACKS.push({});
+                LINKS.push({});
+                STRANDS.push({});
+                ENTITIES.push({});
+                INTERFACES.push({});
+                SSE.push({});
+                NR_INTERACTIONS.push({});
+                NS_INTERACTIONS.push({});
+                NUCLEOTIDE_INTERFACE_DATA.push({});
+                RESIDUE_INTERFACE_DATA.push({});
+                SSE_INTERFACE_DATA.push({});
+                PLOT_DATA.labels[mi] = {}; // store SSE labels
+
+                // add pair data
+                for (let i = 0; i < data.dna.models[mi].pairs.length; i++) {
+                    item = data.dna.models[mi].pairs[i];
+                    PAIRS[mi][item.id] = item;
+                    if (!(item.id1 in PAIRS[mi])) {
+                        PAIRS[mi][item.id1] = [];
+                    }
+                    if (!(item.id2 in PAIRS[mi])) {
+                        PAIRS[mi][item.id2] = [];
+                    }
+                    PAIRS[mi][item.id1].push(item);
+                    PAIRS[mi][item.id2].push(item);
+                }
+
+                // add stack data
+                for (let i = 0; i < data.dna.models[mi].stacks.length; i++) {
+                    item = data.dna.models[mi].stacks[i];
+                    STACKS[mi][item.id] = item;
+                    if (!(item.id1 in STACKS[mi])) {
+                        STACKS[mi][item.id1] = [];
+                    }
+                    if (!(item.id2 in STACKS[mi])) {
+                        STACKS[mi][item.id2] = [];
+                    }
+                    STACKS[mi][item.id1].push(item);
+                    STACKS[mi][item.id2].push(item);
+                }
+
+                // add link data
+                let p5, p3;
+                for (let i = 0; i < data.dna.models[mi].links.length; i++) {
+                    p5 = data.dna.models[mi].links[i]["5p_nuc_id"];
+                    p3 = data.dna.models[mi].links[i]["3p_nuc_id"];
+                    if (!(p5 in LINKS[mi])) {
+                        LINKS[mi][p5] = {
+                            p3: p3,
+                            p5: null
+                        };
+                    } else {
+                        LINKS[mi][p5].p3 = p3;
+                    }
+                    if (!(p3 in LINKS[mi])) {
+                        LINKS[mi][p3] = {
+                            p3: null,
+                            p5: p5
+                        }
+                    } else {
+                        LINKS[mi][p3].p5 = p5;
+                    }
+                }
+
+                // add DNA entitiy data
+                for (let i = 0; i < data.dna.models[mi].entities.length; i++) {
+                    item = data.dna.models[mi].entities[i];
+                    ENTITIES[mi][item.id] = item;
+                }
+
+                // add sse data 
+                for (let i = 0; i < data.protein.models[mi].secondary_structure_elements.length; i++) {
+                    item = data.protein.models[mi].secondary_structure_elements[i];
+                    SSE[mi][item.id] = item;
+                    //escapeID(item.id);
+                    for (let j = 0; j < item.residue_ids.length; j++) {
+                        SSE[mi][item.residue_ids[j]] = item;
+                    }
+                }
+
+                // add nucleotide-residue interaction, nucleotide-sse interaction and nucleotide interface data 
+                for (let i = 0; i < data.interfaces.models[mi].length; i++) {
+                    id = data.interfaces.models[mi][i].dna_entity_id;
+                    if(! (id in INTERFACES[mi])) {
+                        NR_INTERACTIONS[mi][id] = {};
+                        NS_INTERACTIONS[mi][id] = {};
+                        NUCLEOTIDE_INTERFACE_DATA[mi][id] = {};
+                        RESIDUE_INTERFACE_DATA[mi][id] = {};
+                        SSE_INTERFACE_DATA[mi][id] = {};
+                        INTERFACES[mi][id] = [data.interfaces.models[mi][i]];
+                    } else {
+                        INTERFACES[mi][id].push(data.interfaces.models[mi][i]);
+                    }
+
+                    for (let j = 0; j < data.interfaces.models[mi][i]["nucleotide-residue_interactions"].length; j++) {
+                        item = data.interfaces.models[mi][i]["nucleotide-residue_interactions"][j];
+                        NR_INTERACTIONS[mi][id][getHash(item.nuc_id, item.res_id)] = item;
+                        if (! (item.nuc_id in NR_INTERACTIONS[mi][id]) )  {
+                            NR_INTERACTIONS[mi][id][item.nuc_id] = [];
+                        }
+                        NR_INTERACTIONS[mi][id][item.nuc_id].push(item);
+                    }
+
+                    for (let j = 0; j < data.interfaces.models[mi][i]["nucleotide-sse_interactions"].length; j++) {
+                        item = data.interfaces.models[mi][i]["nucleotide-sse_interactions"][j];
+                        NS_INTERACTIONS[mi][id][getHash(item.nuc_id, item.sse_id)] = item;
+                        if (! (item.nuc_id in NS_INTERACTIONS[mi][id]) )  {
+                            NS_INTERACTIONS[mi][id][item.nuc_id] = [];
+                        }
+                        NS_INTERACTIONS[mi][id][item.nuc_id].push(item);
+                    }
+
+                    for (let j = 0; j < data.interfaces.models[mi][i]["nucleotide_data"].length; j++) {
+                        item = data.interfaces.models[mi][i]["nucleotide_data"][j];
+                        NUCLEOTIDE_INTERFACE_DATA[mi][id][item.nuc_id] = item;
+                    }
+
+                    for (let j = 0; j < data.interfaces.models[mi][i]["residue_data"].length; j++) {
+                        item = data.interfaces.models[mi][i]["residue_data"][j];
+                        RESIDUE_INTERFACE_DATA[mi][id][item.res_id] = item;
+                    }
+
+                    for (let j = 0; j < data.interfaces.models[mi][i]["sse_data"].length; j++) {
+                        item = data.interfaces.models[mi][i]["sse_data"][j];
+                        SSE_INTERFACE_DATA[mi][id][item.sse_id] = item;
+                    }
+                }
+            }
+        })
+        .done(function (data) {
+            /* initialized some required UI/data structures */
+            
+            // build the model select 
+            let opts = "";
+            for (let i = 0; i < DATA.num_models; i++) {
+                 opts += `<option value="${i}">${i}</option>`;
+            }
+            $('#model_select').append(opts);
+            $('#model_select').change(function () {
+                entitySelectSetup(this.value);
+            });
+        
+            // call entitySelectSetup with default model (0)
+            entitySelectSetup(0);
+
+            // map all component IDs to an HTML friendly form
+            let id_re = /\s|\./g;
+            let id1, id2;
+            // add nucleotide ids
+            for (let i = 0; i < DATA.dna.nucleotides.length; i++) {
+                id1 = DATA.dna.nucleotides[i].id;
+                id2 = id1.replace(id_re, '');
+                PLOT_DATA.idMap[id1] = id2;
+                PLOT_DATA.idMap[id2] = id1;
+            }
+
+            // add residue ids
+            for (let i = 0; i < DATA.protein.residues.length; i++) {
+                id1 = DATA.protein.residues[i].id;
+                id2 = id1.replace(id_re, '');
+                PLOT_DATA.idMap[id1] = id2;
+                PLOT_DATA.idMap[id2] = id1;
+            }
+
+            // add sse ids
+            for (let mi = 0; mi < DATA.num_models; mi++) {
+                for (let i = 0; i < DATA.protein.models[mi].secondary_structure_elements.length; i++) {
+                    id1 = DATA.protein.models[mi].secondary_structure_elements[i].id;
+                    id2 = id1.replace(id_re, '');
+                    PLOT_DATA.idMap[id1] = id2;
+                    PLOT_DATA.idMap[id2] = id1;
+                }
+            }
+        
+            // make the citation table (this is only called once)
+            if(typeof(DATA.meta_data.citation_data) == "undefined") {
+                PDB_STRUCTURE = false;
+            }
+            makeCitationTable();
+    })
+        .done(function (data) {
+            /* load the NGL viewer */ 
+            loadStructure(PDB_URL).then(function () {
+                // make 2D visualizations with default selection
+                let id = DATA.dna.models[0].entities[0].id;
+                updateSelection(0, id, $("#protein_chains_select").val());
+            }); // add error handling here
+        })
+        .done(function (data) {
+            /* add data explorer */
+            BigJsonViewerDom.fromObject(JSON.parse(JSON.stringify(data)), {arrayNodesLimit: 25}).then(viewer => {
+                const node = viewer.getRootElement();
+                document.getElementById("json_data_explorer").appendChild(node);
+                node.openAll(1);
+                JSON_VIEWER.root = node;
+                JSON_VIEWER.viewer = viewer;
+            });
+            
+            // used to create model selects
+            JSON_VIEWER.models_array = [];
+            for (let i = 0; i < data.num_models; i++) {
+                JSON_VIEWER.models_array.push(i);
+            }
+        });
 });
