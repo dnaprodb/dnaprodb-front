@@ -574,7 +574,7 @@ function makePlots(selection, colors) {
         makeShapeOverlay(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], shape_name, PLOT_DATA.model, PLOT_DATA.dna_entity_id);
         
         /* Plot Polar Contact Map */
-         // set up helix select
+        // set up helix select
         $("#pcm_grid_button").text("hide grid");
         $("#pcm_legend_button").text("hide legend");
         $("#pcm_helix_select").empty();
@@ -584,7 +584,7 @@ function makePlots(selection, colors) {
         }
         $("#pcm_helix_select").append(opts);
         
-        //makePCM(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], PLOT_DATA.model, PLOT_DATA.dna_entity_id);
+        makePCM(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], PLOT_DATA.model, PLOT_DATA.dna_entity_id);
     }
     
     /* Plot Linear Contact Map */
@@ -801,7 +801,7 @@ function updateLabelTransform(d) {
                 return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
                 break;
             case 'PCM':
-                return `translate(${d.x}, ${d.y}) rotate(${-PCM.theta}) scale(${d.scale})`;
+                return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
                 break;
             case 'SOP':
                 return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
@@ -1112,7 +1112,7 @@ function offsetLabelText(selection) {
             node = SOP.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
             break;
         }
-
+        
         // get node and label bounding boxes
         let node_box = node.node().getBoundingClientRect();
         let node_data = node.datum();
@@ -1223,7 +1223,7 @@ function placeLabelsForce(nodes, labels, D, g, opts={}) {
         });
         gl.append("rect")
             .attr("class", "handle")
-            .attr("fill-opacity", 0.5)
+            .attr("fill-opacity", 0)
             .attr("width", function (d) {
                 return d.width;
             })
@@ -1866,14 +1866,6 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         dy = n5.y - n3.y;
         theta = Math.atan2(dy, dx) + offset;
         return 180 * theta / Math.PI;
-        
-        /*
-        if (theta < 0) {
-            return 360 + 180 * theta / Math.PI;    
-        } else {
-            return 180 * theta / Math.PI;
-        }
-        */
     }
 
     function rotateAbout(cx, cy, x, y, theta) {
@@ -3529,6 +3521,9 @@ function makePCM(helix, mi, ent_id) {
 
     // add the sse nodes
     PCM.svg.selectAll(".sse")
+        .attr("data-node_id", function (d) {
+            return d.node_id;
+        })
         .append("path")
         .attr("d", d3.symbol()
             .size(function (d) {
@@ -3549,9 +3544,6 @@ function makePCM(helix, mi, ent_id) {
         }))
         .attr("class", function (d) {
             return d.data.secondary_structure;
-        })
-        .attr("data-node_id", function (d) {
-                return d.node_id;
         })
         .attr("data-com_id", function (d) {
             return PLOT_DATA.idMap[d.data.id];

@@ -1904,33 +1904,29 @@ $(document).ready(function(){
             .attr("transform", `rotate(${PCM.theta})`);
         PCM.svg.selectAll(".sse path")
             .attr("transform", `rotate(${-PCM.theta})`);
-        PCM.svg.select(".nodes")
-            .selectAll("text")
-            .attr("transform", function (d) {
-                return `rotate(${-PCM.theta}) scale(${PCM.label_scale})`;
+        let selection = PCM.svg.selectAll(".label")
+            .each(function(d) {
+                d.angle = -PCM.theta;
             });
-        PCM.svg.select(".nodes")
-            .selectAll("rect.handle")
-            .attr("transform", function (d) {
-                return `rotate(${-PCM.theta}) scale(${PCM.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
-            });
+        offsetLabelText(selection);
+        selection.attr("transform", updateLabelTransform);
     });
 
     // bind the label scale event
     $("#pcm_label_scale_slider").on('input', function () {
         if (!this.value) this.value = 0;
         PCM.label_scale = this.value;
+        for(let i = 0; i < PCM.node_data.length; i++) {
+            PCM.node_data[i].scale = this.value;
+        }
+        let selection = PCM.svg.selectAll(".label")
+            .each(function(d) {
+                d.scale = PCM.label_scale;
+            });
+        
+        offsetLabelText(selection);
+        selection.attr("transform", updateLabelTransform);
 
-        PCM.svg.select(".nodes")
-            .selectAll("text")
-            .attr("transform", function (d) {
-                return `rotate(${-PCM.theta}) scale(${PCM.label_scale})`;
-            });
-        PCM.svg.select(".nodes")
-            .selectAll("rect.handle")
-            .attr("transform", function (d) {
-                return `rotate(${-PCM.theta}) scale(${PCM.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
-            });
     });
     
     /* Asynchronously request DNAproDB data */
