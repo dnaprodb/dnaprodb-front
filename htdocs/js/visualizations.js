@@ -21,6 +21,8 @@ var LCM = {
     height: 800,
     scale: null,
     charge: -40,
+    reflectX: 1,
+    reflectY: 1,
     link_distance: {
         stack: 35,
         linkage: 50,
@@ -587,6 +589,10 @@ function makePlots(selection, colors) {
     
     /* Plot Linear Contact Map */
     LCM.svg = null;
+    LCM.reflectX = 1;
+    LCM.reflectY = 1;
+    LCM.theta = 0;
+    LCM.label_theta = 0;
     $("#lcm_grid_button").text("show grid");
     $("#lcm_legend_button").text("hide legend");
     $("#lcm_selected_button").text("hide selected components");
@@ -594,9 +600,9 @@ function makePlots(selection, colors) {
     $("#lcm_residues_button").prop("disabled", false);
     $("#lcm_selected_button").prop("disabled", false);
     $('input[type=radio][name="show_hbonds"]').val(["no"]);
-    $("#lcm_plot_rotation_slider").val(0);//trigger("input");
-    $("#lcm_label_rotation_slider").val(0);//trigger("input");
-    $("#lcm_label_scale_slider").val(1.0);//trigger("input");
+    $("#lcm_plot_rotation_slider").val(0);
+    $("#lcm_label_rotation_slider").val(0);
+    $("#lcm_label_scale_slider").val(1.0);
     makeLCM(PLOT_DATA.model, PLOT_DATA.dna_entity_id, INTERFACES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]);
 }
 
@@ -1846,7 +1852,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             } else {
                 n5 = node;
             }
-            offset = Math.PI/2;
+            offset = Math.PI/2*LCM.reflectX*LCM.reflectY;
         } else if ((node.data.id in PAIRS[mi]) && (PAIRS[mi][node.data.id].length == 1) && (LCM.layout_type == "radial")) {
             n5 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id1];
             n3 = LCM.node_lookup[PAIRS[mi][node.data.id][0].id2];
@@ -1859,13 +1865,15 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         dx = n5.x - n3.x;
         dy = n5.y - n3.y;
         theta = Math.atan2(dy, dx) + offset;
+        return 180 * theta / Math.PI;
+        
+        /*
         if (theta < 0) {
-            //return 360 + 180 * Math.atan2(dy, dx) / Math.PI;
-            return 360 + 180 * theta / Math.PI;
+            return 360 + 180 * theta / Math.PI;    
         } else {
-            //return 180 * Math.atan2(dy, dx) / Math.PI;
             return 180 * theta / Math.PI;
         }
+        */
     }
 
     function rotateAbout(cx, cy, x, y, theta) {

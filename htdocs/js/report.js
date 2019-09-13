@@ -1539,6 +1539,7 @@ $(document).ready(function(){
 
     // bind reflect x button event
     $("#lcm_reflectX_button").click(function () {
+        LCM.reflectX *= -1;
         LCM.simulation.stop();
         $.each(LCM.simulation.nodes(), function (i, d) {
             if (d.fx) d.fx += 2 * (LCM.cx - d.fx);
@@ -1551,6 +1552,7 @@ $(document).ready(function(){
 
     // bind reflect y button event
     $("#lcm_reflectY_button").click(function () {
+        LCM.reflectY *= -1;
         LCM.simulation.stop();
         $.each(LCM.simulation.nodes(), function (i, d) {
             if (d.fy) d.fy += 2 * (LCM.cy - d.fy);
