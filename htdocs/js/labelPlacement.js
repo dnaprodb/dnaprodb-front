@@ -39,7 +39,8 @@ onmessage = function (event) {
             node_id: nodes[i].node_id,
             width: event.data.xscale*labels[i].label.length,
             height: event.data.yscale,
-            scale: 1
+            scale: 1,
+            angle: 0
         });
         label_nodes.push({
             type: "anchor",

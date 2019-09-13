@@ -193,15 +193,6 @@ var tooltip = d3.select("body div.tooltip");
 function submitLabelInput () {
     let label = $("#label_input").val();
     if (label.trim().length > 0) {
-        //let id = PLOT_DATA.label_id;
-        //let mi = PLOT_DATA.model;
-        
-        /*
-        if (id in PLOT_DATA.labels[mi]) {
-            PLOT_DATA.labels[mi][id] = label;
-        } else {
-            PLOT_DATA.labels[id] = label;
-        }*/
         updateLabelText(PLOT_DATA.label_id, label);
     }
     /* finished - hide the input again */
@@ -710,7 +701,7 @@ function updateResLabels(lookup, format, chain, label_type, offset) {
                     break;
             }
         }
-        updateLabel(`.${label_type}[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, label);
+        updateLabelText(`.${label_type}[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, label);
     }
 }
 
@@ -759,7 +750,7 @@ function updateSSELabels(lookup, format, chain, mi, label_type) {
             }
         }
         if (lookup[mi][id].include) {
-            updateLabel(`.${label_type}[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, label, mi);
+            updateLabelText(`.${label_type}[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, label, mi);
         } else {
             PLOT_DATA.labels[mi][id] = label;
         }
@@ -801,7 +792,7 @@ function updateLabelTransform(d) {
     }
     switch (d.node.plot_type) {
             case 'LCM':
-                return `translate(${d.x}, ${d.y}) rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${d.scale})`;
+                return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
                 break;
             case 'PCM':
                 return `translate(${d.x}, ${d.y}) rotate(${-PCM.theta}) scale(${d.scale})`;
@@ -816,21 +807,8 @@ function updateLabelText(com_id, label) {
     /* 
     This function updates multiple labels corresponding to the same 
     com_id with a given label and adjusts their positions by calling
-    offset labels
+    offsetLabelText
     */
-    /*
-    $(`${selector} text`).text(label);
-    let rects = $(`${selector} rect.handle`);
-    if(rects.length) {
-        rects.each(function(i) {
-            $(this).attr("width", PLOT_DATA.label_font.xscale*label.length);
-            let t = $(this).attr("transform");
-            $(this).attr("transform", t.replace(
-                /translate\([0-9\.,+-\s]+\)/,
-                `translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`
-            ));
-        });
-    }*/
     let selection = d3.selectAll(`.label[data-com_id="${PLOT_DATA.idMap[com_id]}"]`);
     // update the text
     selection.selectAll("text").text(label);
@@ -853,11 +831,7 @@ function updateLabelText(com_id, label) {
     // offset labels since the label length has changed
     offsetLabelText(selection);
     selection.attr("transform", updateLabelTransform);
-    /*
-    selection.attr("transform", function (d) {
-        return `scale(${d.scale}) translate(${d.x}, ${d.y})`;
-    })
-    */
+
     
     // update the label value in PLOT_DATA.labels
     let mi = PLOT_DATA.model;
@@ -870,16 +844,15 @@ function updateLabelText(com_id, label) {
 
 function offsetLabelText(selection) {
     /*
-    selection is a d3.js selection of label nodes. This function
-    applies translate transforms to the children of a g.label 
-    element to offset the text and rectangle drag handle
-    to account for the length of the label text
+    selection is a d3.js selection of label nodes. This function offsets a label
+    group when the label size or orientation changes to avoid overlapping its
+    parent node
     */
-    
+
     function dot(u, v) {
         return u[0] * v[0] + u[1] * v[1];
     }
-    
+
     function distance(u, v) {
         let d = subtractPoints(u, v);
         return Math.sqrt(dot(d, d));
@@ -900,52 +873,52 @@ function offsetLabelText(selection) {
                 points[i][0] * Math.sin(angle) + points[i][1] * Math.cos(angle) + center[1]
             ]);
         }
-        
+
         let edges = [];
         for (let i = 0; i < points_r.length; i++) {
             edges.push([points_r[i], points_r[(i + 1) % points_r.length]]);
         }
         return edges;
     }
-    
+
     function cross2D(u, v) {
         return u[0] * v[1] - u[1] * v[0];
     }
-    
+
     function subtractPoints(u, v) {
         return [u[0] - v[0], u[1] - v[1]];
     }
 
-   function equalPoints(u, v) {
-       return u[0] == v[0] && u[1] == v[1];
-   }
+    function equalPoints(u, v) {
+        return u[0] == v[0] && u[1] == v[1];
+    }
 
-   function edgeIntersection(edge1, edge2) {
-       let d1 = subtractPoints(edge1[1], edge1[0]);
-       let d2 = subtractPoints(edge2[1], edge2[0]);
+    function edgeIntersection(edge1, edge2) {
+        let d1 = subtractPoints(edge1[1], edge1[0]);
+        let d2 = subtractPoints(edge2[1], edge2[0]);
 
-       let uNumerator = cross2D(subtractPoints(edge2[0], edge1[0]), d1);
-       let denominator = cross2D(d1, d2);
+        let uNumerator = cross2D(subtractPoints(edge2[0], edge1[0]), d1);
+        let denominator = cross2D(d1, d2);
 
-       if (uNumerator == 0 && denominator == 0) {
-           // They are coLlinear
+        if (uNumerator == 0 && denominator == 0) {
+            // They are coLlinear
 
-           // Do they touch? (Are any of the points equal?)
-           if (equalPoints(edge1[0], edge2[0])) {
-               return edge1[0];
-           }
-           if (equalPoints(edge1[0], edge2[1])) {
-               return edge1[0];
-           }
-           if (equalPoints(edge1[1], edge2[0])) {
-               return edge1[1];
-           }
-           if (equalPoints(edge1[1], edge2[1])) {
-               return edge1[1];
-           }
+            // Do they touch? (Are any of the points equal?)
+            if (equalPoints(edge1[0], edge2[0])) {
+                return edge1[0];
+            }
+            if (equalPoints(edge1[0], edge2[1])) {
+                return edge1[0];
+            }
+            if (equalPoints(edge1[1], edge2[0])) {
+                return edge1[1];
+            }
+            if (equalPoints(edge1[1], edge2[1])) {
+                return edge1[1];
+            }
 
-           // We explicity ignore overlaps for now
-           /*
+            // We explicity ignore overlaps for now
+            /*
                 return !allEqual(
 				    (q.x - p.x < 0),
 				    (q.x - p2.x < 0),
@@ -959,182 +932,181 @@ function offsetLabelText(selection) {
 				    (q2.y - p2.y < 0)
                 );
                 */
-           return false;
-       }
-
-       if (denominator == 0) {
-           // lines are paralell
-           return false;
-       }
-
-       let t2 = uNumerator / denominator;
-       let t1 = cross2D(subtractPoints(edge2[0], edge1[0]), d2) / denominator;
-
-       if ((t1 >= 0) && (t1 <= 1) && (t2 >= 0) && (t2 <= 1)) {
-           return [edge1[0][0] + t1 * d1[0], edge1[0][1] + t1 * d1[1]];
-       } else {
-           return false;
-       }
-   }
-
-   function segmentDistance(seg1, seg2, u, measure="max") {
-            /* Find the maximum distance between seg1 and seg2 along
-            the direction given by u. We only need to check the end 
-            points of the segments */
-            
-            function _solve(t, A1, C1, A2, C2, u) {
-                /* solves the following system of equations for d and s
-                    A1x + t*C1x + d*ux = A2x + s*C2x
-                    A1y + t*C1y + d*uy = A2y + s*C2y
-                */
-                let d, s;
-                let x1 = A1[0] + t*C1[0];
-                let y1 = A1[1] + t*C1[1];
-                if (u[0] != 0 && (C2[1] - C2[0]*u[1]/u[0]) != 0) {
-                    s = (y1 - A2[1] + (A2[0]-x1)*u[1]/u[0])/(C2[1] - C2[0]*u[1]/u[0]);
-                    d = (A2[0] + s*C2[0] - x1)/u[0];
-                    
-                    return [d, s];
-                } else if (u[1] != 0 && (C2[0] - u[0]*C2[1]/u[1]) != 0) {
-                    s = (x1 - A2[0] + (A2[1]-y1)*u[0]/u[1])/(C2[0] - C2[1]*u[0]/u[1]);
-                    d = (A2[1] + s*C2[1] - ay)/u[1];
-                    
-                    return [d, s];
-                } else {
-                    return [0, 0]; // no solution possible
-                }
-            }
-            
-            let found = false;
-            let dist, solution, C1, C2;
-            
-            if(measure == 'max') {
-                dist = 0;
-            } else {
-                dist = 99999;
-            }
-            
-            C1 = subtractPoints(seg1[1], seg1[0]);
-            C2 = subtractPoints(seg2[1], seg2[0]);
-            // t = 0:
-            solution = _solve(0, seg1[0], C1, seg2[0], C2, u);
-            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
-                if(measure == 'max') {
-                    dist = Math.max(dist, solution[0]);
-                } else {
-                    dist = Math.min(dist, solution[0]);
-                }
-                found = true;
-            }
-            
-            // t = 0.25:
-            solution = _solve(0.25, seg1[0], C1, seg2[0], C2, u);
-            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
-                if(measure == 'max') {
-                    dist = Math.max(dist, solution[0]);
-                } else {
-                    dist = Math.min(dist, solution[0]);
-                }
-                found = true;
-            }
-            
-            // t = 0.5:
-            solution = _solve(0.5, seg1[0], C1, seg2[0], C2, u);
-            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
-                if(measure == 'max') {
-                    dist = Math.max(dist, solution[0]);
-                } else {
-                    dist = Math.min(dist, solution[0]);
-                }
-                found = true;
-            }
-            
-            // t = 0.75:
-            solution = _solve(0.75, seg1[0], C1, seg2[0], C2, u);
-            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
-                if(measure == 'max') {
-                    dist = Math.max(dist, solution[0]);
-                } else {
-                    dist = Math.min(dist, solution[0]);
-                }
-                found = true;
-            }
-            
-            // t = 1:
-            solution = _solve(1, seg1[0], C1, seg2[0], C2, u);
-            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
-                if(measure == 'max') {
-                    dist = Math.max(dist, solution[0]);
-                } else {
-                    dist = Math.min(dist, solution[0]);
-                }
-                found = true;
-            }
-
-            return found ?  dist :  -1;
+            return false;
         }
 
-   function pointInterior(point, edges) {
-       let x = point[0],
-           y = point[1];
+        if (denominator == 0) {
+            // lines are paralell
+            return false;
+        }
 
-       let inside = false;
-       let xi, xj, yi, yj, intersect;
-       for (let i = 0; i < edges.length; i++) {
-           xi = edges[i][0][0], yi = edges[i][0][1];
-           xj = edges[i][1][0], yj = edges[i][1][1];
+        let t2 = uNumerator / denominator;
+        let t1 = cross2D(subtractPoints(edge2[0], edge1[0]), d2) / denominator;
 
-           intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
-           if (intersect) inside = !inside;
-       }
+        if ((t1 >= 0) && (t1 <= 1) && (t2 >= 0) && (t2 <= 1)) {
+            return [edge1[0][0] + t1 * d1[0], edge1[0][1] + t1 * d1[1]];
+        } else {
+            return false;
+        }
+    }
 
-       return inside;
-   }
+    function segmentDistance(seg1, seg2, u, measure = "max") {
+        /* Find the maximum distance between seg1 and seg2 along
+        the direction given by u. We only need to check the end 
+        points of the segments */
 
-   function overlapBoundaryEdges(edges1, edges2, boundary) {
-       // Find all edges from edges1 that intersect edges from edges2
-       var boundaryEdgeIndices = [];
-       for (let i = 0; i < edges1.length; i++) {
-           let segment = []; // portion of current line segement that contributes to the boundary of overlap
-           if (pointInterior(edges1[i][0], edges2)) {
-               segment.push(edges1[i][0]);
-           }
-           if (pointInterior(edges1[i][1], edges2)) {
-               segment.push(edges1[i][1]);
-           }
+        function _solve(t, A1, C1, A2, C2, u) {
+            /* solves the following system of equations for d and s
+                A1x + t*C1x + d*ux = A2x + s*C2x
+                A1y + t*C1y + d*uy = A2y + s*C2y
+            */
+            let d, s;
+            let x1 = A1[0] + t * C1[0];
+            let y1 = A1[1] + t * C1[1];
+            if (u[0] != 0 && (C2[1] - C2[0] * u[1] / u[0]) != 0) {
+                s = (y1 - A2[1] + (A2[0] - x1) * u[1] / u[0]) / (C2[1] - C2[0] * u[1] / u[0]);
+                d = (A2[0] + s * C2[0] - x1) / u[0];
 
-           // check for intersections between edges
-           for (let j = 0; j < edges2.length; j++) {
-               let p = edgeIntersection(edges1[i], edges2[j]);
-               if (p) {
-                   segment.push(p);
-               }
-           }
+                return [d, s];
+            } else if (u[1] != 0 && (C2[0] - u[0] * C2[1] / u[1]) != 0) {
+                s = (x1 - A2[0] + (A2[1] - y1) * u[0] / u[1]) / (C2[0] - C2[1] * u[0] / u[1]);
+                d = (A2[1] + s * C2[1] - ay) / u[1];
 
-           // add a boundary edge segment if we have exactly two points of intersection
-           if (segment.length == 2) {
-               boundary.push(segment);
-               boundaryEdgeIndices.push(boundary.length - 1);
-           }
-       }
+                return [d, s];
+            } else {
+                return [0, 0]; // no solution possible
+            }
+        }
 
-       return boundaryEdgeIndices;
-   }
-    
-    selection.each(function(d) {
+        let found = false;
+        let dist, solution, C1, C2;
+
+        if (measure == 'max') {
+            dist = 0;
+        } else {
+            dist = 99999;
+        }
+
+        C1 = subtractPoints(seg1[1], seg1[0]);
+        C2 = subtractPoints(seg2[1], seg2[0]);
+        // t = 0:
+        solution = _solve(0, seg1[0], C1, seg2[0], C2, u);
+        if ((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+            if (measure == 'max') {
+                dist = Math.max(dist, solution[0]);
+            } else {
+                dist = Math.min(dist, solution[0]);
+            }
+            found = true;
+        }
+
+        // t = 0.25:
+        solution = _solve(0.25, seg1[0], C1, seg2[0], C2, u);
+        if ((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+            if (measure == 'max') {
+                dist = Math.max(dist, solution[0]);
+            } else {
+                dist = Math.min(dist, solution[0]);
+            }
+            found = true;
+        }
+
+        // t = 0.5:
+        solution = _solve(0.5, seg1[0], C1, seg2[0], C2, u);
+        if ((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+            if (measure == 'max') {
+                dist = Math.max(dist, solution[0]);
+            } else {
+                dist = Math.min(dist, solution[0]);
+            }
+            found = true;
+        }
+
+        // t = 0.75:
+        solution = _solve(0.75, seg1[0], C1, seg2[0], C2, u);
+        if ((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+            if (measure == 'max') {
+                dist = Math.max(dist, solution[0]);
+            } else {
+                dist = Math.min(dist, solution[0]);
+            }
+            found = true;
+        }
+
+        // t = 1:
+        solution = _solve(1, seg1[0], C1, seg2[0], C2, u);
+        if ((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+            if (measure == 'max') {
+                dist = Math.max(dist, solution[0]);
+            } else {
+                dist = Math.min(dist, solution[0]);
+            }
+            found = true;
+        }
+
+        return found ? dist : -1;
+    }
+
+    function pointInterior(point, edges) {
+        let x = point[0],
+            y = point[1];
+
+        let inside = false;
+        let xi, xj, yi, yj, intersect;
+        for (let i = 0; i < edges.length; i++) {
+            xi = edges[i][0][0], yi = edges[i][0][1];
+            xj = edges[i][1][0], yj = edges[i][1][1];
+
+            intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+            if (intersect) inside = !inside;
+        }
+
+        return inside;
+    }
+
+    function overlapBoundaryEdges(edges1, edges2, boundary) {
+        // Find all edges from edges1 that intersect edges from edges2
+        var boundaryEdgeIndices = [];
+        for (let i = 0; i < edges1.length; i++) {
+            let segment = []; // portion of current line segement that contributes to the boundary of overlap
+            if (pointInterior(edges1[i][0], edges2)) {
+                segment.push(edges1[i][0]);
+            }
+            if (pointInterior(edges1[i][1], edges2)) {
+                segment.push(edges1[i][1]);
+            }
+
+            // check for intersections between edges
+            for (let j = 0; j < edges2.length; j++) {
+                let p = edgeIntersection(edges1[i], edges2[j]);
+                if (p) {
+                    segment.push(p);
+                }
+            }
+
+            // add a boundary edge segment if we have exactly two points of intersection
+            if (segment.length == 2) {
+                boundary.push(segment);
+                boundaryEdgeIndices.push(boundary.length - 1);
+            }
+        }
+
+        return boundaryEdgeIndices;
+    }
+    selection.each(function (d) {
         let node;
         switch (d.node.plot_type) {
-            case 'LCM':
-                node = LCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
-                break;
-            case 'PCM':
-                node = PCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
-                break;
-            case 'SOP':
-                node = SOP.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
-                break;
+        case 'LCM':
+            node = LCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+            break;
+        case 'PCM':
+            node = PCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+            break;
+        case 'SOP':
+            node = SOP.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+            break;
         }
-        
+
         // get node and label bounding boxes
         let node_box = node.node().getBoundingClientRect();
         let node_data = node.datum();
@@ -1144,15 +1116,15 @@ function offsetLabelText(selection) {
         T[0] /= distance(pLabel, pNode);
         T[1] /= distance(pLabel, pNode);
         let Tminus = [-T[0], -T[1]];
-        
+
         let nodeEdges = getRectEdges(pNode, node_box.width, node_box.height, 0);
-        let labelEdges = getRectEdges(pLabel, d.width*d.scale, d.height*d.scale, 0);
-        
+        let labelEdges = getRectEdges(pLabel, d.width * d.scale, d.height * d.scale, 0);
+
         // compute overlap
         let overlapBoundary = [];
         let edgesIndNode = overlapBoundaryEdges(nodeEdges, labelEdges, overlapBoundary);
         let edgesIndLabel = overlapBoundaryEdges(labelEdges, nodeEdges, overlapBoundary);
-        
+
         if (overlapBoundary.length > 2) {
             let max_distance = 0;
             for (let i = 0; i < edgesIndLabel.length; i++) {
@@ -1174,7 +1146,7 @@ function offsetLabelText(selection) {
             for (let i = 0; i < nodeEdges.length; i++) {
                 for (let j = 0; j < labelEdges.length; j++) {
                     dist = segmentDistance(nodeEdges[i], labelEdges[j], T, "min");
-                    if(dist > 0) {
+                    if (dist > 0) {
                         min_distance = Math.min(min_distance, dist);
                     }
                 }
@@ -1182,7 +1154,7 @@ function offsetLabelText(selection) {
             for (let i = 0; i < labelEdges.length; i++) {
                 for (let j = 0; j < nodeEdges.length; j++) {
                     dist = segmentDistance(labelEdges[i], nodeEdges[j], Tminus, "min");
-                    if(dist > 0) {
+                    if (dist > 0) {
                         min_distance = Math.min(min_distance, dist);
                     }
                 }
@@ -1341,32 +1313,6 @@ function hexToRGB(hex, scale=false) {
             g: parseInt(result[2], 16),
             b: parseInt(result[3], 16)
         } : null;   
-    }
-}
-
-function transformTextLCM(d) {
-    /*
-    this function is used to re-apply text and rectangle transforms as the 
-    force-layout ticks or the scale/rotation changes
-    */
-    //console.log(d);
-    //console.log(this);
-    if (d.type == "nucleotide") {
-        return `rotate(${-d.angle}) rotate(${-LCM.theta}) scale(${LCM.label_scale})`;
-    } else {
-        //this.setAttribute('transform', `translate(${d.x}, ${d.y}) rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${d.scale})`);
-        /*
-        this.childNodes[0].setAttribute('transform', `rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${LCM.label_scale})`);
-        let r = this.childNodes[1];
-        r.setAttribute('transform', 
-                       `rotate(${-LCM.theta}) ` + 
-                       `rotate(${LCM.label_theta}) ` + 
-                       `scale(${LCM.label_scale}) ` +
-                       `translate(${-r.getAttribute("width")/2}, ${-r.getAttribute("height")/2})`
-        );
-        return `translate(${d.x}, ${d.y})`;
-        */
-        return `translate(${d.x}, ${d.y}) rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${d.scale})`;
     }
 }
 
@@ -2799,10 +2745,10 @@ function makeLCM(mi, dna_entity_id, interfaces) {
 
         // apply text transforms
         g_nodes.selectAll("text")
-            .attr("transform", transformTextLCM);
+            .attr("transform", updateLabelTransform);
         
         g_labels.selectAll(".label")
-            .attr("transform", transformTextLCM);
+            .attr("transform", updateLabelTransform);
         
         // update lines
         g_lines.attr("x1", function (d) {

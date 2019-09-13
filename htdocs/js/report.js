@@ -1568,10 +1568,12 @@ $(document).ready(function(){
         if(LCM.svg) {
             LCM.svg.select(".rotate")
                 .attr("transform", `rotate(${LCM.theta}, ${LCM.cx}, ${LCM.cy})`);
-
             LCM.svg.selectAll(".nodes text")
                 .attr("transform", updateLabelTransform);
             LCM.svg.selectAll(".label")
+                .each(function (d) {
+                    d.angle = LCM.label_theta-LCM.theta;
+                })
                 .attr("transform", updateLabelTransform);
             LCM.svg.selectAll(".residue path")
                 .attr("transform", `rotate(${-LCM.theta})`);
@@ -1586,47 +1588,31 @@ $(document).ready(function(){
         if(LCM.svg) {
             LCM.svg.selectAll(".nodes text")
                 .attr("transform", updateLabelTransform);
-            LCM.svg.selectAll(".label")
-                .attr("transform", updateLabelTransform);
+            
+            let selection = LCM.svg.selectAll(".label")
+                .each(function(d) {
+                    d.angle = LCM.label_theta-LCM.theta;
+                });
+            offsetLabelText(selection);
+            selection.attr("transform", updateLabelTransform);
         }
     });
 
     // bind label scale range event
     $("#lcm_label_scale_slider").on('input', function () {
-        //if (!this.value) this.value = 0;
-        //LCM.label_scale = this.value;
-        
         if (!this.value) this.value = 0;
         LCM.label_scale = this.value;
         for(let i = 0; i < LCM.node_data.length; i++) {
             LCM.node_data[i].scale = this.value;
         }
         
-        /*
-        if(LCM.svg) {
-            LCM.svg.selectAll(".nodes text")
-                .attr("transform", transformTextLCM);
-            LCM.svg.selectAll(".label")
-                .attr("transform", transformTextLCM);
-        }
-        */
         let selection = LCM.svg.selectAll(".label")
             .each(function(d) {
                 d.scale = LCM.label_scale;
-            })
-            .attr("transform", updateLabelTransform);
-            /*
-            .attr("transform", function(d) {
-                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-        });
-        */
+            });
         offsetLabelText(selection);
-        /*
-        selection.attr("transform", function(d) {
-                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-        });
-        */
         selection.attr("transform", updateLabelTransform);
+        LCM.svg.selectAll(".nodes text").attr("transform", updateLabelTransform);
     });
 
     // bind hide/show legend button event
@@ -1835,37 +1821,13 @@ $(document).ready(function(){
         for(let i = 0; i < SOP.node_data.length; i++) {
             SOP.node_data[i].scale = this.value;
         }
-        /*
-        SOP.svg.select(".labels")
-            .selectAll("text")
-            .attr("transform", function (d) {
-                return `scale(${SOP.label_scale})`;
-            });
-
-        SOP.svg.select(".labels")
-            .selectAll("rect.handle")
-            .attr("transform", function (d) {
-                return `scale(${SOP.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
-            });
-        */
-        
         let selection = SOP.svg.selectAll(".label")
             .each(function(d) {
                 d.scale = SOP.label_scale;
-            })
-            .attr("transform", updateLabelTransform);
-        /*
-            .attr("transform", function(d) {
-                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-        });
-        */
+            });
+        
         offsetLabelText(selection);
         selection.attr("transform", updateLabelTransform);
-        /*
-        selection.attr("transform", function(d) {
-                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-        });
-        */
     });
 
     // bind hide/show residues button event 
