@@ -24,7 +24,8 @@
     <link rel="stylesheet" href="/css/main.css?v=1488920049">
     <link rel="stylesheet" href="/css/report.css?v=1498001111">
     <link rel="stylesheet" href="/css/big-json-viewer.css?v=1">
-
+    
+    <!-- Other stuff -->
     <link rel="apple-touch-icon" sizes="57x57" href="/fav.ico/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/fav.ico/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/fav.ico/apple-icon-72x72.png">
@@ -57,16 +58,19 @@
             <div class="col-xl-5 col-lg-12" style="padding-right:20px; border-right: 1px solid rgba(0, 0, 0, 0.1);">
                 <ul class="nav nav-tabs my-2">
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#viewer">3D Structure Viewer</a>
+                        <a class="nav-link active" data-toggle="tab" href="#viewer"><i class="fa fa-cubes" aria-hidden="true"></i>
+ 3D Viewer</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#interface_select">Interface Selection</a>
+                        <a class="nav-link" data-toggle="tab" href="#interface_select"><i class="fa fa-sliders" aria-hidden="true"></i> Interface Selection</a>
                     </li>
                     <li class="nav-item">
-                        <a id="chart_controls_link" class="nav-link" data-toggle="tab" href="#console">Chart Controls</a>
+                        <a id="chart_controls_link" class="nav-link" data-toggle="tab" href="#console"><i class="fa fa-cog" aria-hidden="true"></i>
+ Chart Controls</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#explorer">Data Explorer</a>
+                        <a class="nav-link" data-toggle="tab" href="#explorer"><i class="fa fa-binoculars" aria-hidden="true"></i>
+ Data Explorer</a>
                     </li>
                 </ul>
                 <div class="tab-content">
@@ -931,7 +935,7 @@
         </div>
         <svg class="hidden_svg">
             <g class="label">
-                <text id="test_text">ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</text>
+                <text id="test_text">abcdefghijklmnopqrstuvwxyz0123456789</text>
             </g>
         </svg>
         <div class="card hidden_label_input" id="label_input_div">

@@ -431,7 +431,7 @@ function dataItemUpdate(val) {
             $("#data_item_label").html('enter protein chain ID (single character)');
             break;
         default:
-            $("#data_item_label").html('to search for a data item use the select below');
+            $("#data_item_label").html('to search for a data item use the inputs below');
             $('#data_item_search_button').prop("disabled", true);
             break;
     }
@@ -1203,6 +1203,7 @@ function updateSelection(mi, dna_id, pro_chains) {
     
     // reset various UI elements
     $("#cartoon_toggle_button").text("Hide Cartoon");
+    $("#label_input_div").css("visibility", "hidden");
     
     /* Show current selection */
     $("#current_model").text(SELECTION.model);
@@ -1295,12 +1296,12 @@ var JSON_VIEWER = {
 }
 
 // Resize NGL viewer whenever window is resized
-var resizeTimer;
+var RESIZE_TIMER;
 $(window).resize(function () {
-    if(resizeTimer){
-        clearTimeout(resizeTimer);
+    if(RESIZE_TIMER){
+        clearTimeout(RESIZE_TIMER);
     }
-    resizeTimer = setTimeout(stage_nm1.handleResize(), 200);
+    RESIZE_TIMER = setTimeout(stage_nm1.handleResize(), 200);
 });
 
 // Begin when page is ready
@@ -1405,7 +1406,7 @@ $(document).ready(function(){
     /*** reset UI elements ***/
     $('#data_item_select').val("");
     $('#data_item_search_button').prop("disabled", true);
-    $("#data_item_label").html('to search for a data item use the select below');
+    $("#data_item_label").html('to search for a data item use the inputs below');
     $("#data_search_error").text("");
     
     /* Set up interface select controls */
@@ -1469,19 +1470,15 @@ $(document).ready(function(){
     });
 
     $("#label_input_cancel_button").click(function () {
-        d3.select("#label_input_div")
-            .style("opacity", 0)
-            .style("right", null)
-            .style("top", null)
-            .style("bottom", null)
-            .style("left", null);
+        $("#label_input_div").css("visibility", "hidden");
+
     });
 
-    $("#label_input_submit_button").click(labelInputSubmit);
+    $("#label_input_submit_button").click(submitLabelInput);
 
     $("#label_input").on('keyup', function (e) {
         if (e.keyCode == 13) {
-            labelInputSubmit();
+            submitLabelInput();
         }
     });
 
@@ -1573,9 +1570,9 @@ $(document).ready(function(){
                 .attr("transform", `rotate(${LCM.theta}, ${LCM.cx}, ${LCM.cy})`);
 
             LCM.svg.selectAll(".nodes text")
-                .attr("transform", transformTextLCM);
+                .attr("transform", updateLabelTransform);
             LCM.svg.selectAll(".label")
-                .attr("transform", transformTextLCM);
+                .attr("transform", updateLabelTransform);
             LCM.svg.selectAll(".residue path")
                 .attr("transform", `rotate(${-LCM.theta})`);
         }
@@ -1588,23 +1585,48 @@ $(document).ready(function(){
         
         if(LCM.svg) {
             LCM.svg.selectAll(".nodes text")
-                .attr("transform", transformTextLCM);
+                .attr("transform", updateLabelTransform);
             LCM.svg.selectAll(".label")
-                .attr("transform", transformTextLCM);
+                .attr("transform", updateLabelTransform);
         }
     });
 
     // bind label scale range event
     $("#lcm_label_scale_slider").on('input', function () {
+        //if (!this.value) this.value = 0;
+        //LCM.label_scale = this.value;
+        
         if (!this.value) this.value = 0;
         LCM.label_scale = this.value;
+        for(let i = 0; i < LCM.node_data.length; i++) {
+            LCM.node_data[i].scale = this.value;
+        }
         
+        /*
         if(LCM.svg) {
             LCM.svg.selectAll(".nodes text")
                 .attr("transform", transformTextLCM);
             LCM.svg.selectAll(".label")
                 .attr("transform", transformTextLCM);
         }
+        */
+        let selection = LCM.svg.selectAll(".label")
+            .each(function(d) {
+                d.scale = LCM.label_scale;
+            })
+            .attr("transform", updateLabelTransform);
+            /*
+            .attr("transform", function(d) {
+                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+        });
+        */
+        offsetLabelText(selection);
+        /*
+        selection.attr("transform", function(d) {
+                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+        });
+        */
+        selection.attr("transform", updateLabelTransform);
     });
 
     // bind hide/show legend button event
@@ -1810,7 +1832,10 @@ $(document).ready(function(){
     $("#sop_label_scale_slider").on('input', function () {
         if (!this.value) this.value = 0;
         SOP.label_scale = this.value;
-
+        for(let i = 0; i < SOP.node_data.length; i++) {
+            SOP.node_data[i].scale = this.value;
+        }
+        /*
         SOP.svg.select(".labels")
             .selectAll("text")
             .attr("transform", function (d) {
@@ -1822,6 +1847,25 @@ $(document).ready(function(){
             .attr("transform", function (d) {
                 return `scale(${SOP.label_scale}) translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`;
             });
+        */
+        
+        let selection = SOP.svg.selectAll(".label")
+            .each(function(d) {
+                d.scale = SOP.label_scale;
+            })
+            .attr("transform", updateLabelTransform);
+        /*
+            .attr("transform", function(d) {
+                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+        });
+        */
+        offsetLabelText(selection);
+        selection.attr("transform", updateLabelTransform);
+        /*
+        selection.attr("transform", function(d) {
+                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+        });
+        */
     });
 
     // bind hide/show residues button event 

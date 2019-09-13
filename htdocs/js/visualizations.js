@@ -51,7 +51,7 @@ var LCM = {
     label_scale: 1.0,
     simulation: null,
     svg: null,
-    residue_padding: 15.0,
+    residue_padding: 18.0,
     hidden_elements: [],
     visifyComponents: function(val) {
         for (let i = 0; i < this.hidden_elements.length; i++) {
@@ -64,7 +64,8 @@ var LCM = {
                 });
         }
     },
-    layout_type: "radial"
+    layout_type: "radial",
+    node_data: null
 };
 
 /* PCM parameters */
@@ -189,33 +190,30 @@ var PLOT_DATA = {
 /* add a container for tooltips */
 var tooltip = d3.select("body div.tooltip");
 
-function labelInputSubmit (id, mi) {
-    var text = $("#label_input").val();
-    if (text.trim().length > 0) {
-        var id = PLOT_DATA.label_id;
-        var mi = PLOT_DATA.model;
+function submitLabelInput () {
+    let label = $("#label_input").val();
+    if (label.trim().length > 0) {
+        //let id = PLOT_DATA.label_id;
+        //let mi = PLOT_DATA.model;
         
-        if(id in PLOT_DATA.labels[mi]){
-            PLOT_DATA.labels[mi][id] = text;
+        /*
+        if (id in PLOT_DATA.labels[mi]) {
+            PLOT_DATA.labels[mi][id] = label;
         } else {
-            PLOT_DATA.labels[id] = text;
-        }
-        updateLabel(`.label[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, text);
+            PLOT_DATA.labels[id] = label;
+        }*/
+        updateLabelText(PLOT_DATA.label_id, label);
     }
     /* finished - hide the input again */
-    d3.select("#label_input_div")
-        .style("opacity", 0)
-        .style("right", null)
-        .style("top", null)
-        .style("bottom", null)
-        .style("left", null);
+    $("#label_input_div").css("visibility", "hidden");
 }
 
-function labelInputShow(d) {
+function showLabelInput(d) {
+    // initialize the label input window
     $("#label_input").val("");
     d3.event.stopPropagation();
-    var div = d3.select("#label_input_div");
-    var xy = d3.mouse(d3.event.target.farthestViewportElement);
+    let div = d3.select("#label_input_div");
+    let xy = d3.mouse(d3.event.target.farthestViewportElement);
     
     // set horizontal position of input window
     if(xy[0] <= $(d3.event.target.farthestViewportElement).attr("width")/2) {
@@ -235,24 +233,14 @@ function labelInputShow(d) {
         div.style("top", null);
     }
     
+    // text input placeholder
+    $("#label_input").attr("placeholder", d.text);
     
-    
-    var text = $(this).siblings("text").text();
-    $("#label_input").attr("placeholder", text);
-    
-    //console.log(d);
-    /*
-    if(d.res_id) {
-        PLOT_DATA.label_id = d.res_id;
-    } else if (d.sse_id ) {
-        PLOT_DATA.label_id = d.sse_id;
-    }
-    */
-    PLOT_DATA.label_id = d.parent_id;
-    div.style("opacity", 1);
+    PLOT_DATA.label_id = d.com_id;
+    div.style("visibility", "visible");
 }
 
-function toolTipIn(d) {
+function showToolTip(d) {
     /* check if tooltips on */
     if(PLOT_DATA.tooltips == "off") {
         return;
@@ -314,7 +302,7 @@ function toolTipIn(d) {
         case "sse":
             ss = d.data.secondary_structure;
             if(ss == "L") {
-                toolTipIn({
+                showToolTip({
                     type: "residue",
                     data: RESIDUES[d.data.id]
                 });
@@ -437,7 +425,7 @@ function toolTipIn(d) {
         .style("opacity", 1.0);
 }
 
-function toolTipOut() {
+function hideToolTip() {
     tooltip.transition()
         .duration(200)
         .style("opacity", 0);
@@ -603,7 +591,7 @@ function makePlots(selection, colors) {
         }
         $("#pcm_helix_select").append(opts);
         
-        makePCM(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], PLOT_DATA.model, PLOT_DATA.dna_entity_id);
+        //makePCM(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], PLOT_DATA.model, PLOT_DATA.dna_entity_id);
     }
     
     /* Plot Linear Contact Map */
@@ -615,16 +603,10 @@ function makePlots(selection, colors) {
     $("#lcm_residues_button").prop("disabled", false);
     $("#lcm_selected_button").prop("disabled", false);
     $('input[type=radio][name="show_hbonds"]').val(["no"]);
-    $("#lcm_plot_rotation_slider").val(0).trigger("input");
-    $("#lcm_label_rotation_slider").val(0).trigger("input");
-    $("#lcm_label_scale_slider").val(1.0).trigger("input");
+    $("#lcm_plot_rotation_slider").val(0);//trigger("input");
+    $("#lcm_label_rotation_slider").val(0);//trigger("input");
+    $("#lcm_label_scale_slider").val(1.0);//trigger("input");
     makeLCM(PLOT_DATA.model, PLOT_DATA.dna_entity_id, INTERFACES[PLOT_DATA.model][PLOT_DATA.dna_entity_id]);
-}
-
-function labelOptionClick(e) {
-    let button = $(e).parent().siblings('button');
-    button.attr("data-value", $(e).attr("data-value"));
-    button.text($(e).attr("data-placeholder"));
 }
 
 function applyLabelFormats() {
@@ -784,26 +766,6 @@ function updateSSELabels(lookup, format, chain, mi, label_type) {
     }
 }
 
-function updateLabel(selector, id, label, mi) {
-    $(`${selector} text`).text(label);
-    let rects = $(`${selector} rect.handle`);
-    if(rects.length) {
-        rects.each(function(i) {
-            $(this).attr("width", PLOT_DATA.label_font.xscale*label.length);
-            let t = $(this).attr("transform");
-            $(this).attr("transform", t.replace(
-                /translate\([0-9\.,+-\s]+\)/,
-                `translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`
-            ));
-        });
-    }
-    if (mi) {
-        PLOT_DATA.labels[mi][id] = label;
-    } else {
-        PLOT_DATA.labels[id] = label;
-    }
-}
-
 function resetLabels() {
     // set nucleotide labels
     for (let i = 0; i < DATA.dna.nucleotides.length; i++) {
@@ -833,87 +795,475 @@ function resetLabels() {
     }
 }
 
-function transformTextLCM(d) {
+function updateLabelTransform(d) {
     if (d.type == "nucleotide") {
         return `rotate(${-d.angle}) rotate(${-LCM.theta}) scale(${LCM.label_scale})`;
-    } else {
-        this.childNodes[0].setAttribute('transform', `rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${LCM.label_scale})`);
-        let r = this.childNodes[1];
-        r.setAttribute('transform', 
-                       `rotate(${-LCM.theta}) ` + 
-                       `rotate(${LCM.label_theta}) ` + 
-                       `scale(${LCM.label_scale}) ` +
-                       `translate(${-r.getAttribute("width")/2}, ${-r.getAttribute("height")/2})`
-        );
-        return `translate(${d.x}, ${d.y})`;
+    }
+    switch (d.node.plot_type) {
+            case 'LCM':
+                return `translate(${d.x}, ${d.y}) rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${d.scale})`;
+                break;
+            case 'PCM':
+                return `translate(${d.x}, ${d.y}) rotate(${-PCM.theta}) scale(${d.scale})`;
+                break;
+            case 'SOP':
+                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+                break;
     }
 }
 
-function offsetLabels(selection) {
-    selection.each( function(d) {
-        d.width = d.text.length*PLOT_DATA.label_font.xscale;
+function updateLabelText(com_id, label) {
+    /* 
+    This function updates multiple labels corresponding to the same 
+    com_id with a given label and adjusts their positions by calling
+    offset labels
+    */
+    /*
+    $(`${selector} text`).text(label);
+    let rects = $(`${selector} rect.handle`);
+    if(rects.length) {
+        rects.each(function(i) {
+            $(this).attr("width", PLOT_DATA.label_font.xscale*label.length);
+            let t = $(this).attr("transform");
+            $(this).attr("transform", t.replace(
+                /translate\([0-9\.,+-\s]+\)/,
+                `translate(${-$(this).attr("width")/2}, ${-$(this).attr("height")/2})`
+            ));
+        });
+    }*/
+    let selection = d3.selectAll(`.label[data-com_id="${PLOT_DATA.idMap[com_id]}"]`);
+    // update the text
+    selection.selectAll("text").text(label);
+    selection.each(function(d){
+        d.text = label;
+        d.width = label.length*PLOT_DATA.label_font.xscale;
         d.height = PLOT_DATA.label_font.yscale;
-        let diffX = d.x - d.node.x;
-        let diffY = d.y - d.node.y;
-        let theta = Math.atan2(diffY, diffX);
-        d.x += d.width*Math.cos(theta)/2;
-        d.y += d.height*Math.sin(theta)/2;
+    });
+    // update the rect handle
+    selection.selectAll('rect')
+        .attr("width", function(d) {
+            return d.width;
+        })
+        .attr("height", function(d) {
+            return d.height;
+        })
+        .attr("transform",function (d) {
+            return  `translate(${-d.width/2}, ${-d.height/2})`;
+        });
+    // offset labels since the label length has changed
+    offsetLabelText(selection);
+    selection.attr("transform", updateLabelTransform);
+    /*
+    selection.attr("transform", function (d) {
+        return `scale(${d.scale}) translate(${d.x}, ${d.y})`;
+    })
+    */
+    
+    // update the label value in PLOT_DATA.labels
+    let mi = PLOT_DATA.model;
+    if (com_id in PLOT_DATA.labels[mi]) {
+        PLOT_DATA.labels[mi][com_id] = label;
+    } else {
+        PLOT_DATA.labels[com_id] = label;
+    }
+}
+
+function offsetLabelText(selection) {
+    /*
+    selection is a d3.js selection of label nodes. This function
+    applies translate transforms to the children of a g.label 
+    element to offset the text and rectangle drag handle
+    to account for the length of the label text
+    */
+    
+    function dot(u, v) {
+        return u[0] * v[0] + u[1] * v[1];
+    }
+    
+    function distance(u, v) {
+        let d = subtractPoints(u, v);
+        return Math.sqrt(dot(d, d));
+    }
+
+    function getRectEdges(center, width, height, angle) {
+        angle = angle * Math.PI / 180;
+        let points = [
+            [-width / 2, height / 2],
+            [width / 2, height / 2],
+            [width / 2, -height / 2],
+            [-width / 2, -height / 2]
+        ];
+        let points_r = [];
+        for (let i = 0; i < points.length; i++) {
+            points_r.push([
+                points[i][0] * Math.cos(angle) - points[i][1] * Math.sin(angle) + center[0],
+                points[i][0] * Math.sin(angle) + points[i][1] * Math.cos(angle) + center[1]
+            ]);
+        }
         
-        // Update handle
-        this.childNodes[1].setAttribute("height", d.height);
-        this.childNodes[1].setAttribute("width", d.width);
-        this.childNodes[1].setAttribute("transform", `translate(${-d.width/2}, ${-d.height/2})`);
-        this.setAttribute("transform", `translate(${d.x}, ${d.y})`);
+        let edges = [];
+        for (let i = 0; i < points_r.length; i++) {
+            edges.push([points_r[i], points_r[(i + 1) % points_r.length]]);
+        }
+        return edges;
+    }
+    
+    function cross2D(u, v) {
+        return u[0] * v[1] - u[1] * v[0];
+    }
+    
+    function subtractPoints(u, v) {
+        return [u[0] - v[0], u[1] - v[1]];
+    }
+
+   function equalPoints(u, v) {
+       return u[0] == v[0] && u[1] == v[1];
+   }
+
+   function edgeIntersection(edge1, edge2) {
+       let d1 = subtractPoints(edge1[1], edge1[0]);
+       let d2 = subtractPoints(edge2[1], edge2[0]);
+
+       let uNumerator = cross2D(subtractPoints(edge2[0], edge1[0]), d1);
+       let denominator = cross2D(d1, d2);
+
+       if (uNumerator == 0 && denominator == 0) {
+           // They are coLlinear
+
+           // Do they touch? (Are any of the points equal?)
+           if (equalPoints(edge1[0], edge2[0])) {
+               return edge1[0];
+           }
+           if (equalPoints(edge1[0], edge2[1])) {
+               return edge1[0];
+           }
+           if (equalPoints(edge1[1], edge2[0])) {
+               return edge1[1];
+           }
+           if (equalPoints(edge1[1], edge2[1])) {
+               return edge1[1];
+           }
+
+           // We explicity ignore overlaps for now
+           /*
+                return !allEqual(
+				    (q.x - p.x < 0),
+				    (q.x - p2.x < 0),
+				    (q2.x - p.x < 0),
+				    (q2.x - p2.x < 0)
+                ) ||
+			     !allEqual(
+				    (q.y - p.y < 0),
+				    (q.y - p2.y < 0),
+				    (q2.y - p.y < 0),
+				    (q2.y - p2.y < 0)
+                );
+                */
+           return false;
+       }
+
+       if (denominator == 0) {
+           // lines are paralell
+           return false;
+       }
+
+       let t2 = uNumerator / denominator;
+       let t1 = cross2D(subtractPoints(edge2[0], edge1[0]), d2) / denominator;
+
+       if ((t1 >= 0) && (t1 <= 1) && (t2 >= 0) && (t2 <= 1)) {
+           return [edge1[0][0] + t1 * d1[0], edge1[0][1] + t1 * d1[1]];
+       } else {
+           return false;
+       }
+   }
+
+   function segmentDistance(seg1, seg2, u, measure="max") {
+            /* Find the maximum distance between seg1 and seg2 along
+            the direction given by u. We only need to check the end 
+            points of the segments */
+            
+            function _solve(t, A1, C1, A2, C2, u) {
+                /* solves the following system of equations for d and s
+                    A1x + t*C1x + d*ux = A2x + s*C2x
+                    A1y + t*C1y + d*uy = A2y + s*C2y
+                */
+                let d, s;
+                let x1 = A1[0] + t*C1[0];
+                let y1 = A1[1] + t*C1[1];
+                if (u[0] != 0 && (C2[1] - C2[0]*u[1]/u[0]) != 0) {
+                    s = (y1 - A2[1] + (A2[0]-x1)*u[1]/u[0])/(C2[1] - C2[0]*u[1]/u[0]);
+                    d = (A2[0] + s*C2[0] - x1)/u[0];
+                    
+                    return [d, s];
+                } else if (u[1] != 0 && (C2[0] - u[0]*C2[1]/u[1]) != 0) {
+                    s = (x1 - A2[0] + (A2[1]-y1)*u[0]/u[1])/(C2[0] - C2[1]*u[0]/u[1]);
+                    d = (A2[1] + s*C2[1] - ay)/u[1];
+                    
+                    return [d, s];
+                } else {
+                    return [0, 0]; // no solution possible
+                }
+            }
+            
+            let found = false;
+            let dist, solution, C1, C2;
+            
+            if(measure == 'max') {
+                dist = 0;
+            } else {
+                dist = 99999;
+            }
+            
+            C1 = subtractPoints(seg1[1], seg1[0]);
+            C2 = subtractPoints(seg2[1], seg2[0]);
+            // t = 0:
+            solution = _solve(0, seg1[0], C1, seg2[0], C2, u);
+            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+                if(measure == 'max') {
+                    dist = Math.max(dist, solution[0]);
+                } else {
+                    dist = Math.min(dist, solution[0]);
+                }
+                found = true;
+            }
+            
+            // t = 0.25:
+            solution = _solve(0.25, seg1[0], C1, seg2[0], C2, u);
+            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+                if(measure == 'max') {
+                    dist = Math.max(dist, solution[0]);
+                } else {
+                    dist = Math.min(dist, solution[0]);
+                }
+                found = true;
+            }
+            
+            // t = 0.5:
+            solution = _solve(0.5, seg1[0], C1, seg2[0], C2, u);
+            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+                if(measure == 'max') {
+                    dist = Math.max(dist, solution[0]);
+                } else {
+                    dist = Math.min(dist, solution[0]);
+                }
+                found = true;
+            }
+            
+            // t = 0.75:
+            solution = _solve(0.75, seg1[0], C1, seg2[0], C2, u);
+            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+                if(measure == 'max') {
+                    dist = Math.max(dist, solution[0]);
+                } else {
+                    dist = Math.min(dist, solution[0]);
+                }
+                found = true;
+            }
+            
+            // t = 1:
+            solution = _solve(1, seg1[0], C1, seg2[0], C2, u);
+            if((solution[1] >= 0) && (solution[1] <= 1) && solution[0] > 0) {
+                if(measure == 'max') {
+                    dist = Math.max(dist, solution[0]);
+                } else {
+                    dist = Math.min(dist, solution[0]);
+                }
+                found = true;
+            }
+
+            return found ?  dist :  -1;
+        }
+
+   function pointInterior(point, edges) {
+       let x = point[0],
+           y = point[1];
+
+       let inside = false;
+       let xi, xj, yi, yj, intersect;
+       for (let i = 0; i < edges.length; i++) {
+           xi = edges[i][0][0], yi = edges[i][0][1];
+           xj = edges[i][1][0], yj = edges[i][1][1];
+
+           intersect = ((yi > y) != (yj > y)) && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+           if (intersect) inside = !inside;
+       }
+
+       return inside;
+   }
+
+   function overlapBoundaryEdges(edges1, edges2, boundary) {
+       // Find all edges from edges1 that intersect edges from edges2
+       var boundaryEdgeIndices = [];
+       for (let i = 0; i < edges1.length; i++) {
+           let segment = []; // portion of current line segement that contributes to the boundary of overlap
+           if (pointInterior(edges1[i][0], edges2)) {
+               segment.push(edges1[i][0]);
+           }
+           if (pointInterior(edges1[i][1], edges2)) {
+               segment.push(edges1[i][1]);
+           }
+
+           // check for intersections between edges
+           for (let j = 0; j < edges2.length; j++) {
+               let p = edgeIntersection(edges1[i], edges2[j]);
+               if (p) {
+                   segment.push(p);
+               }
+           }
+
+           // add a boundary edge segment if we have exactly two points of intersection
+           if (segment.length == 2) {
+               boundary.push(segment);
+               boundaryEdgeIndices.push(boundary.length - 1);
+           }
+       }
+
+       return boundaryEdgeIndices;
+   }
+    
+    selection.each(function(d) {
+        let node;
+        switch (d.node.plot_type) {
+            case 'LCM':
+                node = LCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+                break;
+            case 'PCM':
+                node = PCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+                break;
+            case 'SOP':
+                node = SOP.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+                break;
+        }
+        
+        // get node and label bounding boxes
+        let node_box = node.node().getBoundingClientRect();
+        let node_data = node.datum();
+        let pNode = [node_data.x, node_data.y];
+        let pLabel = [d.x, d.y];
+        let T = subtractPoints(pLabel, pNode);
+        T[0] /= distance(pLabel, pNode);
+        T[1] /= distance(pLabel, pNode);
+        let Tminus = [-T[0], -T[1]];
+        
+        let nodeEdges = getRectEdges(pNode, node_box.width, node_box.height, 0);
+        let labelEdges = getRectEdges(pLabel, d.width*d.scale, d.height*d.scale, 0);
+        
+        // compute overlap
+        let overlapBoundary = [];
+        let edgesIndNode = overlapBoundaryEdges(nodeEdges, labelEdges, overlapBoundary);
+        let edgesIndLabel = overlapBoundaryEdges(labelEdges, nodeEdges, overlapBoundary);
+        
+        if (overlapBoundary.length > 2) {
+            let max_distance = 0;
+            for (let i = 0; i < edgesIndLabel.length; i++) {
+                for (let j = 0; j < nodeEdges.length; j++) {
+                    max_distance = Math.max(max_distance, segmentDistance(overlapBoundary[edgesIndLabel[i]], nodeEdges[j], T));
+                }
+            }
+            for (let i = 0; i < edgesIndNode.length; i++) {
+                for (let j = 0; j < labelEdges.length; j++) {
+                    max_distance = Math.max(max_distance, segmentDistance(overlapBoundary[edgesIndNode[i]], labelEdges[j], Tminus));
+                }
+            }
+
+            d.x += max_distance * T[0];
+            d.y += max_distance * T[1];
+        } else {
+            let min_distance = 99999;
+            let dist;
+            for (let i = 0; i < nodeEdges.length; i++) {
+                for (let j = 0; j < labelEdges.length; j++) {
+                    dist = segmentDistance(nodeEdges[i], labelEdges[j], T, "min");
+                    if(dist > 0) {
+                        min_distance = Math.min(min_distance, dist);
+                    }
+                }
+            }
+            for (let i = 0; i < labelEdges.length; i++) {
+                for (let j = 0; j < nodeEdges.length; j++) {
+                    dist = segmentDistance(labelEdges[i], nodeEdges[j], Tminus, "min");
+                    if(dist > 0) {
+                        min_distance = Math.min(min_distance, dist);
+                    }
+                }
+            }
+            d.x -= min_distance * T[0];
+            d.y -= min_distance * T[1];
+        }
     });
 }
 
-function placeLabelsForce(nodes, labels, D, g, 
-    opts={
+function placeLabelsForce(nodes, labels, D, g, opts={}) {
+    var default_opts= {
         callback: undefined, 
         link_distance: 5,
-        label_destination: undefined
-}) 
-{
+        label_destination: undefined,
+        xscale: PLOT_DATA.label_font.xscale,
+        yscale: PLOT_DATA.label_font.yscale
+    }
+    opts = Object.assign(default_opts, opts);
+    
     D.w = new Worker("/js/labelPlacement.js");
     
     D.w.postMessage({
         nodes: nodes,
         labels: labels,
-        link_distance: opts.link_distance
+        link_distance: opts.link_distance,
+        xscale: opts.xscale,
+        yscale: opts.yscale
     });
-
+    
     D.w.onmessage = function(event) {
+        // create label nodes
         var gl = g.selectAll("g.label")
             .data(event.data.label_nodes)
             .enter()
             .append("g")
             .attr("class", "label")
             .attr("data-com_id", function (d) {
-                return PLOT_DATA.idMap[d.parent_id];
+                return PLOT_DATA.idMap[d.com_id];
             })
             .call(d3.drag()
                 .on("drag", function(d) {
                     d.x += d3.event.dx;
                     d.y += d3.event.dy;
                     d3.select(this)
-                        .attr("transform", `translate(${d.x}, ${d.y})`);
-                    }
-                )
-            );
+                        .attr("transform", updateLabelTransform);
+                })
+            )
+            .attr("transform", function(d) {
+                // move labels to positions
+                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+            });
         
+        // add text and rect nodes
         gl.append("text")
             .style("text-anchor", "middle")
             .style("dominant-baseline", "middle")
             .text(function (d) {
                 return d.text;
         });
-        
         gl.append("rect")
             .attr("class", "handle")
-            .attr("fill-opacity", 0.0)
-            .on("dblclick", labelInputShow);
+            .attr("fill-opacity", 0.5)
+            .attr("width", function (d) {
+                return d.width;
+            })
+            .attr("height", function (d) {
+                return d.height;
+            })
+            .attr("transform", function (d) {
+                return `translate(${-d.width/2}, ${-d.height/2})`;
+            })
+            .on("dblclick", showLabelInput);
         
-        gl.call(offsetLabels);
+        // reposition labels if needed   
+        offsetLabelText(gl);
+        gl.attr("transform", function(d) {
+            // update positions based on offsets
+            return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
+        });
+
         
         if( typeof(opts.callback) != "undefined" ) {
             opts.callback(g);
@@ -994,6 +1344,32 @@ function hexToRGB(hex, scale=false) {
     }
 }
 
+function transformTextLCM(d) {
+    /*
+    this function is used to re-apply text and rectangle transforms as the 
+    force-layout ticks or the scale/rotation changes
+    */
+    //console.log(d);
+    //console.log(this);
+    if (d.type == "nucleotide") {
+        return `rotate(${-d.angle}) rotate(${-LCM.theta}) scale(${LCM.label_scale})`;
+    } else {
+        //this.setAttribute('transform', `translate(${d.x}, ${d.y}) rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${d.scale})`);
+        /*
+        this.childNodes[0].setAttribute('transform', `rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${LCM.label_scale})`);
+        let r = this.childNodes[1];
+        r.setAttribute('transform', 
+                       `rotate(${-LCM.theta}) ` + 
+                       `rotate(${LCM.label_theta}) ` + 
+                       `scale(${LCM.label_scale}) ` +
+                       `translate(${-r.getAttribute("width")/2}, ${-r.getAttribute("height")/2})`
+        );
+        return `translate(${d.x}, ${d.y})`;
+        */
+        return `translate(${d.x}, ${d.y}) rotate(${-LCM.theta}) rotate(${LCM.label_theta}) scale(${d.scale})`;
+    }
+}
+
 function makeShapeOverlay(helix, shape_name, mi, ent_id) {
     
     function makeNodes(length, ids1, ids2, mi, ent_id, shape, ymin, ymax) {
@@ -1015,7 +1391,9 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
                                 size: getMarkerSize(RESIDUES[rid], SOP.min_marker_size, "residue"),
                                 res_id: rid,
                                 label_id: rid,
-                                com_id: rid
+                                com_id: rid,
+                                node_id: PLOT_DATA.idMap[rid],
+                                plot_type: 'SOP'
                             };
                         }
                         nodes[rid].indices.push(index);
@@ -1395,13 +1773,16 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
                 fy: null
             });
         }
-        
+        SOP.node_data = node_data;
         gt.append('g')
             .attr("class", "nodes")
             .selectAll("g")
             .data(node_data)
             .enter()
             .append("g")
+            .attr("data-node_id", function (d) {
+                return d.node_id;
+            })
             .attr("class", function (d) {
                 return d.type;
             })
@@ -1442,8 +1823,8 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
                 return null;
                 }
             })
-            .on('mouseover', toolTipIn)
-            .on('mouseout', toolTipOut)
+            .on('mouseover', showToolTip)
+            .on('mouseout', hideToolTip)
             .on('click', selectClick);
         
         
@@ -1547,65 +1928,6 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         rx = Math.cos(theta) * (x - cx) - Math.sin(theta) * (y - cy) + cx;
         ry = Math.sin(theta) * (x - cx) + Math.cos(theta) * (y - cy) + cy;
         return [rx, ry];
-    }
-
-    function forceAngle(links) {
-        var strengths, // cached strength values from calling strength(node, i, nodes)
-            strength; // function to compute strength of force on each node
-
-        function force(alpha) {
-            let v1, v2, F;
-            for (let i = 0; i < links.length; i++) {
-                if (links[i].type != "interaction") {
-                    continue;
-                }
-                v1 = [links[i].target.x - links[i].source.x, links[i].target.y - links[i].source.y];
-                v2 = [Math.cos(links[i].source.angle * Math.PI / 180), Math.sin(links[i].source.angle * Math.PI / 180)];
-
-                F = rotationForce(v1, v2);
-
-                links[i].target.vx -= alpha * strengths[i] * F[0];
-                links[i].target.vy -= alpha * strengths[i] * F[1];
-            }
-        }
-
-        function initialize() {
-            // populate local `strengths` using `strength` accessor
-            strengths = new Array(links.length);
-            for (let i = 0; i < links.length; i++) strengths[i] = strength(links[i], i, links);
-        }
-
-        function rotationForce(v1, v2) {
-            // Compute the force on node1 in transformed coordinate system
-            let d = v1[0] * v2[0] + v1[1] * v2[1];
-            let nv1 = Math.sqrt(v1[0] ** 2 + v1[1] ** 2);
-
-            let fx1 = v2[0] / (nv1) - d * v1[0] / (nv1 ** 3);
-            let fy1 = v2[1] / (nv1) - d * v1[1] / (nv1 ** 3);
-            return [fx1, fy1];
-        }
-
-        force.initialize = function (_) {
-            initialize();
-        };
-
-        force.strength = function (_) {
-            if (_ == null) return strength;
-
-            // coerce `strength` accessor into a function
-            // if _ is a function, use it
-            // else use function which returns +_
-            strength = typeof _ === 'function' ? _ : () => +_;
-
-            // reinitialize
-            initialize();
-
-            // allow chaining
-            return force;
-        };
-
-        if (!strength) force.strength(20);
-        return force;
     }
 
     function makeLinks(entity, node_sets, nodes, mi) {
@@ -1877,8 +2199,8 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                     hnodes[r[k].id]._fy = hnodes[r[k].id].fy;
                     
                     // assign label positions
-                    hlabels[r[k].id].fx = hnodes[r[k].id].fx + 10*dx[0];
-                    hlabels[r[k].id].fy = hnodes[r[k].id].fy + 10*dx[1];
+                    hlabels[r[k].id].fx = hnodes[r[k].id].fx + 15*dx[0];
+                    hlabels[r[k].id].fy = hnodes[r[k].id].fy + 15*dx[1];
                     
                     hlabels[r[k].id].x = hlabels[r[k].id].fx;
                     hlabels[r[k].id].y = hlabels[r[k].id].fy;
@@ -1990,8 +2312,9 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                 x: LCM.graph_coordinates[nid].x,
                 y: LCM.graph_coordinates[nid].y,
                 type: "nucleotide",
-                data: NUCLEOTIDES[nid]
-            }
+                data: NUCLEOTIDES[nid],
+                node_id: PLOT_DATA.idMap[nid],
+            };
             node._fx = node.fx;
             node._fy = node.fy;
             nodes.push(node);
@@ -2142,7 +2465,10 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                     com_id: rid,
                     total_interactions: 0,
                     active_interactions: 0,
-                    angle: null
+                    angle: null,
+                    plot_type: 'LCM',
+                    node_id: `${PLOT_DATA.idMap[rid]}_${node_sets[i].num}`,
+                    scale: 1
                 };
                 
                 // label node
@@ -2471,7 +2797,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             }
         });
 
-        // unrotate text
+        // apply text transforms
         g_nodes.selectAll("text")
             .attr("transform", transformTextLCM);
         
@@ -2689,10 +3015,11 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         .attr("stroke-opacity", function(d) {
             return d.opacity;
         })
-        .on('mouseover', toolTipIn)
-        .on('mouseout', toolTipOut);
+        .on('mouseover', showToolTip)
+        .on('mouseout', hideToolTip);
 
     // set up nodes
+    LCM.node_data = node_data;
     g_nodes = gr.append("g")
         .attr("class", "nodes")
         .selectAll("g")
@@ -2705,6 +3032,9 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         .attr("id", function (d) {
             return d.id;
         })
+        .attr("data-node_id", function (d) {
+                return d.node_id;
+            })
         .call(d3.drag()
             .on("start", dragstarted)
             .on("drag", dragged)
@@ -2803,8 +3133,8 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                 return "1px";
             }
         })
-        .on('mouseover', toolTipIn)
-        .on('mouseout', toolTipOut);
+        .on('mouseover', showToolTip)
+        .on('mouseout', hideToolTip);
     
     svg.selectAll(".nucleotide")
         .append("rect")
@@ -2869,8 +3199,8 @@ function makeLCM(mi, dna_entity_id, interfaces) {
                 return null;
             }
         })
-        .on('mouseover', toolTipIn)
-        .on('mouseout', toolTipOut)
+        .on('mouseover', showToolTip)
+        .on('mouseout', hideToolTip)
         .on('click', selectClick);
     
     
@@ -2882,19 +3212,9 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         .nodes(node_data)
         .on("tick", ticked)
         .on("end", function () {
-            LCM.node_data = node_data;
-            placeLabelsForce(node_data.filter(item => item.type == 'residue'), node_labels, LCM, g_labels, 
-                {
-                    callback: function(gl) {
-                        gl.selectAll("g.label")
-                            .attr("data-node_id", function (d) {
-                                return d.node.id;
-                            });
-                    },
-                    link_distance: 5,
-                    label_destination: LCM.node_data
-                }
-            );
+            placeLabelsForce(node_data.filter(item => item.type == 'residue'), node_labels, LCM, g_labels, {
+                label_destination: LCM.node_data
+            });
             LCM.ended = true;
             LCM.simulation.on("end", null);
         })
@@ -2915,11 +3235,6 @@ function makeLCM(mi, dna_entity_id, interfaces) {
             })
             .distanceMax(1.25 * LCM.link_distance.interaction)
         )
-        /*
-        .force("angle", forceAngle(link_data)
-            .strength(200)
-        )
-        */
         .alphaDecay(0.06)
         .velocityDecay(0.2);
     
@@ -2987,7 +3302,9 @@ function makePCM(helix, mi, ent_id) {
                                 sse_id: sse_id,
                                 label_id: sse_id,
                                 com_id: sse_id,
-                                size: getMarkerSize(SSE[mi][sse_id], PCM.min_marker_size, "sse", mty)
+                                size: getMarkerSize(SSE[mi][sse_id], PCM.min_marker_size, "sse", mty),
+                                plot_type: 'PCM',
+                                node_id: `${PLOT_DATA.idMap[sse_id]}_${mty}`
                             };
                             rho[mty].push(SSE_INTERFACE_DATA[mi][ent_id][sse_id].helicoidal_coordinates.rho);
                         }
@@ -3242,6 +3559,7 @@ function makePCM(helix, mi, ent_id) {
         });
     }
     
+    PCM.node_data = node_data;
     var gn = g.append("g")
         .attr("class", "nodes");
     gn.selectAll("g")
@@ -3278,6 +3596,9 @@ function makePCM(helix, mi, ent_id) {
         .attr("class", function (d) {
             return d.data.secondary_structure;
         })
+        .attr("data-node_id", function (d) {
+                return d.node_id;
+        })
         .attr("data-com_id", function (d) {
             return PLOT_DATA.idMap[d.data.id];
         })
@@ -3291,8 +3612,8 @@ function makePCM(helix, mi, ent_id) {
                 return null;
             }
         })
-        .on('mouseover', toolTipIn)
-        .on('mouseout', toolTipOut)
+        .on('mouseover', showToolTip)
+        .on('mouseout', hideToolTip)
         .on('click', selectClick);
     
     /* add sse labels */
