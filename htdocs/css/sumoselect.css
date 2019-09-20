@@ -1,5 +1,5 @@
 .SumoSelect p {margin: 0;}
-/*.SumoSelect{width: 150px;}*/
+/*.SumoSelect{width: 200px;} */
 .SumoSelect{width: inherit; min-width: 150px;}
 .SelectBox {padding: 5px 8px;}
 

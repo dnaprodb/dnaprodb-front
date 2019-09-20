@@ -102,7 +102,8 @@ var SOP = {
     label_scale: 1.0,
     min_marker_size: 100,
     min_bp_spacing: 40,
-    max_bp_spacing: 60
+    max_bp_spacing: 60,
+    shape_name: null
 };
 
 /* shared parameters */
@@ -571,7 +572,7 @@ function makePlots(selection, colors) {
         $("#sop_helix_select").append(opts);
     
         let shape_name = $("#shape_parameter_select").val(); // shape selection
-        makeShapeOverlay(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], shape_name, PLOT_DATA.model, PLOT_DATA.dna_entity_id);
+        makeSOP(DNA_ENTITIES[PLOT_DATA.model][PLOT_DATA.dna_entity_id].helical_segments[hi], shape_name, PLOT_DATA.model, PLOT_DATA.dna_entity_id);
         
         /* Plot Polar Contact Map */
         // set up helix select
@@ -609,7 +610,7 @@ function makePlots(selection, colors) {
 function applyLabelFormats() {
     var format, offset;
     var dna_chains = ['_'].concat(SELECTION.dna_chains);
-    var pro_chains = ['_'].concat(PLOT_DATA.protein_chains);
+    var pro_chains = ['_'].concat(SELECTION.protein_chains);
     
     for (let i = 0; i < dna_chains.length; i++) {
         format = [];
@@ -645,7 +646,7 @@ function applyLabelFormats() {
             if(isNaN(offset)) {
                 offset = 0;
             }
-            updateResLabels(RESIDUES, format, pro_chains[i], 'label', offset);
+            updateResLabels(RESIDUES, format, pro_chains[i], 'residue', offset);
         }
     }
     
@@ -659,7 +660,7 @@ function applyLabelFormats() {
             }
         });
         if (format.length > 0) {
-            updateSSELabels(SSE, format, pro_chains[i], PLOT_DATA.model, 'label');
+            updateSSELabels(SSE, format, pro_chains[i], PLOT_DATA.model, 'residue');
         }
     }
 }
@@ -707,7 +708,7 @@ function updateResLabels(lookup, format, chain, label_type, offset) {
                     break;
             }
         }
-        updateLabelText(`.${label_type}[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, label);
+        updateLabelText(id, label, label_type);
     }
 }
 
@@ -756,7 +757,7 @@ function updateSSELabels(lookup, format, chain, mi, label_type) {
             }
         }
         if (lookup[mi][id].include) {
-            updateLabelText(`.${label_type}[data-com_id="${PLOT_DATA.idMap[id]}"]`, id, label, mi);
+            updateLabelText(id, label, 'residue');
         } else {
             PLOT_DATA.labels[mi][id] = label;
         }
@@ -796,20 +797,10 @@ function updateLabelTransform(d) {
     if (d.type == "nucleotide") {
         return `rotate(${-d.angle}) rotate(${-LCM.theta}) scale(${LCM.label_scale})`;
     }
-    switch (d.node.plot_type) {
-            case 'LCM':
-                return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
-                break;
-            case 'PCM':
-                return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
-                break;
-            case 'SOP':
-                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-                break;
-    }
+    return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
 }
 
-function updateLabelText(com_id, label) {
+function updateLabelText(com_id, label, type="residue") {
     /* 
     This function updates multiple labels corresponding to the same 
     com_id with a given label and adjusts their positions by calling
@@ -818,26 +809,27 @@ function updateLabelText(com_id, label) {
     let selection = d3.selectAll(`.label[data-com_id="${PLOT_DATA.idMap[com_id]}"]`);
     // update the text
     selection.selectAll("text").text(label);
-    selection.each(function(d){
-        d.text = label;
-        d.width = label.length*PLOT_DATA.label_font.xscale;
-        d.height = PLOT_DATA.label_font.yscale;
-    });
-    // update the rect handle
-    selection.selectAll('rect')
-        .attr("width", function(d) {
-            return d.width;
-        })
-        .attr("height", function(d) {
-            return d.height;
-        })
-        .attr("transform",function (d) {
-            return  `translate(${-d.width/2}, ${-d.height/2})`;
+    if(type == "residue") {
+        selection.each(function(d){
+            d.text = label;
+            d.width = label.length*PLOT_DATA.label_font.xscale;
+            d.height = PLOT_DATA.label_font.yscale;
         });
-    // offset labels since the label length has changed
-    offsetLabelText(selection);
-    selection.attr("transform", updateLabelTransform);
-
+        // update the rect handle
+        selection.selectAll('rect')
+            .attr("width", function(d) {
+                return d.width;
+            })
+            .attr("height", function(d) {
+                return d.height;
+            })
+            .attr("transform",function (d) {
+                return  `translate(${-d.width/2}, ${-d.height/2})`;
+            });
+        // offset labels since the label length has changed
+        offsetLabelText(selection);
+        selection.attr("transform", updateLabelTransform);
+    }
     
     // update the label value in PLOT_DATA.labels
     let mi = PLOT_DATA.model;
@@ -854,7 +846,7 @@ function offsetLabelText(selection) {
     group when the label size or orientation changes to avoid overlapping its
     parent node
     */
-
+    
     function dot(u, v) {
         return u[0] * v[0] + u[1] * v[1];
     }
@@ -1124,7 +1116,7 @@ function offsetLabelText(selection) {
         let Tminus = [-T[0], -T[1]];
 
         let nodeEdges = getRectEdges(pNode, node_box.width, node_box.height, 0);
-        let labelEdges = getRectEdges(pLabel, d.width * d.scale, d.height * d.scale, 0);
+        let labelEdges = getRectEdges(pLabel, d.width * d.scale, d.height * d.scale, d.angle);
 
         // compute overlap
         let overlapBoundary = [];
@@ -1209,10 +1201,7 @@ function placeLabelsForce(nodes, labels, D, g, opts={}) {
                         .attr("transform", updateLabelTransform);
                 })
             )
-            .attr("transform", function(d) {
-                // move labels to positions
-                return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-            });
+            .attr("transform", updateLabelTransform);
         
         // add text and rect nodes
         gl.append("text")
@@ -1237,10 +1226,7 @@ function placeLabelsForce(nodes, labels, D, g, opts={}) {
         
         // reposition labels if needed   
         offsetLabelText(gl);
-        gl.attr("transform", function(d) {
-            // update positions based on offsets
-            return `translate(${d.x}, ${d.y}) scale(${d.scale})`;
-        });
+        gl.attr("transform", updateLabelTransform);
 
         
         if( typeof(opts.callback) != "undefined" ) {
@@ -1322,7 +1308,85 @@ function hexToRGB(hex, scale=false) {
     }
 }
 
-function makeShapeOverlay(helix, shape_name, mi, ent_id) {
+function makeSSELegend(legend) {
+    // container to store the SSE mini legend
+    var container = legend.append("g")
+        .attr("class", "sst_color_legend");
+    
+    var lh = 10; // height of a row
+    var lw = 16; // width of a column
+    
+    // count how many columns we will need
+    var sse_types = ['H', 'S', 'L'];
+    var sst_colors = {
+        H: new Set(),
+        S: new Set(),
+        L: new Set()
+    };
+    
+    for (let i = 0; i < sse_types.length; i++) {
+        for (let chain in PROTEIN_COLORS[sse_types[i]]) {
+            sst_colors[sse_types[i]].add(PROTEIN_COLORS[sse_types[i]][chain]);
+        }
+    }
+    
+    var nc = Math.max(sst_colors['H'].size, sst_colors['S'].size, sst_colors['L'].size);
+    var chain_labels, y0;
+    if (nc == 1) {
+        chain_labels = [SELECTION.protein_chains[0]];
+        y0 = 0;
+    } else {
+        chain_labels = SELECTION.protein_chains;
+        y0 = 1.5*lh
+        nc = chain_labels.length;
+    }
+    
+    // residue shape symbols
+    var labels = ["helix", "strand", "loop"];
+    var shapes = [d3.symbolCircle, d3.symbolTriangle, d3.symbolSquare];
+    var ss_data = d3.range(y0, y0 + 2 * labels.length * lh, 2 * lh).map(function (d, i) {
+        return {
+            label: labels[i],
+            shape: shapes[i],
+            sst: sse_types[i],
+            y: d
+        };
+    });
+    
+    // add residue shape symbols
+    for (let i = 0; i < ss_data.length; i++) {
+        for (let j = 0; j < nc; j++) {
+            container.append("path")
+                .attr("d", d3.symbol().size(75).type(ss_data[i].shape))
+                .attr("transform", `translate(${j*lw}, ${ss_data[i].y})`)
+                .style("fill", PROTEIN_COLORS[ss_data[i].sst][chain_labels[j]]);
+        }
+    }
+    
+    // add labels
+    for (let i = 0; i < ss_data.length; i++) {
+        container.append("text")
+            .attr("x", nc*lw)
+            .attr("y", ss_data[i].y)
+            .style("dominant-baseline", "middle")
+            .text(ss_data[i].label);
+    }
+    
+    if (nc > 1) {
+        for (let j = 0; j < nc; j++) {
+            container.append("text")
+                .attr("x", j*lw)
+                .attr("y", 0)
+                .style("dominant-baseline", "middle")
+                .style("text-anchor", "middle")
+                .text(chain_labels[j]);
+        }
+    }
+    
+    return [(nc+2.5)*lw, ss_data[2].y, container];
+}
+
+function makeSOP(helix, shape_name, mi, ent_id) {
     
     function makeNodes(length, ids1, ids2, mi, ent_id, shape, ymin, ymax) {
         /* This function generates the residue nodes */
@@ -1496,100 +1560,6 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
         return nodes;
     }
     
-    function makeLegend(w, h, shape_name) {
-        var width = 185;
-        var height = 100;
-
-        var legend = SOP.svg.append("g")
-            .attr("id", "sop_legend")
-            .attr("class", "legend")
-            .attr("cursor", "move")
-            .attr("transform", `translate(${w-width}, 0)`)
-            .data([{
-                x: w-width,
-                y: 0.0
-             }])
-            .call(d3.drag()
-                .on("drag", function (d) {
-                    d.x += d3.event.dx;
-                    d.y += d3.event.dy;
-                    d3.select(this)
-                        .attr("transform", "translate(" +
-                            Math.max(0, Math.min(w - width, d.x)) +
-                            ", " +
-                            Math.max(0, Math.min(h - height, d.y)) +
-                            ")"
-                        )
-                })
-            );
-
-        legend.append("rect")
-            .attr("class", "border")
-            .attr("width", width)
-            .attr("height", height);
-        
-        // residue shape symbols
-        var lh = 10;
-        var lw = 15;
-        var start = 15;
-        var ssl = [
-                "Helix residue",
-                "Strand residue",
-                "Loop residue"
-            ];
-        
-        var shape = [
-                d3.symbolCircle,
-                d3.symbolTriangle,
-                d3.symbolSquare
-            ];
-        
-        var ss_data = d3.range(start, start + 2 * ssl.length * lh, 2 * lh).map(function (d, i) {
-            return {
-                label: ssl[i],
-                shape: shape[i],
-                y: d
-            };
-        });
-
-        var ss_labels = legend.append("g")
-            .selectAll("g")
-            .data(ss_data)
-            .enter()
-            .append("g");
-
-        ss_labels.append("path")
-            .attr("d", d3.symbol().size(75).type(function (d) {
-                return d.shape;
-            }))
-            .attr("transform", function (d) {
-                return `translate(${lw}, ${d.y})`;
-            });
-
-        ss_labels.append("text")
-            .attr("x", 2*lw)
-            .attr("y", function (d) {
-                return d.y;
-            })
-            .style("dominant-baseline", "middle")
-            .text(function (d) {
-                return d.label;
-            });
-        
-        // add line label
-        legend.append("line")
-            .attr("y1", start + 2*lh*ssl.length + lh/2)
-            .attr("y2", start + 2*lh*ssl.length + lh/2)
-            .attr("x1", lw/2)
-            .attr("x2", 2*lw);
-
-        legend.append("text")
-            .attr("x", 2.5*lw)
-            .attr("y", start + 2*lh*ssl.length + lh/2)
-            .style("dominant-baseline", "middle")
-            .text(PLOT_DATA.dna_shape_labels[shape_name][0]);
-    }
-    
     var length = helix.length;
     var shape, ids1, ids2, seq1, seq2;
     if(SOP.reverse) {
@@ -1613,10 +1583,22 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
     bp_type.push("watson-crick");
     var spacing = Math.min(Math.max(SOP.min_bp_spacing, SOP.max_width/(length+2)), SOP.max_bp_spacing);
     SOP.width = spacing*(length+2); // space per base-pair
-    var ymin = (1.0-0.2*Math.sign(Math.min(...shape_filtered)))*Math.min(...shape_filtered); // min y-value
-    var ymax = (1.0+0.2*Math.sign(Math.max(...shape_filtered)))*Math.max(...shape_filtered); // max y-value
+    SOP.shape_name = shape_name;
     var xScale = d3.scaleLinear().range([SOP.margin.left, SOP.width - SOP.margin.right])
         .domain([-1, length]);
+    // set the y-axis scale
+    var ymin = $("input[name='y-lower']").val();
+    var ymax = $("input[name='y-upper']").val();
+    ymin = (ymin == '' ? Number('null') : Number(ymin));
+    ymax = (ymax == '' ? Number('null') : Number(ymax));
+    if(isNaN(ymin)) {
+        ymin = (1.0-0.2*Math.sign(Math.min(...shape_filtered)))*Math.min(...shape_filtered); // min y-value
+    }
+    if(isNaN(ymax)) {
+        ymax = (1.0+0.2*Math.sign(Math.max(...shape_filtered)))*Math.max(...shape_filtered); // max y-value
+    }
+    
+
     var yScale = d3.scaleLinear().range([SOP.height - SOP.margin.bottom, SOP.margin.top])
         .domain([ymin, ymax]);
     
@@ -1679,39 +1661,7 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
         .append("path")
         .attr("d", line);
     
-    var tickLabels = [""];
-    for (let i = 0; i < length; i++) {
-        tickLabels.push(seq1.charAt(i) + "-" + seq2.charAt(i));
-    }
-    tickLabels.push("");
-    var yAxis = d3.axisLeft(yScale)
-        .ticks(5);
-    var xAxis = d3.axisBottom(xScale)
-        .ticks(tickLabels.length)
-        .tickFormat(function(d, i) {
-            return tickLabels[i];
-        });
-    
-    // add x-axis
-    gt.append('g')
-        .attr("id", "sop_axis_x")
-        .attr("class", "sop_axis")
-        .attr("transform", "translate(0," + (SOP.height - SOP.margin.bottom) + ")")
-        .call(xAxis)
-        .selectAll("text")
-        .attr("y", 0)
-        .attr("x", 9)
-        .attr("dy", ".35em")
-        .attr("transform", "rotate(90)")
-        .style("text-anchor", "start")
-        .style("color", function(i) {
-            if(bp_type[i+1] == "watson-crick") {
-                return "black";
-            } else {
-                return "#A00";
-            }
-        });
-    
+           
     // add residue markers
     if(shape_filtered.length > 0) {
         var node_data = makeNodes(length, ids1, ids2, mi, ent_id, shape, ymin, ymax);
@@ -1794,7 +1744,45 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
             .text(PLOT_DATA.dna_shape_labels[shape_name][0] + " is not available")
     }
     
+    // add x-axis
+    var tickLabels = [""];
+    for (let i = 0; i < length; i++) {
+        tickLabels.push(seq1.charAt(i) + "-" + seq2.charAt(i));
+    }
+    tickLabels.push("");
+    var xAxis = d3.axisBottom(xScale)
+        .ticks(tickLabels.length)
+        .tickFormat(function(d, i) {
+            return tickLabels[i];
+        });
+    var gx = gt.append('g')
+        .attr("id", "sop_axis_x")
+        .attr("class", "sop_axis")
+        .attr("transform", "translate(0," + (SOP.height - SOP.margin.bottom) + ")");
+    
+    gx.append("rect")
+        .attr("width", SOP.width-SOP.margin.right)
+        .attr("height", SOP.margin.bottom)
+        .attr("fill", "white");
+    
+    gx.call(xAxis)
+        .selectAll("text")
+        .attr("y", 0)
+        .attr("x", 9)
+        .attr("dy", ".35em")
+        .attr("transform", "rotate(90)")
+        .style("text-anchor", "start")
+        .style("color", function(i) {
+            if(bp_type[i+1] == "watson-crick") {
+                return "black";
+            } else {
+                return "#A00";
+            }
+        });
+    
     // add y-axis and label
+    var yAxis = d3.axisLeft(yScale)
+        .ticks(5);
     SOP.svg.append("rect")
         .attr("fill", "#FFF")
         .attr("height", SOP.height)
@@ -1806,15 +1794,16 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
         .call(yAxis);
     
     SOP.svg.append("text")
-      .attr("transform", `rotate(-90, 0, ${SOP.height/2})`)
-      .attr("y", SOP.height/2)
-      .attr("x", SOP.margin.left/2)
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
-      .text(PLOT_DATA.dna_shape_labels[shape_name][0] + " " + PLOT_DATA.dna_shape_labels[shape_name][1]);     
+        .attr("transform", `rotate(-90, 0, ${SOP.height/2})`)
+        .attr("y", SOP.height/2)
+        .attr("x", SOP.margin.left/2)
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .style("font-size", "17pt")
+        .text(PLOT_DATA.dna_shape_labels[shape_name][0] + " " + PLOT_DATA.dna_shape_labels[shape_name][1]);     
     
     // add legend
-    makeLegend(Math.min(SOP.width, SOP.max_width), SOP.height, shape_name)
+    makeSOPLegend();
     
     // add horizonal pan ability
     var zoom_handler = d3.zoom()
@@ -1833,6 +1822,67 @@ function makeShapeOverlay(helix, shape_name, mi, ent_id) {
         $("#sop_warning").html("");
     }
 }
+
+function makeSOPLegend() {
+        let ypad = 15;
+        let xpad = 15;
+        let spad = 20;
+        let w = Math.min(SOP.width, SOP.max_width);
+        let h = SOP.height;
+
+        $('#sop_legend').remove();
+    
+        let legend = SOP.svg.append("g")
+            .attr("id", "sop_legend")
+            .attr("class", "legend")
+            .attr("cursor", "move");
+        
+        legend.append("rect")
+            .attr("class", "border");
+    
+        let ld = makeSSELegend(legend);
+        ld[2].attr("transform", `translate(${xpad}, ${ypad})`);
+        
+
+        let width = Math.max(ld[0] + 2*xpad, 25 + PLOT_DATA.dna_shape_labels[SOP.shape_name][0].length*PLOT_DATA.label_font.xscale + 2*xpad);
+        let height = ld[1] + 2*ypad + spad;
+    
+        legend.attr("transform", `translate(${w-width}, 0)`)
+            .data([{
+                x: w-width,
+                y: 0.0
+             }])
+            .call(d3.drag()
+                .on("drag", function (d) {
+                    d.x += d3.event.dx;
+                    d.y += d3.event.dy;
+                    d3.select(this)
+                        .attr("transform", "translate(" +
+                            Math.max(0, Math.min(w - width, d.x)) +
+                            ", " +
+                            Math.max(0, Math.min(h - height, d.y)) +
+                            ")"
+                        )
+                })
+            );
+    
+        legend.select("rect")
+            .attr("width", width)
+            .attr("height", height);
+    
+        // add shape label
+        legend.append("line")
+            .attr("y1", ypad + ld[1] + spad)
+            .attr("y2", ypad + ld[1] + spad)
+            .attr("x1", xpad)
+            .attr("x2", xpad + 20);
+
+        legend.append("text")
+            .attr("x", xpad + 25)
+            .attr("y", ypad + ld[1] + spad)
+            .style("dominant-baseline", "middle")
+            .text(PLOT_DATA.dna_shape_labels[SOP.shape_name][0]);
+    }
 
 function makeLCM(mi, dna_entity_id, interfaces) {
     /* called functions */
@@ -2462,222 +2512,6 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         }
         return [nodes, node_sets, labels];
     }
-
-    function makeLegend(w, h) {
-        var width = 225;
-        var height = 180;
-        var cx = 45;
-        var cy = 25;
-        
-        var x2 = 4*width/7;
-        
-        var legend = LCM.svg.append("g")
-            .attr("id", "lcm_legend")
-            .attr("class", "legend")
-            .attr("cursor", "move")
-            .data([{
-                x: 0.0,
-                y: 0.0
-             }])
-            .call(d3.drag()
-                .on("drag", function (d) {
-                    d.x += d3.event.dx;
-                    d.y += d3.event.dy;
-                    d3.select(this)
-                        .attr("transform", "translate(" +
-                            Math.max(0, Math.min(w - width, d.x)) +
-                            ", " +
-                            Math.max(0, Math.min(h - height, d.y)) +
-                            ")"
-                        )
-                })
-            );
-
-        legend.append("rect")
-            .attr("class", "border")
-            .attr("width", width)
-            .attr("height", height);
-
-        /* nucleotide moiety */
-        legend.append("circle")
-            .attr("class", "wg shape")
-            .attr("r", LCM.glyph_size.wg)
-            .attr("cy", cy + LCM.glyph_size.rect_h)
-            .attr("cx", cx)
-            .attr("fill", PLOT_DATA.colors.wg);
-
-        legend.append("circle")
-            .attr("class", "sg shape")
-            .attr("r", LCM.glyph_size.sg)
-            .attr("cy", cy - LCM.glyph_size.rect_h)
-            .attr("cx", cx)
-            .attr("fill", PLOT_DATA.colors.sg);
-
-        legend.append("circle")
-            .attr("class", "pp shape")
-            .attr("r", LCM.glyph_size.phosphate)
-            .attr("cx", cx - LCM.glyph_size.phosphate_c)
-            .attr("cy", cy)
-            .attr("fill", PLOT_DATA.colors.pp);
-
-        legend.append("polygon")
-            .attr("class", "sr shape")
-            .attr("points", LCM.pentagon_points)
-            .attr("fill", PLOT_DATA.colors.sr)
-            .attr("transform", `translate(${cx}, ${cy})`);
-
-        legend.append("rect")
-            .attr("width", 2 * LCM.glyph_size.rect_w)
-            .attr("height", 2 * LCM.glyph_size.rect_h)
-            .attr("class", "base shape")
-            .attr("rx", 3)
-            .attr("ry", 3)
-            .attr("transform", `translate(${cx-LCM.glyph_size.rect_w}, ${cy-LCM.glyph_size.rect_h})`);
-
-        legend.append("text")
-            .attr("x", cx)
-            .attr("y", cy)
-            .attr("text-anchor", "middle")
-            .style("dominant-baseline", "middle")
-            .text("N");
-
-        /* moiety labels */
-        var lh = 15;
-        var lw = 15;
-        var lm = 10;
-        var mty_data = d3.range(cy + 30, cy + 30 + 5 * 1.5 * lh, 1.5 * lh).map(function (d, i) {
-            return {
-                fill: PLOT_DATA.colors[PLOT_DATA.dna_moiety_keys[i]],
-                label: PLOT_DATA.dna_moiety_labels[PLOT_DATA.dna_moiety_keys[i]],
-                y: d
-            };
-        });
-
-        var dna_labels = legend.append("g")
-            .selectAll("g")
-            .data(mty_data)
-            .enter()
-            .append("g");
-
-        dna_labels.append("rect")
-            .attr("x", lm)
-            .attr("y", function (d) {
-                return d.y;
-            })
-            .attr("width", lw)
-            .attr("height", lh)
-            .attr("fill", function (d) {
-                return d.fill
-            });
-
-        dna_labels.append("text")
-            .attr("x", lm + lw + 5)
-            .attr("y", function (d) {
-                return d.y;
-            })
-            .text(function (d) {
-                return d.label;
-            });
-
-        /* line labels */
-        var ll = [
-                "W.C. BP",
-                "Hoog. BP",
-                "Other BP",
-                "Stacking",
-                "Linkage"
-            ];
-        var lc = [
-                "watson-crick",
-                "hoogsteen",
-                "other",
-                "stack",
-                "linkage"
-            ];
-        var end = cy - 10 + 1.5 * lc.length * lh;
-        var line_data = d3.range(cy - 10, end, 1.5 * lh).map(function (d, i) {
-            return {
-                class: lc[i],
-                label: ll[i],
-                y: d
-            };
-        });
-
-        var line_labels = legend.append("g")
-            .attr("class", "lines")
-            .selectAll("g")
-            .data(line_data)
-            .enter()
-            .append("g");
-
-        line_labels.append("line")
-            .attr("class", function (d) {
-                return d.class;
-            })
-            .attr("y1", function (d) {
-                return d.y;
-            })
-            .attr("y2", function (d) {
-                return d.y;
-            })
-            .attr("x1", x2)
-            .attr("x2", x2 + lw);
-
-        line_labels.append("text")
-            .attr("x", x2 + lw + 5)
-            .attr("y", function (d) {
-                return d.y;
-            })
-            .style("dominant-baseline", "middle")
-            .text(function (d) {
-                return d.label;
-            });
-        
-        // residue shape symbols
-        var ssl = [
-                "Helix",
-                "Strand",
-                "Loop"
-            ];
-        var shape = [
-                d3.symbolCircle,
-                d3.symbolTriangle,
-                d3.symbolSquare
-            ];
-
-        var ss_data = d3.range(end + 5, end + 5 + 1.2*ssl.length * lh, 1.2*lh).map(function (d, i) {
-            return {
-                label: ssl[i],
-                shape: shape[i],
-                y: d
-            };
-        });
-
-        var ss_labels = legend.append("g")
-            .selectAll("g")
-            .data(ss_data)
-            .enter()
-            .append("g");
-
-        ss_labels.append("path")
-            .attr("d", d3.symbol().size(75).type(function (d) {
-                return d.shape;
-            }))
-            .attr("transform", function (d) {
-                return `translate(${x2+lw/2}, ${d.y})`;
-            });
-
-        ss_labels.append("text")
-            .attr("x", x2 + lw + 5)
-            .attr("y", function (d) {
-                return d.y;
-            })
-            .style("dominant-baseline", "middle")
-            .text(function (d) {
-                return d.label;
-            });
-        return legend;
-    }
     
     /* function which updates links and base_nodes SVG elements */
     function ticked() {
@@ -2939,7 +2773,7 @@ function makeLCM(mi, dna_entity_id, interfaces) {
         .call(ygrid);
     
     // add legend
-    var legend = makeLegend(LCM.width, LCM.height);
+    var legend = makeLCMLegend();
 
     // add container element for dragging/zooming
     var gt = svg.append("g")
@@ -3196,6 +3030,187 @@ function makeLCM(mi, dna_entity_id, interfaces) {
     zoom_handler(svg);
 }
 
+function makeLCMLegend() {
+    $("#lcm_legend").remove();
+    
+    let legend = LCM.svg.append("g")
+        .attr("id", "lcm_legend")
+        .attr("class", "legend")
+        .attr("cursor", "move");
+
+    legend.append("rect")
+        .attr("class", "border");
+
+    /* create nucleotide moiety */
+    let cx = 45;
+    let cy = 25;
+    let x2 = 135;
+    legend.append("circle")
+        .attr("class", "wg shape")
+        .attr("r", LCM.glyph_size.wg)
+        .attr("cy", cy + LCM.glyph_size.rect_h)
+        .attr("cx", cx)
+        .attr("fill", PLOT_DATA.colors.wg);
+
+    legend.append("circle")
+        .attr("class", "sg shape")
+        .attr("r", LCM.glyph_size.sg)
+        .attr("cy", cy - LCM.glyph_size.rect_h)
+        .attr("cx", cx)
+        .attr("fill", PLOT_DATA.colors.sg);
+
+    legend.append("circle")
+        .attr("class", "pp shape")
+        .attr("r", LCM.glyph_size.phosphate)
+        .attr("cx", cx - LCM.glyph_size.phosphate_c)
+        .attr("cy", cy)
+        .attr("fill", PLOT_DATA.colors.pp);
+
+    legend.append("polygon")
+        .attr("class", "sr shape")
+        .attr("points", LCM.pentagon_points)
+        .attr("fill", PLOT_DATA.colors.sr)
+        .attr("transform", `translate(${cx}, ${cy})`);
+
+    legend.append("rect")
+        .attr("width", 2 * LCM.glyph_size.rect_w)
+        .attr("height", 2 * LCM.glyph_size.rect_h)
+        .attr("class", "base shape")
+        .attr("rx", 3)
+        .attr("ry", 3)
+        .attr("transform", `translate(${cx-LCM.glyph_size.rect_w}, ${cy-LCM.glyph_size.rect_h})`);
+
+    legend.append("text")
+        .attr("x", cx)
+        .attr("y", cy)
+        .attr("text-anchor", "middle")
+        .style("dominant-baseline", "middle")
+        .text("N");
+
+    /* moiety labels */
+    let lh = 15;
+    let lw = 15;
+    let lm = 10;
+    var mty_data = d3.range(cy + 30, cy + 30 + 5 * 1.5 * lh, 1.5 * lh).map(function (d, i) {
+        return {
+            fill: PLOT_DATA.colors[PLOT_DATA.dna_moiety_keys[i]],
+            label: PLOT_DATA.dna_moiety_labels[PLOT_DATA.dna_moiety_keys[i]],
+            y: d
+        };
+    });
+
+    let dna_labels = legend.append("g")
+        .selectAll("g")
+        .data(mty_data)
+        .enter()
+        .append("g");
+
+    dna_labels.append("rect")
+        .attr("x", lm)
+        .attr("y", function (d) {
+            return d.y;
+        })
+        .attr("width", lw)
+        .attr("height", lh)
+        .attr("fill", function (d) {
+            return d.fill
+        });
+
+    dna_labels.append("text")
+        .attr("x", lm + lw + 5)
+        .attr("y", function (d) {
+            return d.y;
+        })
+        .text(function (d) {
+            return d.label;
+        });
+
+    /* line labels */
+    let ll = [
+        "W.C. BP",
+        "Hoog. BP",
+        "Other BP",
+        "Stacking",
+        "Linkage"
+    ];
+    let lc = [
+        "watson-crick",
+        "hoogsteen",
+        "other",
+        "stack",
+        "linkage"
+    ];
+    let end = cy - 10 + 1.5 * lc.length * lh;
+    let line_data = d3.range(cy - 10, end, 1.5 * lh).map(function (d, i) {
+        return {
+            class: lc[i],
+            label: ll[i],
+            y: d
+        };
+    });
+
+    let line_labels = legend.append("g")
+        .attr("class", "lines")
+        .selectAll("g")
+        .data(line_data)
+        .enter()
+        .append("g");
+
+    line_labels.append("line")
+        .attr("class", function (d) {
+            return d.class;
+        })
+        .attr("y1", function (d) {
+            return d.y;
+        })
+        .attr("y2", function (d) {
+            return d.y;
+        })
+        .attr("x1", x2)
+        .attr("x2", x2 + lw);
+
+    line_labels.append("text")
+        .attr("x", x2 + lw + 5)
+        .attr("y", function (d) {
+            return d.y;
+        })
+        .style("dominant-baseline", "middle")
+        .text(function (d) {
+            return d.label;
+        });
+
+    // residue shape symbols
+    let ld = makeSSELegend(legend);
+    ld[2].attr("transform", `translate(${x2+5}, ${end})`);
+    
+    let width = Math.max(x2 + ld[0] + 15, x2 + lw + PLOT_DATA.label_font.xscale*8 + 10);
+    let height = Math.max(175, end + ld[1] + 10);
+    
+    legend.data([{
+            x: 0.0,
+            y: 0.0
+             }])
+        .call(d3.drag()
+            .on("drag", function (d) {
+                d.x += d3.event.dx;
+                d.y += d3.event.dy;
+                d3.select(this)
+                    .attr("transform", "translate(" +
+                        Math.max(0, Math.min(LCM.width - width, d.x)) +
+                        ", " +
+                        Math.max(0, Math.min(LCM.height - height, d.y)) +
+                        ")"
+                    )
+            })
+        );
+
+    legend.select("rect.border")
+        .attr("width", width)
+        .attr("height", height);
+    
+    return legend;
+}
+
 function makePCM(helix, mi, ent_id) {
     /* Generate the polar contact map */
     function range(start, count) {
@@ -3306,87 +3321,6 @@ function makePCM(helix, mi, ent_id) {
         return nodes;     
     }
     
-    function makeLegend(w, h) {
-        var width = 145;
-        var height = 75;
-
-        var legend = PCM.svg.append("g")
-            .attr("id", "pcm_legend")
-            .attr("class", "legend")
-            .attr("cursor", "move")
-            .attr("transform", `translate(${w-width}, 0)`)
-            .data([{
-                x: w-width,
-                y: 0.0
-             }])
-            .call(d3.drag()
-                .on("drag", function (d) {
-                    d.x += d3.event.dx;
-                    d.y += d3.event.dy;
-                    d3.select(this)
-                        .attr("transform", "translate(" +
-                            Math.max(0, Math.min(w - width, d.x)) +
-                            ", " +
-                            Math.max(0, Math.min(h - height, d.y)) +
-                            ")"
-                        )
-                })
-            );
-
-        legend.append("rect")
-            .attr("class", "border")
-            .attr("width", width)
-            .attr("height", height);
-        
-        // residue shape symbols
-        var lh = 12;
-        var lw = 15;
-        var start = 15;
-        var ssl = [
-                "Helix SSE",
-                "Strand SSE",
-                "Loop SSE"
-            ];
-        
-        var shape = [
-                d3.symbolCircle,
-                d3.symbolTriangle,
-                d3.symbolSquare
-            ];
-        
-        var ss_data = d3.range(start, start + 2 * ssl.length * lh, 2 * lh).map(function (d, i) {
-            return {
-                label: ssl[i],
-                shape: shape[i],
-                y: d
-            };
-        });
-
-        var ss_labels = legend.append("g")
-            .selectAll("g")
-            .data(ss_data)
-            .enter()
-            .append("g");
-
-        ss_labels.append("path")
-            .attr("d", d3.symbol().size(75).type(function (d) {
-                return d.shape;
-            }))
-            .attr("transform", function (d) {
-                return `translate(${lw}, ${d.y})`;
-            });
-
-        ss_labels.append("text")
-            .attr("x", 2*lw)
-            .attr("y", function (d) {
-                return d.y;
-            })
-            .style("dominant-baseline", "middle")
-            .text(function (d) {
-                return d.label;
-            });
-    }
-
     var data = d3.range(0, 2 * Math.PI, .01).map(function (t) {
         return [t, Math.sin(2 * t) * Math.cos(2 * t)];
     });
@@ -3568,5 +3502,45 @@ function makePCM(helix, mi, ent_id) {
     placeLabelsForce(node_data, node_labels, PCM, gl);
     
     /* Make legend */
-    makeLegend(PCM.width, PCM.height);
+    makePCMLegend();
+}
+
+function makePCMLegend() {
+    $('#pcm_legend').remove();
+    
+    let legend = PCM.svg.append("g")
+        .attr("id", "pcm_legend")
+        .attr("class", "legend")
+        .attr("cursor", "move");
+
+    legend.append("rect")
+        .attr("class", "border");
+
+    let ld = makeSSELegend(legend);
+    ld[2].attr("transform", `translate(${15}, ${15})`);
+    
+    let width = ld[0] + 30;
+    let height = ld[1] + 30;
+    legend.attr("transform", `translate(${PCM.width-width}, 0)`)
+        .data([{
+            x: PCM.width-width,
+            y: 0.0
+         }])
+        .call(d3.drag()
+            .on("drag", function (d) {
+                d.x += d3.event.dx;
+                d.y += d3.event.dy;
+                d3.select(this)
+                    .attr("transform", "translate(" +
+                        Math.max(0, Math.min(PCM.width - width, d.x)) +
+                        ", " +
+                        Math.max(0, Math.min(PCM.height - height, d.y)) +
+                        ")"
+                    )
+            })
+        );
+    
+    legend.select("rect")
+        .attr("width", width)
+        .attr("height", height);
 }

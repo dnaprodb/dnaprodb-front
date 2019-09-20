@@ -572,10 +572,9 @@ function updateProteinColors() {
         $("#protein_all_color_row input[type=color]").each(function(n) {
             let val = $(this).val();
             let sst = $(this).attr("name");
-            PROTEIN_COLORS[sst] = {};
-            $.each(pro_chains, function(i, c) {
-                PROTEIN_COLORS[sst][c] = val;
-            });
+            for(let i = 0; i < pro_chains.length; i++) {
+                PROTEIN_COLORS[sst][pro_chains[i]] = val;
+            };
         });
     } else {
         for (let i = 0; i < pro_chains.length; i++) {
@@ -583,7 +582,6 @@ function updateProteinColors() {
                 let val = $(this).val();
                 let sst = $(this).attr("name");
                 let chain = $(this).attr("data-chain");
-                PROTEIN_COLORS[sst] = {};
                 PROTEIN_COLORS[sst][chain] = val;
             });
         }
@@ -622,6 +620,11 @@ function applyProteinColors(){
         }
     }
     selectResidues3D(SELECTION.included_component_ids);
+    
+    // update legends
+    makePCMLegend();
+    makeSOPLegend();
+    makeLCMLegend();
 }
 
 function makeColorFormatInputs(dna_chains, pro_chains) {
@@ -1224,6 +1227,12 @@ function getInterfaceString(chains) {
     }
 }
 
+function labelOptionClick(e) {
+    let button = $(e).parent().siblings('button');
+    button.attr("data-value", $(e).attr("data-value"));
+    button.text($(e).attr("data-placeholder"));
+}
+
 // Useful extentions to builtin prototypes
 Array.prototype.unique = function () {
     var n = {},
@@ -1257,9 +1266,9 @@ var SELECTION = {
 
 // Store colors of each current protein chain by SST
 var PROTEIN_COLORS = {
-    H: null,
-    S: null,
-    L: null,
+    H: {},
+    S: {},
+    L: {},
     default:{
         H: "#ff0000",
         S: "#49e20e",
@@ -1338,19 +1347,22 @@ $(document).ready(function(){
     $('#exclude_nucleotide_select').SumoSelect({
         csvDispCount: 1,
         captionFormat: '{0} selected',
-        captionFormatAllSelected: '{0} selected'
+        captionFormatAllSelected: '{0} selected',
+        selectAll: true
     });
     
     $('#exclude_residue_select').SumoSelect({
         csvDispCount: 1,
         captionFormat: '{0} selected',
-        captionFormatAllSelected: '{0} selected'
+        captionFormatAllSelected: '{0} selected',
+        selectAll: true
     });
     
     $('#exclude_sse_select').SumoSelect({
         csvDispCount: 1,
         captionFormat: '{0} selected',
-        captionFormatAllSelected: '{0} selected'
+        captionFormatAllSelected: '{0} selected',
+        selectAll: true
     });
 
     $('#protein_chains_select').SumoSelect({
@@ -1777,7 +1789,7 @@ $(document).ready(function(){
         PLOT_DATA.selected.residue_ids = [];
         addBallStick(PLOT_DATA.selected.residue_ids);
         
-        makeShapeOverlay(DNA_ENTITIES[mi][entity_id].helical_segments[hi], shape_name, mi, entity_id);
+        makeSOP(DNA_ENTITIES[mi][entity_id].helical_segments[hi], shape_name, mi, entity_id);
     });
 
     // bind flip strands button event
