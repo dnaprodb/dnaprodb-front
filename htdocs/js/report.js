@@ -625,6 +625,17 @@ function applyProteinColors(){
     makePCMLegend();
     makeSOPLegend();
     makeLCMLegend();
+    
+    // toggle visibilities
+    if ($("#lcm_legend_button").text() == "show legend") {
+        $("#lcm_legend").attr("visibility", "hidden");
+    }
+    if ($("#pcm_legend_button").text() == "show legend") {
+        $("#pcm_legend").attr("visibility", "hidden");
+    }
+    if ($("#sop_legend_button").text() == "show legend") {
+        $("#sop_legend").attr("visibility", "hidden");
+    }
 }
 
 function makeColorFormatInputs(dna_chains, pro_chains) {
@@ -1251,7 +1262,6 @@ var PROTEIN_COLORS = {
         L: "#003eff"
     }
 }
-
 
 // Data structures for accessing DNAproDB data
 var DATA,
