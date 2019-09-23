@@ -20,7 +20,7 @@ import sys
 import smtplib
 import json
 
-UPLOAD_PATH = "/srv/www/htdocs/uploads"
+UPLOAD_PATH = "/srv/www/dnaprodb.usc.edu/htdocs/uploads"
 
 # Load sensitive data
 with open("../.sensitive.json") as FH:
