@@ -327,7 +327,7 @@ for interface in dnaprodb_data["interfaces"]["models"][model_num]:             #
                                 <br>
                                 <pre>
 $.ajax({
-  url: "http://dnaprodb.usc.edu:/cgi-bin/request-data",
+  url: "https://dnaprodb.usc.edu:/cgi-bin/request-data",
   dataType: "json",
   data : { 
     'query': '{"protein.chains.organism": {"$regex": "homo sapiens", "$options": "i"}}',
@@ -338,11 +338,11 @@ $.ajax({
   }
 });
                                 </pre>
-                                Here we sent a GET request with wget to retrieve the number of entries in the database.
+                                Here we send a GET request with wget to retrieve the number of entries in the database.
                                 <br>
                                 <br>
                                 <pre>
-wget -O count.json http://dnaprodb.usc.edu/cgi-bin/request-data?count=1
+wget -O count.json https://dnaprodb.usc.edu/cgi-bin/request-data?count=1
 cat count.json
                                 </pre>
                             </td>
