@@ -1217,6 +1217,9 @@ function placeLabelsForce(nodes, labels, D, g, opts={}) {
             .attr("data-com_id", function (d) {
                 return PLOT_DATA.idMap[d.com_id];
             })
+            .attr("data-node_id", function(d){
+                return d.node.id;
+            })
             .call(d3.drag()
                 .on("drag", function(d) {
                     d.x += d3.event.dx;

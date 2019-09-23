@@ -1690,7 +1690,7 @@ $(document).ready(function(){
                     if (d.active_interactions == 0) {
                         LCM.hidden_elements.push(this);
                         LCM.hidden_elements.push(
-                            LCM.svg.select(`g.label[data-node_id=${d.id}]`).node()
+                            LCM.svg.select(`.label[data-node_id=${d.id}]`).node()
                         );
                     } else {
                         d.active_interactions = d.total_interactions;
