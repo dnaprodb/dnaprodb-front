@@ -17,9 +17,9 @@
 readonly PROGNAME=$(basename "$0")
 readonly LOCK_FD=200
 readonly LOCKFILE_DIR="/tmp"
-readonly QUEUE_FILE="/srv/www/htdocs/uploads/queue.dat"
-readonly UPLOADS_DIR="/srv/www/htdocs/uploads"
-readonly SCRIPT_DIR="/srv/www/scripts"
+readonly QUEUE_FILE="/srv/www/dnaprodb.usc.edu/htdocs/uploads/queue.dat"
+readonly UPLOADS_DIR="/srv/www/dnaprodb.usc.edu/htdocs/uploads"
+readonly SCRIPT_DIR="/srv/www/dnaprodb.usc.edu/scripts"
 readonly PIPELINE_DIR="/home/sagendor/bin/pipeline"
 readonly 
 lock() {

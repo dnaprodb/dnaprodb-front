@@ -1,456 +1,3012 @@
+
+
 {
-    "protein": {
-        "description": "(object) These fields contain information about the protein structure and sequence. Note that some proteins may not actually interact with the DNA in the structure.",
-        "residues": {
-            "description": "(array) An array of residue objects. Each residue object represents one residue in the DNA-protein interface and has the following data fields.",
-            "name": "(string) three letter residue name",
-            "chain": "(string) chain id of the residue",
-            "number": "(string) number of the residue, if present the insertion code is appended",
-            "secondary_structure": "(string)[H,S,L] residue secondary structure",
-            "id": "(string) a unique identifier of the form 'chain.number'",
-            "sap_score": "(float) hydrophobicity score calculated from the SAP algorithm",
-            "chemical_modification": "(string) describes if the residue is chemically modified or not.",
-            "standard_parent": "(string) the standard parent of the residue in the case of chemical modifications.",
-            "basa": {
-                "description": "(object) The buried SASA (BASA) summed over atoms in the residue main-chain (mc) or side-chain (sc).",
-                "mc": "(float) main-chain summed BASA",
-                "sc": "(float) side-chain summed BASA",
-                "total": "(float) the sum of the mc and sc basa.",
-                "groove": {
-                    "description": "(object) Components of the residue BASA which are due to interactions with the DNA major groove (wg), minor groove (sg) or backbone (bb).",
-                    "sc": {
-                        "description": "(object) Side-chain components.",
-                        "wg": "(float) side-chain-major groove BASA",
-                        "sg": "(float) side-chain-major groove BASA",
-                        "bb": "(float) side-chain-major groove BASA"
-                    },
-                    "mc": {
-                        "description": "(object) Main-chain components.",
-                        "wg": "(float) main-chain-major groove BASA",
-                        "sg": "(float) main-chain-major groove BASA",
-                        "bb": "(float) main-chain-major groove BASA"
-                    }
-                }
-            },
-            "fasa": {
-                "description": "(object) The free-state SASA (FASA) summed over atoms in the residue main-chain (mc) or side-chain (sc).",
-                "mc": "(float) main-chain summed FASA",
-                "sc": "(float) side-chain summed FASA",
-                "total": "(float) the sum of the mc and sc FASA"
-            },
-            "hbond_sum": {
-                "description": "(object) The sum of hydrogen bonds between residue atoms in the main-chain or side-chain and DNA atoms in Major Groove (wg), minor Groove (sg) or Backbone (bb).",
-                "sc": {
-                    "description": "(object) Residue side-chain-nucleotide hydrogen bonds.",
-                    "wg": "(int) side-chain-major groove hbonds",
-                    "sg": "(int) side-chain-minor groove hbonds",
-                    "bb": "(int) side-chain-backbone hbonds",
-                    "total": "(int) total side-chain-nucleotide hbonds"
-                },
-                "mc": {
-                    "description": "(object) Residue main-chain-nucleotide hydrogen bonds.",
-                    "wg": "(int) main-chain-major groove hbonds",
-                    "sg": "(int) main-chain-minor groove hbonds",
-                    "bb": "(int) main-chain-backbone hbonds",
-                    "total": "(int) total main-chain-nucleotide hbonds"
-                },
-                "total": "(int) sum of all hydrogen bonds for this residue"
-            },
-            "vdw_sum": {
-                "description": "(object) The sum of vdW interactions between residue atoms in the main-chain or side-chain and DNA atoms in Major Groove (wg), minor Groove (sg) or Backbone (bb).",
-                "sc": {
-                    "description": "(object) Residue side-chain-nucleotide vdW interactions.",
-                    "wg": "(int) side-chain-major groove vdWs",
-                    "sg": "(int) side-chain-minor groove vdWs",
-                    "bb": "(int) side-chain-backbone vdWs",
-                    "total": "(int) total side-chain-nucleotide vdWs"
-                },
-                "mc": {
-                    "description": "(object) Residue main-chain-nucleotide vdW interactions.",
-                    "wg": "(int) main-chain-major groove vdWs",
-                    "sg": "(int) main-chain-minor groove vdWs",
-                    "bb": "(int) main-chain-backbone vdWs",
-                    "total": "(int) total main-chain-nucleotide vdWs"
-                },
-                "total": "(int) sum of all vdW interactions for this residue"
-            }
-        },
-        "sse": {
-            "description": "(array) An array of Secondary Structure Elements (SSE) that represent a collection of one or more residues which make up the SSE. For example, a SSE may represent a single alpha helix, or may represent a single loop residue. The fields 'basa', 'hbond_sum', and 'vdw_sum' are just aggregations of the same fields for each residue belonging to that SSE.",
-            "label": "(string) A label assigned to the SSE to be used for plotting purposes. May not be unique.",
-            "id": "(string) A unique identifier assigned to the SSE.",
-            "chain": "(string) the chain id which contains the SSE",
-            "secondary_structure": "(string) the secondary structure type of the SSE",
-            "res_ids": "(array) An array of residue ids which make up the SSE",
-            "hbond_sum": "(object) Same as the hbond_sum field for Residues except aggregated over all residues in the SSE",
-            "vdw_sum": "(object) Same as the hbond_sum field for Residues except aggregated over all residues in the SSE",
-            "basa": "(object) Same as the basa field for Residues except aggregated over all residues in the SSE",
-            "coordinates": "(array)[phi, rho, s] An array of floats of length three which describe the axial coordinates of the SSE. Refer to the supplemental material of the paper for a description."
-        },
-        "chains": {
-            "description": "(array) An array of chain-objects which store information about each protein chain",
-            "chain_id": "(string) unique chain identifier",
-            "sequence": "(string) amino acid sequence",
-            "secondary_structure": "(string) secondary structure for each residue",
-            "res_ids": "(array) a list of residue identifiers in the chain",
-            "uniprot_names": "(array) a list of names for the protein extracted from UNIPROT",
-            "uniprot_accession": "(array) a list of UNIPROT accession IDs associated with the sequence",
-            "sequence_clusters": {
-                "description": "(object) The representative chain for each PDB sequence cluster. In the format 'PDBID.CHAIN_ID'",
-                "30": "(string) representative chain for cluster at 30% sequence similarity.",
-                "40": "(string) representative chain for cluster at 40% sequence similarity.",
-                "50": "(string) representative chain for cluster at 50% sequence similarity.",
-                "70": "(string) representative chain for cluster at 70% sequence similarity.",
-                "90": "(string) representative chain for cluster at 90% sequence similarity.",
-                "95": "(string) representative chain for cluster at 95% sequence similarity.",
-                "100": "(string) representative chain for cluster at 100% sequence similarity."
-            },
-            "au_chain_id": "(string) the chain ID which this chain was generated from in the asymmetric unit. May be different from 'chain_id' if multiple symmetry operations are required to generate the biological assembly.",
-            "organism": "(string) the source organism for this sequence",
-            "dna_interaction": "(bool) whether this chain interacts with any DNA or not",
-            "cath_class": "(array) a list of unique CATH classes of all domains contained in the chain (normally this will be a single value in the range 1-4)",
-            "cath_architecture": "(array) a list of unique CATH architectures of all domains contained in the chain in the format [0-9].[0-9]+",
-            "cath_topology": "(array) a list of unique CATH topologies of all domains contained in the chain in the format [0-9].[0-9]+.[0-9]+",
-            "cath_homologous_superfamily": "(array) a list of unique CATH super families of all domains contained in the chain in the format [0-9].[0-9]+.[0-9]+.[0-9]+"
-        }
-    },
+  "type": "object",
+  "properties": {
     "dna": {
-        "description": "(object) These fields contain information about the DNA structure and sequence",
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "pairs": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "origin": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "dssr_description": {
+                      "type": "string"
+                    },
+                    "hbonds": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "distance": {
+                            "type": "string"
+                          },
+                          "atom1": {
+                            "type": "string"
+                          },
+                          "atom2": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "pair_type": {
+                      "type": "string"
+                    },
+                    "id2": {
+                      "type": "string"
+                    },
+                    "id1": {
+                      "type": "string"
+                    },
+                    "name2": {
+                      "type": "string"
+                    },
+                    "mismatched": {
+                      "type": "boolean"
+                    },
+                    "name1": {
+                      "type": "string"
+                    },
+                    "y_axis": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "z_axis": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "x_axis": {
+                      "type": "array",
+                      "items": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                }
+              },
+              "links": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "3p_atom": {
+                      "type": "string"
+                    },
+                    "link_distance": {
+                      "type": "number"
+                    },
+                    "3p_nuc_id": {
+                      "type": "string"
+                    },
+                    "5p_nuc_id": {
+                      "type": "string"
+                    },
+                    "5p_atom": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "num_entities": {
+                "type": "integer"
+              },
+              "entities": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "visualization": {
+                      "type": "object",
+                      "properties": {
+                        "contains_pseudoknots": {
+                          "type": "boolean"
+                        },
+                        "radial": {
+                          "type": "object",
+                          "properties": {
+                            "link_distance": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "circular": {
+                          "type": "object",
+                          "properties": {
+                            "link_distance": {
+                              "type": "number"
+                            }
+                          }
+                        },
+                        "dbn": {
+                          "type": "string"
+                        }
+                      }
+                    },
+                    "pairs": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "chemical_modifications": {
+                      "type": "object",
+                      "properties": {
+                        "5_methylated_cytosine": {
+                          "type": "boolean"
+                        },
+                        "non-standard_nucleotides": {
+                          "type": "boolean"
+                        }
+                      }
+                    },
+                    "helical_segments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "helix_id": {
+                            "type": "string"
+                          },
+                          "mean_radius": {
+                            "type": "number"
+                          },
+                          "contains_non-standard_pairs": {
+                            "type": "boolean"
+                          },
+                          "classification": {
+                            "type": "string"
+                          },
+                          "contains_mismatches": {
+                            "type": "boolean"
+                          },
+                          "chemical_modifications": {
+                            "type": "object",
+                            "properties": {
+                              "5_methylated_cytosine": {
+                                "type": "boolean"
+                              },
+                              "non-standard_nucleotides": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "multiplets": {
+                            "type": "array",
+                            "items": {
+                              "items": {}
+                            }
+                          },
+                          "handedness": {
+                            "type": "string"
+                          },
+                          "helical_axis": {
+                            "type": "object",
+                            "properties": {
+                              "bp_origin_y": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "bp_origin_x": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "bp_origin_z": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "z_coef": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "axis_length": {
+                                "type": "number"
+                              },
+                              "x_coef": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "y_coef": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "axis_curvature": {
+                                "type": "string"
+                              }
+                            }
+                          },
+                          "contains_hoogsteen_pairs": {
+                            "type": "boolean"
+                          },
+                          "contains_non-wc_pairs": {
+                            "type": "boolean"
+                          },
+                          "length": {
+                            "type": "integer"
+                          },
+                          "score": {
+                            "type": "number"
+                          },
+                          "sequence1": {
+                            "type": "string"
+                          },
+                          "sequence2": {
+                            "type": "string"
+                          },
+                          "contains_A-tracts": {
+                            "type": "boolean"
+                          },
+                          "GC_content": {
+                            "type": "number"
+                          },
+                          "ids2": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "shape_parameters": {
+                            "type": "object",
+                            "properties": {
+                              "minor_groove_3dna": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "major_groove_curves": {
+                                "type": "array",
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number"
+                                  ]
+                                }
+                              },
+                              "opening": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "minor_groove_curves": {
+                                "type": "array",
+                                "items": {
+                                  "type": [
+                                    "string",
+                                    "number"
+                                  ]
+                                }
+                              },
+                              "shift": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "buckle": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "rise": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "slide": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "twist": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "stretch": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "stagger": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "tilt": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "propeller": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "major_groove_3dna": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "roll": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              },
+                              "shear": {
+                                "type": "array",
+                                "items": {
+                                  "type": "number"
+                                }
+                              }
+                            }
+                          },
+                          "ids1": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "strands": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "interacts_with_protein": {
+                            "type": "boolean"
+                          },
+                          "sequence": {
+                            "type": "string"
+                          },
+                          "chemical_modifications": {
+                            "type": "object",
+                            "properties": {
+                              "5_methylated_cytosine": {
+                                "type": "boolean"
+                              },
+                              "non-standard_nucleotides": {
+                                "type": "boolean"
+                              }
+                            }
+                          },
+                          "strand_id": {
+                            "type": "string"
+                          },
+                          "5p_end": {
+                            "type": "string"
+                          },
+                          "ids": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "chain_id": {
+                            "type": "string"
+                          },
+                          "length": {
+                            "type": "integer"
+                          },
+                          "GC_content": {
+                            "type": "number"
+                          },
+                          "3p_end": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "num_strands": {
+                      "type": "integer"
+                    },
+                    "num_single-stranded_segments": {
+                      "type": "integer"
+                    },
+                    "nucleotides": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "single-stranded_segments": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "length": {
+                            "type": "integer"
+                          },
+                          "ids": {
+                            "type": "array",
+                            "items": {
+                              "type": "string"
+                            }
+                          },
+                          "chain_id": {
+                            "type": "string"
+                          },
+                          "sequence": {
+                            "type": "string"
+                          }
+                        }
+                      }
+                    },
+                    "type": {
+                      "type": "string"
+                    },
+                    "stacks": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "num_helical_segments": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "ignored_entities": {
+                "type": "array",
+                "items": {
+                  "items": {}
+                }
+              },
+              "stacks": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id2": {
+                      "type": "string"
+                    },
+                    "id1": {
+                      "type": "string"
+                    },
+                    "mindist": {
+                      "type": "number"
+                    },
+                    "name2": {
+                      "type": "string"
+                    },
+                    "name1": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
         "nucleotides": {
-            "description": "(array) An array of nucleotide objects which store information about each nucleotide in the interface.",
-            "id": "(string) a unique identifier of the form 'chain.number'",
-            "name": "(string) two letter nucleotide name",
-            "chain": "(string) chain id of the nucleotide",
-            "number": "(string) number of the nucleotide, if present the insertion code is appended",
-            "chemical_modification": "(string) describes if the nucleotide is chemically modified or not.",
-            "standard_parent": "(string) the standard parent of the nucleotide in the case of chemical modifications.",
-            "partner": "(string) the nucleotide ID, if any, which is base-paired with this nucleotide",
-            "basa": {
-                "description": "(object) The buried SASA (BASA) summed over nucleotide atoms in the major groove (wg), minor groove (sg), or backbone (bb)",
-                "wg": "(float) major groove summed BASA",
-                "sg": "(float) minor groove summed BASA",
-                "bb": "(float) backbone summed BASA",
-                "secondary_structure": {
-                    "description": "(object) The BASA summed over nucleotide atoms in the major groove (wg), minor groove (sg) or backbone (bb) due to contact with Helix (H), Strand (S), or Loop (L) residues",
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ins_code": {
+                "type": "string"
+              },
+              "origin": {
+                "type": "array",
+                "items": {
+                  "type": "array",
+                  "items": {
+                    "type": "number"
+                  }
+                }
+              },
+              "fasa": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
                     "wg": {
-                        "description": "(object) Major groove-SSE components of the total BASA.",
-                        "H": "(float) major groove-Helix BASA",
-                        "S": "(float) major groove-Strand BASA",
-                        "L": "(float) major groove-Loop BASA"
+                      "type": "number"
+                    },
+                    "sr": {
+                      "type": "number"
+                    },
+                    "pp": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
                     },
                     "sg": {
-                        "description": "(object) Minor groove-SSE component of the total BASA.",
-                        "H": "(float) minor groove-Helix BASA",
-                        "S": "(float) minor groove-Strand BASA",
-                        "L": "(float) minor groove-Loop BASA"
-                    },
-                    "bb": {
-                        "description": "(object) Backbone-SSE component of the total BASA.",
-                        "H": "(float) backbone-Helix BASA",
-                        "S": "(float) backbone-Strand BASA",
-                        "L": "(float) backbone-Loop BASA"
+                      "type": "number"
                     }
+                  }
                 }
-            },
-            "fasa": {
-                "description": "(object) The free-state SASA (FASA) summed over nucleotide atoms in the major groove (wg), minor groove (sg), or backbone (bb)",
-                "wg": "(float) major groove summed FASA",
-                "sg": "(float) minor groove summed FASA",
-                "bb": "(float) backbone summed FASA",
-                "total": "(float) total FASA over all atoms in the nucleotide."
-            },
-            "hbond_sum": {
-                "description": "(object) The sum of hydrogen bonds between nucleotide atoms in major groove (wg), minor groove (sg) or backbone (bb) and Helix (H), Strand (S), and Loop (L) residues",
-                "wg": {
-                    "description": "(object) Major groove-SSE hbonds.",
-                    "H": "(int) major groove-Helix hbonds",
-                    "S": "(int) major groove-Strand hbonds",
-                    "L": "(int) major groove-Loop hbonds",
-                    "total": "(int) total major groove hbonds"
-                },
-                "sg": {
-                    "description": "(object) Minor groove-SSE hbonds.",
-                    "H": "(int) minor groove-Helix hbonds",
-                    "S": "(int) minor groove-Strand hbonds",
-                    "L": "(int) minor groove-Loop hbonds",
-                    "total": "(int) total minor groove hbonds"
-                },
-                "bb": {
-                    "description": "(object) Backbone-SSE hbonds.",
-                    "H": "(int) backbone-Helix hbonds",
-                    "S": "(int) backbone-Strand hbonds",
-                    "L": "(int) backbone-Loop hbonds",
-                    "total": "(int) total backbone hbonds"
+              },
+              "graph_coordinates": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "circular": {
+                      "type": "object",
+                      "properties": {
+                        "y": {
+                          "type": "number"
+                        },
+                        "x": {
+                          "type": "number"
+                        }
+                      }
+                    },
+                    "radial": {
+                      "type": "object",
+                      "properties": {
+                        "y": {
+                          "type": "number"
+                        },
+                        "x": {
+                          "type": "number"
+                        }
+                      }
+                    }
+                  }
                 }
-            },
-            "vdw_sum": {
-                "description": "(object) The sum of vdW interactions between nucleotide atoms in major groove (wg), minor groove (sg) or backbone (bb) and Helix (H), Strand (S), and Loop (L) residues",
-                "wg": {
-                    "description": "(object) Major groove-SSE vdWs.",
-                    "H": "(int) major groove-Helix vdWs",
-                    "S": "(int) major groove-Strand vdWs",
-                    "L": "(int) major groove-Loop vdWs",
-                    "total": "(int) total major groove vdWs"
-                },
-                "sg": {
-                    "description": "(object) Minor groove-SSE vdWs.",
-                    "H": "(int) minor groove-Helix vdWs",
-                    "S": "(int) minor groove-Strand vdWs",
-                    "L": "(int) minor groove-Loop vdWs",
-                    "total": "(int) total minor groove vdWs"
-                },
-                "bb": {
-                    "description": "(object) Backbone-SSE vdWs.",
-                    "H": "(int) backbone-Helix vdWs",
-                    "S": "(int) backbone-Strand vdWs",
-                    "L": "(int) backbone-Loop vdWs",
-                    "total": "(int) total backbone hbonds"
+              },
+              "chain": {
+                "type": "string"
+              },
+              "phosphate_present": {
+                "type": "boolean"
+              },
+              "number": {
+                "type": "integer"
+              },
+              "modified": {
+                "type": "boolean"
+              },
+              "glycosidic_conformation": {
+                "type": "array",
+                "items": {
+                  "type": "string"
                 }
+              },
+              "name_short": {
+                "type": "string"
+              },
+              "secondary_structure": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "chemical_name": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
             }
+          }
         },
-        "sequence_features": {
-            "description": "(object) Features derived from the DNA sequence.",
-            "sequence1": "(string) the DNA sequence of the first strand",
-            "sequence2": "(string) the DNA sequence of the second strand",
-            "sequence_length": "(int) length of the DNA sequence",
-            "binding_site1": "(string) continuous sequence of nucleotides which interact with the protein from strand 1",
-            "binding_site2": "(string) continuous sequence of nucleotides which interact with the protein from strand 2",
-            "binding_site_length": "(int) the maximum length of 'binding_site1|2'",
-            "gc_content": "(float) the GC content of the sequence.",
-            "binding_site_gc_content": "(float) the GC content of the binding site sequence",
-            "contains_A-tracts": "(bool) True if the sequence contains 4 or more A-T base pairs without an intervening TA step.",
-            "binding_site_contains_A-tracts": "(bool) True if the binding site sequence contains 4 or more A-T base pairs without an intervening TA step."
+        "num_chains": {
+          "type": "integer"
         },
-        "structural_features": {
-            "description": "(object) Structural features of the DNA.",
-            "shape_features": {
-                "description": "fields which contain the DNA shape parameters 'shear', 'stretch', 'stagger', 'buckle', 'propeller', 'opening', 'shift', 'slide', 'rise', 'tilt', 'roll', 'twist', 'minor_groove', 'major_groove'"
-            },
-            "axis_coordinates_x": "(array) the x-coordinates of the DNA helical axis",
-            "axis_coordinates_y": "(array) the y-coordinates of the DNA helical axis",
-            "axis_coordinates_z": "(array) the z-coordinates of the DNA helical axis",
-            "axis_coordinates_s": "(array) the distance along the DNA helical axis of each base-pair",
-            "axis_curvature": "(string) the curvature of the DNA helical axis",
-            "bp_info": "(array) a list in the same order as sequence1 and sequence2 which classifies the conformation of each base pair",
-            "strand1_ids": "(array) a list of nucleotide IDs which form base-pairs in strand 1",
-            "strand2_ids": "(array) a list of nucleotide IDs which form base-pairs in strand 1",
-            "dna_form": "(string) classification of the helix as A-DNA, B-DNA or Other"
+        "chains": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "sequence": {
+                "type": "string"
+              },
+              "au_chain_id": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "num_nucleotides": {
+                "type": "integer"
+              },
+              "nucleotide_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "num_nucleotides": {
+          "type": "integer"
         }
-
+      }
     },
-    "interactions": {
-        "nucleotide-residue_interactions": {
-            "description": "(array) An array of pair-wise nucleotide-residue interactions. Each nucleotide-residue pair in the interface is represented at most once.",
-            "res_id": "(string) residue identifier",
-            "res_name": "(string) three letter residue name",
-            "nuc_id": "(string) nucleotide identifier",
-            "nuc_name": "(string) two letter nucleotide name",
-            "hbonds": {
-                "description": "(array|null) An array of hydrogen bonds between the nucleotide and residue. null if no hydrogen bonds are present between the pair.",
-                "nuc_atom": "(string) nucleotide atom",
-                "nuc_name": "(string) two-letter nucleotide name",
-                "res_atom": "(string) residue atom",
-                "res_name": "(string) three-letter residue name",
-                "distance": "(float) acceptor-donor distance",
-                "nuc_id": "(string) nucleotide identifier",
-                "res_id": "(string) residue identifier",
-                "groove": "(string)[wg, sg, bb] dna groove",
-                "moiety": "(string)[mc, sc] residue moiety"
-            },
-            "geometry": "(string) the residue-nucleotide interaction geometry",
-            "res_ss": "(string) residue secondary structure",
-            "vdw_contacts": {
-                "description": "(array|null) An array of vdW contacts between the nucleotide and residue. null if no vdW interactions are present between the pair.",
-                "nuc_atom": "(string) nucleotide atom",
-                "nuc_name": "(string) two-letter nucleotide name",
-                "res_atom": "(string) residue atom",
-                "res_name": "(string) three-letter residue name",
-                "distance": "(float) atom-atom distance",
-                "nuc_id": "(string) nucleotide identifier",
-                "res_id": "(string) residue identifier",
-                "groove": "(string)[wg, sg, bb] dna groove",
-                "moiety": "(string)[mc, sc] residue moiety"
-            },
-            "basa": {
-                "description": "(object) The components of the BASA between the residue and nucleotide.",
-                "wg": {
-                    "description": "(object) Components of the Major groove-residue BASA.",
-                    "mc": "(float) major groove-main-chain BASA",
-                    "sc": "(float) major groove-side-chain BASA",
-                    "total": "(float) major groove-residue total BASA"
+    "interfaces": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "dna_entity_id": {
+                  "type": "string"
                 },
-                "sg": {
-                    "description": "(object) Components of the minor groove-residue BASA.",
-                    "mc": "(float) minor groove-main-chain BASA",
-                    "sc": "(float) minor groove-side-chain BASA",
-                    "total": "(float) minor groove-residue total BASA"
+                "nucleotide-sse_interactions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nuc_number": {
+                        "type": "string"
+                      },
+                      "sse_basa": {
+                        "type": "object",
+                        "properties": {
+                          "sc": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "mc": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "sse_chain": {
+                        "type": "string"
+                      },
+                      "residue_interaction_moieties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "nucleotide_interaction_moieties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "nuc_basa": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "number"
+                          },
+                          "sr": {
+                            "type": "number"
+                          },
+                          "pp": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "sg": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "sse_id": {
+                        "type": "string"
+                      },
+                      "nuc_name": {
+                        "type": "string"
+                      },
+                      "nuc_id": {
+                        "type": "string"
+                      },
+                      "nuc_chain": {
+                        "type": "string"
+                      },
+                      "hbond_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "basa": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "moiety_interactions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "vdw_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 },
-                "bb": {
-                    "description": "(object) Components of the backbone-residue BASA.",
-                    "mc": "(float) backbone-main-chain BASA",
-                    "sc": "(float) backbone-side-chain BASA",
-                    "total": "(float) backbone-residue total BASA"
+                "residue_data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nucleotide_interaction_count": {
+                        "type": "integer"
+                      },
+                      "interacting_nucleotides": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "basa_sum": {
+                        "type": "object",
+                        "properties": {
+                          "sc": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "mc": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "interacts_by": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "interacts_with": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "vdw_interaction_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "res_id": {
+                        "type": "string"
+                      },
+                      "hbond_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "interface_features": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "interaction_moiety_summary": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "H": {
+                                "type": "integer"
+                              },
+                              "S": {
+                                "type": "integer"
+                              },
+                              "L": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "H": {
+                                "type": "integer"
+                              },
+                              "S": {
+                                "type": "integer"
+                              },
+                              "L": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "H": {
+                                "type": "integer"
+                              },
+                              "S": {
+                                "type": "integer"
+                              },
+                              "L": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "H": {
+                                "type": "integer"
+                              },
+                              "S": {
+                                "type": "integer"
+                              },
+                              "L": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "H": {
+                                "type": "integer"
+                              },
+                              "S": {
+                                "type": "integer"
+                              },
+                              "L": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "psuedo-stack_interaction_ratio": {
+                        "type": "number"
+                      },
+                      "weak_interaction_count": {
+                        "type": "integer"
+                      },
+                      "secondary_structure_composition": {
+                        "type": "string"
+                      },
+                      "residue_propensities": {
+                        "type": "object",
+                        "properties": {
+                          "CYS": {
+                            "type": "null"
+                          },
+                          "ASP": {
+                            "type": "number"
+                          },
+                          "SER": {
+                            "type": "number"
+                          },
+                          "GLN": {
+                            "type": "number"
+                          },
+                          "LYS": {
+                            "type": "number"
+                          },
+                          "ASN": {
+                            "type": "number"
+                          },
+                          "PRO": {
+                            "type": "number"
+                          },
+                          "THR": {
+                            "type": "number"
+                          },
+                          "PHE": {
+                            "type": "number"
+                          },
+                          "ALA": {
+                            "type": "number"
+                          },
+                          "HIS": {
+                            "type": "number"
+                          },
+                          "GLY": {
+                            "type": "number"
+                          },
+                          "ILE": {
+                            "type": "number"
+                          },
+                          "LEU": {
+                            "type": "number"
+                          },
+                          "ARG": {
+                            "type": "number"
+                          },
+                          "TRP": {
+                            "type": "number"
+                          },
+                          "VAL": {
+                            "type": "number"
+                          },
+                          "GLU": {
+                            "type": "number"
+                          },
+                          "TYR": {
+                            "type": "number"
+                          },
+                          "MET": {
+                            "type": "null"
+                          }
+                        }
+                      },
+                      "psuedo-pair_interaction_ratio": {
+                        "type": "number"
+                      },
+                      "interaction_count": {
+                        "type": "integer"
+                      },
+                      "mean_hydrophobicity_score": {
+                        "type": "number"
+                      },
+                      "protein_chain_id": {
+                        "type": "string"
+                      },
+                      "protein_surface_geometry": {
+                        "type": "object",
+                        "properties": {
+                          "cv_coarse": {
+                            "type": "object",
+                            "properties": {
+                              "flat_ratio": {
+                                "type": "number"
+                              },
+                              "valley_ratio": {
+                                "type": "number"
+                              },
+                              "peak_ratio": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "cv_fine": {
+                            "type": "object",
+                            "properties": {
+                              "flat_ratio": {
+                                "type": "number"
+                              },
+                              "valley_ratio": {
+                                "type": "number"
+                              },
+                              "peak_ratio": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "hbond_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "secondary_structure": {
+                            "type": "object",
+                            "properties": {
+                              "wg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sr": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "pp": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "bs": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "basa": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "secondary_structure": {
+                            "type": "object",
+                            "properties": {
+                              "wg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              "sr": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "number"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              "pp": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "number"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              "sg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "number"
+                                  }
+                                }
+                              },
+                              "bs": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "number"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "number"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "residue_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "vdw_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "secondary_structure": {
+                            "type": "object",
+                            "properties": {
+                              "wg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sr": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "pp": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "bs": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "segment_ids": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  }
+                },
+                "binding_site1": {
+                  "type": "string"
+                },
+                "binding_site2": {
+                  "type": "string"
+                },
+                "nucleotide-residue_interactions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "residue_interaction_moieties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "res_number": {
+                        "type": "string"
+                      },
+                      "res_name": {
+                        "type": "string"
+                      },
+                      "hbond_sum": {
+                        "type": "object",
+                        "properties": {
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "res_secondary_structure": {
+                        "type": "string"
+                      },
+                      "nuc_secondary_structure": {
+                        "type": "string"
+                      },
+                      "nuc_ins": {
+                        "type": "string"
+                      },
+                      "min_distance": {
+                        "type": "number"
+                      },
+                      "nuc_basa": {
+                        "type": "object",
+                        "properties": {
+                          "sr": {
+                            "type": "number"
+                          },
+                          "pp": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "bs": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "vdw_interactions": {
+                        "type": "array",
+                        "items": {
+                          "items": {}
+                        }
+                      },
+                      "nuc_name": {
+                        "type": "string"
+                      },
+                      "res_id": {
+                        "type": "string"
+                      },
+                      "nuc_chain": {
+                        "type": "string"
+                      },
+                      "mean_nn_distance": {
+                        "type": "number"
+                      },
+                      "vdw_sum": {
+                        "type": "object",
+                        "properties": {
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "nuc_number": {
+                        "type": "string"
+                      },
+                      "res_chain": {
+                        "type": "string"
+                      },
+                      "res_basa": {
+                        "type": "object",
+                        "properties": {
+                          "sc": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "mc": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "basa": {
+                        "type": "object",
+                        "properties": {
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "number"
+                              },
+                              "mc": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "weak_interaction": {
+                        "type": "boolean"
+                      },
+                      "moiety_interactions": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "nucleotide_interaction_moieties": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "nuc_id": {
+                        "type": "string"
+                      },
+                      "res_ins": {
+                        "type": "string"
+                      },
+                      "geometry": {
+                        "type": "string"
+                      },
+                      "hbonds": {
+                        "type": "array",
+                        "items": {
+                          "items": {}
+                        }
+                      },
+                      "cm_distance": {
+                        "type": "number"
+                      }
+                    }
+                  }
+                },
+                "nucleotide_data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "hbond_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "secondary_structure": {
+                            "type": "object",
+                            "properties": {
+                              "wg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sr": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "pp": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "basa_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "number"
+                          },
+                          "pp": {
+                            "type": "number"
+                          },
+                          "sr": {
+                            "type": "number"
+                          },
+                          "secondary_structure": {
+                            "type": "object",
+                            "properties": {
+                              "wg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sr": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "pp": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "number"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "sg": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "residue_interaction_count": {
+                        "type": "integer"
+                      },
+                      "nuc_id": {
+                        "type": "string"
+                      },
+                      "interacts_by": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "interacts_with": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "vdw_interaction_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "secondary_structure": {
+                            "type": "object",
+                            "properties": {
+                              "wg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sr": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "pp": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              },
+                              "sg": {
+                                "type": "object",
+                                "properties": {
+                                  "H": {
+                                    "type": "integer"
+                                  },
+                                  "S": {
+                                    "type": "integer"
+                                  },
+                                  "L": {
+                                    "type": "integer"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
+                },
+                "protein_chains": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "pro_entity_id": {
+                  "type": "string"
+                },
+                "sse_data": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "nucleotide_interaction_count": {
+                        "type": "integer"
+                      },
+                      "helicoidal_coordinates": {
+                        "type": "object",
+                        "properties": {
+                          "phi": {
+                            "type": "number"
+                          },
+                          "s": {
+                            "type": "number"
+                          },
+                          "rho": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "interacting_nucleotides": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "basa_sum": {
+                        "type": "object",
+                        "properties": {
+                          "sc": {
+                            "type": "number"
+                          },
+                          "total": {
+                            "type": "number"
+                          },
+                          "mc": {
+                            "type": "number"
+                          }
+                        }
+                      },
+                      "sse_id": {
+                        "type": "string"
+                      },
+                      "interacts_by": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "interacts_with": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        }
+                      },
+                      "vdw_interaction_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "hbond_sum": {
+                        "type": "object",
+                        "properties": {
+                          "wg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "pp": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "sr": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "bs": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          },
+                          "total": {
+                            "type": "integer"
+                          },
+                          "sg": {
+                            "type": "object",
+                            "properties": {
+                              "sc": {
+                                "type": "integer"
+                              },
+                              "mc": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }
                 }
-            },
-            "res_basa": {
-                "description": "(object) the residue BASA between the residue and nucleotide",
-                "mc": "(float) the residue main-chain (mc) BASA between the residue and nucleotide",
-                "sc": "(float) the residue side-chain (sc) BASA between the residue and nucleotide"
-            },
-            "nuc_basa": {
-                "description": "(object) the nucleotide BASA between the residue and nucleotide",
-                "wg": "(float) the nucleotide major groove (wg) BASA between the residue and nucleotide",
-                "sg": "(float) the nucleotide minor groove (sg) BASA between the residue and nucleotide",
-                "bb": "(float) the nucleotide backbone (bb) BASA between the residue and nucleotide"
-            },
-            "hbond_sum": {
-                "description": "(object) The components of the total number of hydrogen bonds between the residue and nucleotide.",
-                "wg": {
-                    "description": "(object) Components of the Major groove-residue hbonds.",
-                    "mc": "(int) major groove-main-chain hbonds",
-                    "sc": "(int) major groove-side-chain hbonds",
-                    "total": "(int) major groove-residue total hbonds"
-                },
-                "sg": {
-                    "description": "(object) Components of the minor groove-residue hbonds.",
-                    "mc": "(int) minor groove-main-chain hbonds",
-                    "sc": "(int) minor groove-side-chain hbonds",
-                    "total": "(int) minor groove-residue total hbonds"
-                },
-                "bb": {
-                    "description": "(object) Components of the backbone-residue hbonds.",
-                    "mc": "(int) backbone-main-chain hbonds",
-                    "sc": "(int) backbone-side-chain hbonds",
-                    "total": "(int) backbone-residue total hbonds"
-                }
-            },
-            "vdw_sum": {
-                "description": "(object) The components of the total number of vdW interactions between the residue and nucleotide.",
-                "wg": {
-                    "description": "(object) Components of the Major groove-residue vdWs.",
-                    "mc": "(int) major groove-main-chain vdWs",
-                    "sc": "(int) major groove-side-chain vdWs",
-                    "total": "(int) major groove-residue total vdWs"
-                },
-                "sg": {
-                    "description": "(object) Components of the minor groove-residue vdWs.",
-                    "mc": "(int) minor groove-main-chain vdWs",
-                    "sc": "(int) minor groove-side-chain vdWs",
-                    "total": "(int) minor groove-residue total vdWs"
-                },
-                "bb": {
-                    "description": "(object) Components of the backbone-residue vdWs.",
-                    "mc": "(int) backbone-main-chain vdWs",
-                    "sc": "(int) backbone-side-chain vdWs",
-                    "total": "(int) backbone-residue total vdWs"
-                }
+              }
             }
-        },
-        "nucleotide-sse_interactions": {
-            "description": "(array) An array of pair-wise nucleotide-sse interactions. Each entry in the array is an aggregation of all the nucleotide-residue interactions, aggregated by secondary structure element. Loop entries here are redundant."
-        },
-        "interface_features": {
-            "description": "(object) Global properties of the DNA-protein interface which are accumulated from the residues, nucleotides, and residue-nucleotide interactions.",
-            "interface_basa": {
-                "description": "(object) Components of the total interface BASA by groove and secondary structure.",
-                "wg": {
-                    "description": "(object) Major groove (wg) components of the total interface BASA.",
-                    "H": "(float) major groove-Helix BASA",
-                    "S": "(float) major groove-Strand BASA",
-                    "L": "(float) major groove-Loop BASA",
-                    "total": "(float) total Major groove BASA"
-                },
-                "sg": {
-                    "description": "(object) Minor groove (sg) components of the total interface BASA.",
-                    "H": "(float) minor groove-Helix BASA",
-                    "S": "(float) minor groove-Strand BASA",
-                    "L": "(float) minor groove-Loop BASA",
-                    "total": "(float) total Minor groove BASA"
-                },
-                "bb": {
-                    "description": "(object) Backbone (bb) components of the total interface BASA.",
-                    "H": "(float) backbone-Helix BASA",
-                    "S": "(float) backbone-Strand BASA",
-                    "L": "(float) backbone-Loop BASA",
-                    "total": "(float) total Minor groove BASA"
-                }
-            },
-            "interface_hbond_sum": {
-                "description": "(object) Components of the total number of interface hbonds by groove and secondary structure.",
-                "wg": {
-                    "description": "(object) Major groove (wg) components of the total interface hbonds.",
-                    "H": "(float) major groove-Helix hbonds",
-                    "S": "(float) major groove-Strand hbonds",
-                    "L": "(float) major groove-Loop hbonds",
-                    "total": "(float) total Major groove hbonds"
-                },
-                "sg": {
-                    "description": "(object) Minor groove (sg) components of the total interface hbonds.",
-                    "H": "(float) minor groove-Helix hbonds",
-                    "S": "(float) minor groove-Strand hbonds",
-                    "L": "(float) minor groove-Loop hbonds",
-                    "total": "(float) total Minor groove hbonds"
-                },
-                "bb": {
-                    "description": "(object) Backbone (bb) components of the total interface hbonds.",
-                    "H": "(float) backbone-Helix hbonds",
-                    "S": "(float) backbone-Strand hbonds",
-                    "L": "(float) backbone-Loop hbonds",
-                    "total": "(float) total Minor groove hbonds"
-                }
-            },
-            "interface_vdw_sum": {
-                "description": "(object) Components of the total number of interface vdw interactions by groove and secondary structure.",
-                "wg": {
-                    "description": "(object) Major groove (wg) components of the total interface vdWs.",
-                    "H": "(float) major groove-Helix vdWs",
-                    "S": "(float) major groove-Strand vdWs",
-                    "L": "(float) major groove-Loop vdWs",
-                    "total": "(float) total Major groove vdWs"
-                },
-                "sg": {
-                    "description": "(object) Minor groove (sg) components of the total interface vdWs.",
-                    "H": "(float) minor groove-Helix vdWs",
-                    "S": "(float) minor groove-Strand vdWs",
-                    "L": "(float) minor groove-Loop vdWs",
-                    "total": "(float) total Minor groove vdWs"
-                },
-                "bb": {
-                    "description": "(object) Backbone (bb) components of the total interface vdWs.",
-                    "H": "(float) backbone-Helix vdWs",
-                    "S": "(float) backbone-Strand vdWs",
-                    "L": "(float) backbone-Loop vdWs",
-                    "total": "(float) total Minor groove vdWs"
-                }
-            },
-            "interface_type": "(string) classification of the interface ['helix'|'strand'|'helix/strand'|'disordered']",
-            "residue_propensity": {
-                "description": "(object) The interface propensity for each residue type, which measures how often a residue appears in the DNA-protein interface relative to the rest of the protein surface. Values greater than one indicate it is enriched in the interface, and less than one indicate it is depleted."
-            }
+          }
         }
+      }
     },
-    "meta": {
+    "meta_data": {
+      "type": "object",
+      "properties": {
+        "added_heavy_atoms": {
+          "type": "array",
+          "items": {
+            "items": {}
+          }
+        },
         "citation_data": {
-            "description": "(object) Citation information.",
-            "citation_title": "(string) title of the cited paper",
-            "structure_title": "(string) author provided structure title",
-            "keywords": "(array) list of keywords associated with the structure",
-            "exp_method": "(string) the experimental method used to determine the structure",
-            "authors": "(array) authors of the cited paper",
-            "pubmed_id": "(string) pubmed id of the cited paper",
-            "doi": "(string) doi of the cited paper",
-            "year": "(string) year the paper was published",
-            "release_date": "(string) year the structure was available in the PDB"
-
+          "type": "object",
+          "properties": {
+            "doi": {
+              "type": "string"
+            },
+            "structure_title": {
+              "type": "string"
+            },
+            "release_date": {
+              "type": "string"
+            },
+            "authors": {
+              "type": "string"
+            },
+            "exp_method": {
+              "type": "string"
+            },
+            "citation_title": {
+              "type": "string"
+            },
+            "pubmed_id": {
+              "type": "string"
+            },
+            "year": {
+              "type": "string"
+            },
+            "keywords": {
+              "type": "string"
+            }
+          }
         },
-        "processing_data": {
-            "description": "(object) Information which is collected during the processing of the structure.",
-            "processed_date": "(string) The date the structure was last processed",
-            "missing_heavy_atoms": "(array) a list of objects which describe any standard residues/nucleotides which are missing atoms and how many atoms are missing.",
-            "removed_residues": "(array) a list of objects which describe any residues/nucleotides which have been removed from the structure and why.",
-            "added_heavy_atoms": "(array) a list of added atoms if the PDB2PQR option is selected.",
-            "processing_options": "(object) an object describing what processing options were used to process the structure."
+        "processing_options": {
+          "type": "object",
+          "properties": {
+            "run_pdb2pqr": {
+              "type": "boolean"
+            },
+            "include_annotations": {
+              "type": "boolean"
+            },
+            "clean_structure": {
+              "type": "boolean"
+            },
+            "ensemble_analysis": {
+              "type": "boolean"
+            }
+          }
+        },
+        "deleted_models": {
+          "type": "array",
+          "items": {
+            "items": {}
+          }
+        },
+        "ensemble": {
+          "type": "boolean"
+        },
+        "program_versions": {
+          "type": "object",
+          "properties": {
+            "msms": {
+              "type": "string"
+            },
+            "reduce": {
+              "type": "string"
+            },
+            "pdb2pqr": {
+              "type": "string"
+            },
+            "hbplus": {
+              "type": "string"
+            },
+            "x3dna-snap": {
+              "type": "string"
+            },
+            "curves": {
+              "type": "string"
+            },
+            "x3dna": {
+              "type": "string"
+            },
+            "dssr": {
+              "type": "string"
+            },
+            "dssp": {
+              "type": "string"
+            }
+          }
+        },
+        "processed_date": {
+          "type": "string"
+        },
+        "modified_ids": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "new_id": {
+                "type": "string"
+              },
+              "old_id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "assembly_chains": {
+          "type": "object",
+          "properties": {
+            "A": {
+              "type": "string"
+            },
+            "B": {
+              "type": "string"
+            }
+          }
+        },
+        "removed_residues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "log": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            }
+          }
         }
+      }
     },
-    "pdbid": "(string) the PDB identifier of the structure"
+    "protein": {
+      "type": "object",
+      "properties": {
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "entities": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "number_of_residues": {
+                      "type": "integer"
+                    },
+                    "segments": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "residue_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "subunits": {
+                      "type": "integer"
+                    }
+                  }
+                }
+              },
+              "segments": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "chain": {
+                      "type": "string"
+                    },
+                    "sequence": {
+                      "type": "string"
+                    },
+                    "length": {
+                      "type": "integer"
+                    },
+                    "secondary_structure": {
+                      "type": "string"
+                    },
+                    "residue_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "secondary_structure_elements": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "chain": {
+                      "type": "string"
+                    },
+                    "sequence": {
+                      "type": "string"
+                    },
+                    "number": {
+                      "type": "integer"
+                    },
+                    "secondary_structure": {
+                      "type": "string"
+                    },
+                    "residue_ids": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "id": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "header_info": {
+                "type": "object",
+                "properties": {
+                  "sheet_remarks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "helix_remarks": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "chains": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "uniprot_names": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "cath_architecture": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "cath_homologous_superfamily": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sequence": {
+                "type": "string"
+              },
+              "GO_cellular_component": {
+                "type": "array",
+                "items": {
+                  "items": {}
+                }
+              },
+              "continuous": {
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              },
+              "cath_topology": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "au_chain_id": {
+                "type": "string"
+              },
+              "uniprot_accession": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "sequence_clusters": {
+                "type": "object",
+                "properties": {
+                  "30": {
+                    "type": "string"
+                  },
+                  "50": {
+                    "type": "string"
+                  },
+                  "40": {
+                    "type": "string"
+                  },
+                  "70": {
+                    "type": "string"
+                  },
+                  "90": {
+                    "type": "string"
+                  },
+                  "100": {
+                    "type": "string"
+                  },
+                  "95": {
+                    "type": "string"
+                  }
+                }
+              },
+              "cath_class": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "interacts_with_dna": {
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              },
+              "GO_molecular_function": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "description": {
+                      "type": "string"
+                    },
+                    "GO_ID": {
+                      "type": "string"
+                    }
+                  }
+                }
+              },
+              "GO_biological_process": {
+                "type": "array",
+                "items": {
+                  "items": {}
+                }
+              },
+              "secondary_structure": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "length": {
+                "type": "integer"
+              },
+              "residue_ids": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "organism": {
+                "type": "string"
+              },
+              "id": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "num_residues": {
+          "type": "integer"
+        },
+        "residues": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "ins_code": {
+                "type": "string"
+              },
+              "name_short": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              },
+              "chain": {
+                "type": "string"
+              },
+              "cv_coarse": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "number": {
+                "type": "integer"
+              },
+              "sap_score": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              },
+              "chemical_name": {
+                "type": "string"
+              },
+              "sesa": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "sc": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "mc": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "surface": {
+                "type": "array",
+                "items": {
+                  "type": "boolean"
+                }
+              },
+              "secondary_structure": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "id": {
+                "type": "string"
+              },
+              "fasa": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "sc": {
+                      "type": "number"
+                    },
+                    "total": {
+                      "type": "number"
+                    },
+                    "mc": {
+                      "type": "number"
+                    }
+                  }
+                }
+              },
+              "cv_fine": {
+                "type": "array",
+                "items": {
+                  "type": "number"
+                }
+              }
+            }
+          }
+        },
+        "num_chains": {
+          "type": "integer"
+        }
+      }
+    },
+    "num_models": {
+      "type": "integer"
+    },
+    "structure_id": {
+      "type": "string"
+    }
+  }
 }

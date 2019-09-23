@@ -20,7 +20,7 @@ import sys
 import smtplib
 import json
 
-UPLOAD_PATH = "/srv/www/htdocs/uploads"
+UPLOAD_PATH = "/srv/www/dnaprodb.usc.edu/htdocs/uploads"
 
 # Load sensitive data
 with open("../.sensitive.json") as FH:
@@ -59,26 +59,26 @@ Unfortunately your job request has failed. The following error message may provi
     
 {}: {}
     
-If you need assistance, please contact us through our contact page (http://dnaprodb.usc.edu/cgi-bin/contact).
+If you need assistance, please contact us through our contact page (https://dnaprodb.usc.edu/cgi-bin/contact).
 """.format(DATA['error'], DATA['message'])
 else:
     if(META['title'] != 'none'):
         subject = "DNAproDB: Your job request ({}) is ready.".format(META['title'])
         text = """\
-    Your job request has been successfully processed and is available at http://dnaprodb.usc.edu/cgi-bin/report?jobid={}&title={} \
+    Your job request has been successfully processed and is available at https://dnaprodb.usc.edu/cgi-bin/report?jobid={}&title={} \
     If you wish to keep your data private and secure, do not share this url with other people.
     
     DNAproDB will never share any data which is uploaded to our server, nor do we collect any information from your data. We hope you will find \
-    our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (http://dnaprodb.usc.edu/cgi-bin/contact).\
+    our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (https://dnaprodb.usc.edu/cgi-bin/contact).\
     """.format(FILE_NAME, META['title'])
     else:
         subject = "DNAproDB: Your job request is ready."
         text = """\
-    Your job request has been successfully processed and is available at http://dnaprodb.usc.edu/cgi-bin/report?jobid={} \
+    Your job request has been successfully processed and is available at https://dnaprodb.usc.edu/cgi-bin/report?jobid={} \
     If you wish to keep your data private and secure, do not share this url with other people.
     
     DNAproDB will never share any data which is uploaded to our server, nor do we collect any information from your data. We hope you will find \
-    our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (http://dnaprodb.usc.edu/cgi-bin/contact).\
+    our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (https://dnaprodb.usc.edu/cgi-bin/contact).\
     """.format(FILE_NAME)
 
 send_email(META['email'], subject, text)

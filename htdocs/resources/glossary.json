@@ -3,7 +3,7 @@
          "item": "PDB Identifier(s)",
          "id": "pdb_id",
          "example": "1jgg",
-         "description": "PDB identifiers are unique, four character identifiers that the Protein Data Bank assigns to every deposited structure. They always begin with a digit from 1-9 and only contain alphanumeric characters. Not case sensative."
+         "description": "PDB identifiers are unique, four character identifiers that the Protein Data Bank assigns to every deposited structure. They always begin with a digit from 1-9 and only contain alphanumeric characters. Not case sensitive."
     },
      {
          "item": "Protein Features",
@@ -17,12 +17,12 @@
                  "sub-items": [{
                      "item": "Sequence Similarity",
                      "id": "protein_seq_similarity",
-                     "description": "Matches protein chains which share a specified sequence similarity (30-100%) with a particular chain in a particular PDB structure. These matches are based on the PDB sequence clusterings which are available at <a href='ftp://resources.rcsb.org/sequence/clusters'>ftp://resources.rcsb.org/sequence/clusters</a>",
+                     "description": "Matches protein chains which share a specified sequence similarity (30-100%) with a particular chain in a particular PDB structure. These matches are based on the PDB sequence clusters which are available at <a href='ftp://resources.rcsb.org/sequence/clusters'>ftp://resources.rcsb.org/sequence/clusters</a>",
                      "example": "The structure 1R05 contains two protein chains of the Max transcription factor homodimer with no DNA. To find structures which contain protein chains with a 90% sequence similarity to chain 'A' in this structure, you would specify '90%' under the sequence similarity drop down, '1R05' in the PDB ID input, and 'A' in the chain ID input."
              }, {
                      "item": "UniProt ID",
                      "id": "protein_uniprot",
-                     "description": "Matches proteins chains which contain sequences identifiable with a <a href='https://www.uniprot.org/'>UniProt</a> ID for the sequence.",
+                     "description": "Matches proteins chains which contain sequences identifiable with a <a href='https://www.uniprot.org/'>UniProt</a> ID for that sequence.",
                      "example": "P61244"
              }, {
                      "item": "CATH Identifier",
@@ -83,7 +83,7 @@
                     }, {
                          "item": "DNA Entity Type",
                          "id": "dna_entity_type",
-                         "example": "selecting 'ssDNA' will match structures where at least one DNA entitiy is single-stranded.",
+                         "example": "selecting 'ssDNA' will match structures where at least one DNA entity is single-stranded.",
                          "description": "DNAproDB classifies <a href='/cgi-bin/glossary?id=dna_entities#dna_entities'>DNA entities</a> at the level of secondary structure based on the base-pairing within the entity. Entity types include helical, single-stranded, helix/single-stranded or other."
                     },
                      {
@@ -234,7 +234,7 @@
      {
          "item": "Model",
          "id": "model",
-         "description": "A model is one possible structure in an ensemble of structures that are possible for a given set of residues/nucleotides. A model is defined by the assignment of atomic coordinates to each atom within the model. Multiple model entries usually occur for NMR structures, where as structures obtained through X-ray diffraction will usually only have a single model. Any quantity which is derived from the three dimensional coordinates of the residues/nucleotides may vary across models. This includes protein secondary structure, nucleotide base-pairing, and nucleotide-residue interactions."
+         "description": "A model is one possible structure in an ensemble of structures that are possible for a given set of residues/nucleotides. A model is defined by the assignment of atomic coordinates to each atom within the model. Multiple model entries usually occur for NMR structures, where as structures obtained through X-ray diffraction will usually only have a single model. Any quantity which is derived from the three-dimensional coordinates of the residues/nucleotides may vary across models. This includes protein secondary structure, nucleotide base-pairing, and nucleotide-residue interactions."
     },
      {
          "item": "DNA Strand",
@@ -256,12 +256,12 @@
      {
          "item": "Protein Structural Entity",
          "id": "protein_entities",
-         "description": "A Protein structural entity is a collection of protein chain segments which are in contact with one another to form a connected sub-component of the structure. A protein entity may consist of multiple protein chains, and will usually form a biologically relevant complex, such as a heterodimer. DNAproDB defines interfaces at the level of DNA entities and protein entities - one interface per interacting DNA entity-protein entity pair."
+         "description": "A protein structural entity is a collection of protein chain segments which are in contact with one another to form a connected sub-component of the structure. A protein entity may consist of multiple protein chains, and will usually form a biologically relevant complex, such as a heterodimer. DNAproDB defines interfaces at the level of DNA entities and protein entities - one interface per interacting DNA entity-protein entity pair."
     },
      {
          "item": "DNA Moieties",
          "id": "dna_moieties",
-         "description": "A DNA moiety is a structural subcomponent of a nucleotide, which depends on the secondary structure. For double-stranded helices, a nucleotide has a phosphate moiety, sugar moiety, and a major and minor groove moiety. Single-stranded DNA obviously does not have a major or minor groove, therefore the entire base is treated as a moiety. DNAproDB identifies nucleotide-residue interactions by which moieties are interacting. For example, a side-chain-minor groove interaction. When visualization these interactions, you can choose which DNA moiety interactions are displayed."
+         "description": "A DNA moiety is a structural sub-component of a nucleotide, which depends on the secondary structure. For double-stranded helices, a nucleotide has a phosphate moiety, sugar moiety, and a major and minor groove moiety. Single-stranded DNA obviously does not have a major or minor groove, therefore the entire base is treated as a moiety. DNAproDB identifies nucleotide-residue interactions by which moieties are interacting. For example, a side-chain-minor groove interaction. When visualization these interactions, you can choose which DNA moiety interactions are displayed."
     },
      {
          "item": "Secondary Structure Element (SSE) Types",
@@ -281,7 +281,7 @@
      {
          "item": "Category Search Logic",
          "id": "category_logic",
-         "description": "This feature allows you to choose how to combine different features within a specific category. By selecting 'ALL', then only structures which match all selected feature options within a category will be shown. If you choose 'ANY', then structures which match any feature option will be shown.",
+         "description": "This input allows you to choose how to combine different features within a specific category. By selecting 'ALL', then only structures which match all selected features within a category will be shown. If you choose 'ANY', then structures which match any feature option will be shown.",
          "example": "Suppose we are looking at DNA features and we choose a sequence motif 'TATAA' and choose that the DNA entity type should be helical. If we select to match on 'ALL' then only structures which contain a helical entity where at least one strand matches the 'TATAA' motif will be returned. If we choose 'ANY', then any structures which contains either a helical entity OR a strand which contains the motif 'TATAA' will be returned."
     },
      {

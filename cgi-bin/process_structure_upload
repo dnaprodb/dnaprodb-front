@@ -55,7 +55,7 @@ up to one hour for this job to complete.
 When finished, your structure report will be available at {}. If you wish to keep your data private and secure, do not share this url with other people.
 
 DNAproDB will never share any data which is uploaded to our server, nor do we collect any information from your data. We hope you will find \
-our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (http://dnaprodb.usc.edu/cgi-bin/contact).\
+our tools useful. If you have any comments about DNAproDB, please let us know through our contact page (https://dnaprodb.usc.edu/cgi-bin/contact).\
 """.format(url)
     
     MESSAGE = "To: %s\r\n" % TO + "Subject: %s\r\n" % SUBJECT + "\r\n" + TEXT
@@ -184,17 +184,17 @@ for chain in structure[0]:
 
 # check for DNA
 if(nuc_count < 2 and not BYPASS):
-    message = 'Less than two standard nucleotides were detected. Verify that this structure actually contains DNA, or <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
+    message = 'Less than two standard nucleotides were detected. Verify that this structure actually contains DNA, or <a href="https://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
     os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
     print_html(message, error=True)
 # check for protein
 elif(res_count < 10 and not BYPASS):
-    message = 'Less than ten standard residues were detected. Verify that this structure actually contains a protein, or <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
+    message = 'Less than ten standard residues were detected. Verify that this structure actually contains a protein, or <a href="https://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
     os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
     print_html(message, error=True)
 # check for multiple chain IDs
 elif(len(chainIDs) < 2):
-    message = 'Only one chain ID was found. <strong>Every chain must have a unique chain ID</strong>. See the official <a href="http://www.wwpdb.org/documentation/file-format-content/format33/v3.3.html">PDB format documentation</a> for more details.'
+    message = 'Only one chain ID was found. <strong>Every chain must have a unique chain ID</strong>. See the official <a href="https://www.wwpdb.org/documentation/file-format-content/format33/v3.3.html">PDB format documentation</a> for more details.'
     os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
     print_html(message, error=True)
 # check structure size
@@ -203,7 +203,7 @@ elif(res_count+nuc_count > 3000):
     os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
     print_html(message, error=True)
 elif(res_count+nuc_count < 10 and not BYPASS):
-    message = 'This structure seems too small to be a DNA-protein complex. This may be caused by incorrect ATOM record formats, or failure to generate the complete structure coordinates. Try verifying the correctness of your structure file, or <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
+    message = 'This structure seems too small to be a DNA-protein complex. This may be caused by incorrect ATOM record formats, or failure to generate the complete structure coordinates. Try verifying the correctness of your structure file, or <a href="https://dnaprodb.usc.edu/cgi-bin/contact">contact us</a> for assistance.'
     os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
     print_html(message, error=True)
 
@@ -223,9 +223,9 @@ try:
     FH.close()
     
     if(TITLE != 'none'):
-        URL = 'http://dnaprodb.usc.edu/cgi-bin/report?jobid={}&title={}'.format(RANDOM_ID, TITLE)
+        URL = 'https://dnaprodb.usc.edu/cgi-bin/report?jobid={}&title={}'.format(RANDOM_ID, TITLE)
     else:
-        URL = 'http://dnaprodb.usc.edu/cgi-bin/report?jobid={}'.format(RANDOM_ID)
+        URL = 'https://dnaprodb.usc.edu/cgi-bin/report?jobid={}'.format(RANDOM_ID)
     
     if(EMAIL != 'none'):
         message = """
@@ -247,7 +247,7 @@ except SystemExit:
 except:
     message = """
     We're sorry, an internal server error occured - please try again in a few minutes. If you see this message repeatedly,
-    you may ask for assistance through the <a href="http://dnaprodb.usc.edu/cgi-bin/contact">contact page</a>.
+    you may ask for assistance through the <a href="https://dnaprodb.usc.edu/cgi-bin/contact">contact page</a>.
     """.format(EMAIL)
     os.remove("{}/{}".format(UPLOAD_PATH, FILE_NAME))
     print_html(message, error=True)

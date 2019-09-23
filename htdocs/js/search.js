@@ -720,7 +720,7 @@ function submitSearch() {
                     }
                 }
                 regexes = regexes.join('|');
-                regexes = '/' + regexes + '/';
+                //regexes = '/' + regexes + '/';
                 
                 // Apply negation if selected
                 if (fieldset_data['negate_seq_motif']) {

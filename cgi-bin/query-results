@@ -23,20 +23,20 @@ import os
 from pymongo import MongoClient
 from jinja2 import Environment, FileSystemLoader
 
-def compile_regex(search_dict, field):
-    # compile any regex expressions found in search query string
-    for key, value in search_dict.iteritems():
-        if key == field:
-            search_dict[key] = re.compile(value.strip('/'))
-        elif isinstance(value, dict):
-            compile_regex(value,field)
-        elif isinstance(value, list):
-            for item in value:
-                if isinstance(item, dict):
-                    compile_regex(item, field)
-        elif(key == "$not" and isinstance(value, basestring)):
-            if(re.search('^/.*/$', value)):
-                search_dict[key] = re.compile(value.strip('/'))
+#def compile_regex(search_dict, field):
+    ## compile any regex expressions found in search query string
+    #for key, value in search_dict.iteritems():
+        #if key == field:
+            #search_dict[key] = re.compile(value.strip('/'))
+        #elif isinstance(value, dict):
+            #compile_regex(value,field)
+        #elif isinstance(value, list):
+            #for item in value:
+                #if isinstance(item, dict):
+                    #compile_regex(item, field)
+        #elif(key == "$not" and isinstance(value, basestring)):
+            #if(re.search('^/.*/$', value)):
+                #search_dict[key] = re.compile(value.strip('/'))
 
 def makeTable(data):
     row_template = """
@@ -158,7 +158,7 @@ if(os.environ['REQUEST_METHOD'] == "GET"):
     # compile the query
     try:
         query_d = json.loads(query)
-        compile_regex(query_d, "$regex")
+        #compile_regex(query_d, "$regex")
     except:
         html_content = """
         <div style="height:300px">
@@ -205,7 +205,7 @@ else:
     # compile the query
     try:
         query_d = json.loads(query)
-        compile_regex(query_d, "$regex")
+        #compile_regex(query_d, "$regex")
     except:
         html_content = """
         <div style="height:300px">

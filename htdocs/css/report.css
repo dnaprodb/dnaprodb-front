@@ -84,3 +84,7 @@ input[type=color]:disabled {
     background: #dddddd;
     opacity: 0.5;
 }
+
+.SumoSelect .select-all {
+  display: table-cell;
+}

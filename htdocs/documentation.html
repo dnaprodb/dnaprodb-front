@@ -51,6 +51,10 @@
                         <a href="#data-parse" class="list-group-item list-group-item-action">Parsing A Data File</a>
                     </div>
                     <a href="#searching" class="list-group-item list-group-item-action">Searching The Database</a>
+                    <div class="list-group pl-3 mt-1">
+                        <a href="#search_form" class="list-group-item list-group-item-action">Search Form</a>
+                        <a href="#search_api" class="list-group-item list-group-item-action">Search API</a>
+                    </div>
                     <!--
                     <a href="#report" class="list-group-item list-group-item-action">Report Pages</a>
                     <a href="#links" class="list-group-item list-group-item-action">Links and References</a>
@@ -62,35 +66,142 @@
             <div class="col-sm-9">
                 <h1 id="intro">Introduction</h1>
                 <img src="/images/documentation/flowchart.png" id="flowchart">
-                <p>DNAproDB is processing pipeline, web server and database which aims to assist researchers in performing structural analysis of DNA-protein complexes. The DNAproDB processing pipeline takes as input the three dimensional structure of a DNA-protein complex (in mmCIF or PDB format) and extracts useful biophysical information from it, using a combination of our own tools and well known third-party libraries and software. Information is organized into three main categories: DNA features which describe the sequence and structure of the DNA present in the complex, protein features which describe the sequence and structure of the protein in the complex, and interface features that describe the various DNA-protein interactions and statistics of those interactions present in the complex. This information is then combined in a hierarchical way and stored in a <a href="http://www.json.org/">JSON</a> file, which is ideal for easy parsing and integration with the web.</p>
+                <p>DNAproDB is processing pipeline, web server and database which aims to assist researchers in performing structural analysis of DNA-protein complexes. The DNAproDB processing pipeline takes as input the three-dimensional structure of a DNA-protein complex (in mmCIF or PDB format) and extracts useful bio-physical information from it, using a combination of our own tools and well known third-party libraries and software. Information is organized into three main categories: DNA features which describe the sequence and structure of the DNA present in the complex, protein features which describe the sequence and structure of the protein in the complex, and interface features that describe the various DNA-protein interactions and statistics of those interactions present in the complex. This information is then combined in a hierarchical way and stored in a <a href="http://www.json.org/">JSON</a> file, which is ideal for easy parsing and integration with the web.</p>
 
-                <p>The DNAproDB web server (which you are currently visiting) provides tools for exploring and visualizing the data extracted from a complex by the processing pipeline. These tools are found in the report page for each structure, which can be accessed by searching the database, typing the PDB identifier in the search box at the top of any page on the website, or by following the link generated when uploading a structure. These tools allow you to visualize various DNA-protein interactions side-by-side with the three-dimensional view of the complex. Clicking and hovering on different parts of the visualizations will display additional information or highlight parts of the three-dimensional structure and allow the user to visually explore different layers of the DNA-protein interface. These visualizations can be customized and exported as a PNG file.</p>
+                <p>DNAproDB  provides tools for exploring and visualizing the data extracted from a complex. These tools are found in the report page for each structure, which can be accessed by searching the database, typing the PDB identifier in the search box at the top of any page on the website, or by following the link generated when uploading a structure. These tools allow you to visualize various DNA-protein interactions side-by-side with the three-dimensional view of the complex. Clicking and hovering on different parts of the visualizations will display additional information or highlight parts of the three-dimensional structure and allow the user to visually explore different layers of the DNA-protein interface. These visualizations can be customized and exported as a PNG file.</p>
 
-                <p>Finally, the third component of DNAproDB is our database. We have pre-processed a large number of DNA-protein complexes retrieved from the <a href="http://www.wwpdb.org/">Protein Data Bank</a> (PDB) which we store in a database - hence the "DB" in "DNAproDB". The database is designed as a <a href="https://en.wikipedia.org/wiki/Document-oriented_database">document-oriented database</a>, and is implemented in <a href="https://docs.mongodb.com/v3.2/">MongoDB</a>. The data stored in the DNAproDB database is identical to the data produced by the processing pipeline and the data available in the report pages, and is returned in the form of a <a href="http://www.json.org/">JSON</a> file.</p>
+                <p>DNAproDB is also a database. We have pre-processed a large number of DNA-protein complexes retrieved from the <a href="http://www.wwpdb.org/">Protein Data Bank</a> (PDB) which we store in a database - hence the "DB" in "DNAproDB". The database is designed as a <a href="https://en.wikipedia.org/wiki/Document-oriented_database">document-oriented database</a>, and is implemented in <a href="https://docs.mongodb.com/v3.4/">MongoDB</a>. The data stored in the DNAproDB database is identical to the data produced by the processing pipeline and the data available in the report pages, and is returned in the form of a <a href="http://www.json.org/">JSON</a> file.</p>
 
                 <p>On the remainder of this page you'll find information about how to use the various aspects of DNAproDB. Have a scroll through or use the side-navigation to the left to jump to a specific section.</p>
 
                 <h2 id="using-data">Using Data from DNAproDB</h2>
-                <p>Every page on this website which displays information to the user about a DNA-protein complex generates the content of that page from the data stored in a DNAproDB data file (JSON format) corresponding to that complex. The data files are self-contained, that is, a single data file describes all the information about a particular DNA-protein complex in one place. For structures which come from the PDB, this includes a small amount of information which is retrieved from external databases such as <a href="http://www.uniprot.org/">UniProt</a>, <a href="http://www.cathdb.info/">CATH</a> and the <a href="http://http://geneontology.org/">Gene Ontology knowledgebase</a>. This information is not included for uploaded structures since it is assumed these are unpublished - if they are, search the database for them instead. Using this web-site is easy and convenient for the user, however, the user has the option to download our data and do whatever they would like with it (all we ask is a citation). Users can download the entire database as a flat file from the <a href="/download.html">download page</a>, can download data for a set of structures returned from a query by <a href="/search.html">searching</a> the database, or can visit the report page for an individual structure and download the data there.
+                <p>Any page which displays information to the user about a DNA-protein complex is generated from the data stored in a DNAproDB data file (JSON format) corresponding to that complex. The data files are self-contained, that is, a single data file describes all the information about a particular DNA-protein complex structure in one place. For structures which come from the PDB, this includes a small amount of information which is retrieved from external databases such as <a href="http://www.uniprot.org/">UniProt</a>, <a href="http://www.cathdb.info/">CATH</a> and the <a href="http://http://geneontology.org/">Gene Ontology knowledgebase</a>. This information is not included for uploaded structures since it is assumed these are unpublished - if they are, search the database for them instead. Users can download our data for their own purposes offline (all we ask is a citation). You can download the entire database as a flat file from the <a href="/download.html">download page</a>, download data for a set of structures returned from a query by <a href="/search.html">searching</a> the database, or can visit the report page for an individual structure and download the data there.
                 </p>
                 <legend id="data-format">Data Format</legend>
                 <p>In order to understand the way DNAproDB data is organized, it is important to define some key terminology which is used throughout the site and to describe the conceptual framework DNAproDB is built on. Below is a diagram representing the conceptual framework of how we organize structural data in DNAproDB, which is based on the Protein Data Bank's framework.</p>
-
-                <img src="/images/documentation/data_framework.png" class="d-block mx-auto" id="framework" width="800px">
-                <div class="accordion" id="terms_accordian"></div>
+                <div class="row">
+                    <div class="col-sm-6"><div class="accordion" id="terms_accordian"></div></div>
+                    <div class="col-sm-6"><img src="/images/documentation/data_framework.png" class="d-block mx-auto img-fluid" id="framework" width="800px"></div>
+                </div>
+                
                 <br>
-                <p>Below is the basic schema for the way we organize the data in DBAproDB. In general, every DNA-protein complex which is stored in DNAproDB is represented by a JSON file with the same basic structure. However, some fields are of variable length, which depends on the size and complexity of the structure. Use the interactive diagram below to explore the structure of the data file and read the description about each field. Note that the field "description" is only used here for documentation purposes, and does not appear in actual data files retrieved from DNAproDB.</p>
+                <p>Below is the basic schema for the way we organize the data in DBAproDB. In general, every DNA-protein complex which is stored in DNAproDB is represented by a JSON file with the same basic structure. However, some fields are of variable length, which depends on the size and complexity of the structure. Use the interactive diagram below to explore the structure of the data file.</p>
                 <div id="json-viewer-schema"></div>
                 <br>
+                
                 <p>As a more concrete example, below is a JSON file which is returned from DNAproDB for the small structure <a href="/cgi-bin/report?pdbid=1jgg">1jgg</a>. Click on the different fields to expand them and explore the data structure.</p>
                 <div id="json-viewer-example"></div>
                 <br>
-                <p>Note that when downloading data for multiple structures from the DNAproDB database, the data will be returned in a single file, which contains and array of objects. Each object corresponds to a single structure.</p>
+                <p>We use various abbreviations in feature names throughout the DNAproDB data files. Reference the table below for the meaning of these abbreviations.</p>
+                <table class="table table-sm nw">
+                    <thead >
+                        <th class="align-middle">abbreviation</th>
+                        <th class="align-middle">full name</th>
+                        <th class="align-middle">description</th>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>nuc</td>
+                            <td>nucleotide</td>
+                            <td>A DNA nucleotide (nucleic acid).</td>
+                        </tr>
+                        <tr>
+                            <td>res</td>
+                            <td>residue</td>
+                            <td>A protein residue (amino acid).</td>
+                        </tr>
+                        <tr>
+                            <td>pp</td>
+                            <td>phosphate</td>
+                            <td>A DNA backbone structural moiety which consists of the phosphate group.</td>
+                        </tr>
+                        <tr>
+                            <td>sr</td>
+                            <td>sugar</td>
+                            <td>A DNA backbone structural moiety which consists of the pentose sugar group.</td>
+                        </tr>
+                        <tr>
+                            <td>wg</td>
+                            <td>major groove or "wide groove"</td>
+                            <td>A helical DNA base structural moiety which consists of the base edge that is exposed in the major groove.</td>
+                        </tr>
+                        <tr>
+                            <td>sg</td>
+                            <td>minor groove or "small groove"</td>
+                            <td>A helical DNA base structural moiety which consists of the base edge that is exposed in the minor groove.</td>
+                        </tr>
+                        <tr>
+                            <td>bs</td>
+                            <td>base</td>
+                            <td>A DNA structural moiety which consists of the entire nucleoside base.</td>
+                        </tr>
+                        <tr>
+                            <td>mc</td>
+                            <td>main chain</td>
+                            <td>A protein structural moiety which consists of the residue backbone.</td>
+                        </tr>
+                        <tr>
+                            <td>sc</td>
+                            <td>side chain</td>
+                            <td>A protein structural moiety which consists of the residue side chain or functional group.</td>
+                        </tr>
+                        <tr>
+                            <td>H</td>
+                            <td>helix</td>
+                            <td>Simplified protein secondary structure consisting of 'H', 'G' or 'I' helices using DSSP notation.</td>
+                        </tr>
+                        <tr>
+                            <td>S</td>
+                            <td>beta strand/beta sheet</td>
+                            <td>Simplified protein secondary structure consisting of 'E' using DSSP notation.</td>
+                        </tr>
+                        <tr>
+                            <td>L</td>
+                            <td>loop</td>
+                            <td>Simplified protein secondary structure consisting of 'B', 'T', 'S' and '-' using DSSP notation. Anything that is not a helix or a strand.</td>
+                        </tr>
+                        <tr>
+                            <td>sse</td>
+                            <td>secondary structure element</td>
+                            <td>A continuous sequence of residues that share a helix or strand conformation.</td>
+                        </tr>
+                        <tr>
+                            <td>basa</td>
+                            <td>buried solvent accessible surface area</td>
+                            <td>The amount of solvent accessible surface area which is lost when two components of the complex are bound to each other.</td>
+                        </tr>
+                        <tr>
+                            <td>fasa</td>
+                            <td>free solvent accessible surface area</td>
+                            <td>The solvent accessible surface area when the component is in a "free" state (e.g. the SASA of the DNA when the protein is removed from the structure).</td>
+                        </tr>
+                        <tr>
+                            <td>sesa</td>
+                            <td>solvent excluded surface area</td>
+                            <td>The solvent excluded surface area of a component.</td>
+                        </tr>
+                        <tr>
+                            <td>hbond</td>
+                            <td>hydrogen bond</td>
+                            <td>A favorable electrostatic interaction between a polar hydrogen (donor) and an electronegative atom (acceptor).</td>
+                        </tr>
+                        <tr>
+                            <td>vdw</td>
+                            <td>van der waals</td>
+                            <td>Two atoms which are in close proximity and may form induce dipole interactions</td>
+                        </tr>
+                        <tr>
+                            <td>cv</td>
+                            <td>circular variance</td>
+                            <td>A measure of the protein surface geometry</td>
+                        </tr>
+                    </tbody>
+                </table>
 
                 <legend id="data-parse">Parsing A Data File</legend>
-                <p>In addition to extracting information from a data file in-browser via the <a href="#report">report page</a>, one can download DNAproDB data files, which contains all the information about a DNA-protein complex provided by DNAproDB, and parse those files offline. In general, all you need is a programming language which supports a JSON parser, and the parser its self. A long list of JSON parsers is available at the official <a href="http://www.json.org">JSON web-page</a>. </p>
+                <p>In addition to extracting information from a data file in-browser via the <a href="#report">report page</a>, one can download DNAproDB data files, which contain all the information about a DNA-protein complex provided by DNAproDB, and parse those files offline. In general, all you need is a programming language which supports a JSON parser, and the parser its self. A long list of JSON parsers is available at the official <a href="http://www.json.org">JSON web-page</a>. </p>
 
-                <p>Below are some simple examples in Python. Note that neither JSON nor the structure of the DNAproDB data files are specific to python - the user can work in whatever language they prefer.</p>
+                <p>Below are some simple examples in Python. Note that neither JSON nor the structure of the DNAproDB data files are specific to python - the user can work in whatever language they prefer. When downloading data for multiple structures from the DNAproDB database, the data will be returned in a single file, which contains and array of objects. Each object corresponds to a single structure.</p>
 
                 <div class="card">
                     <div class="card-header">Python example - counting hydrogen bonds in the DNA major groove</div>
@@ -139,7 +250,7 @@ narrow_minor_groove_interactions = []                                          #
 for interface in dnaprodb_data["interfaces"]["models"][model_num]:             # iterate over each DNA-protein interface for model model_num
     for interaction in interface["nucleotide-residue_interactions"]:           # iterate over each nucleotide-residue interaction
         if("sg" in interaction["nucleotide_interaction_moieties"]):            # check if this interaction involves the minor groove
-            if(interaction["nuc_id"] in narrow_minor_groove_nucleotides):      # check if the nucleotide is in our list of narror minor groove nucleotides
+            if(interaction["nuc_id"] in narrow_minor_groove_nucleotides):      # check if the nucleotide is in our list of narrow minor groove nucleotides
                 narrow_minor_groove_interactions.append(interaction)           # if the above conditions are met, push the interaction
 
 # now the array 'narrow_minor_groove_interactions' contains all minor groove 
@@ -148,13 +259,14 @@ for interface in dnaprodb_data["interfaces"]["models"][model_num]:             #
                     </div>
                 </div>
                 <h2 id="searching">Searching DNAproDB</h2>
-                <p>DNAproDB's database has powerful search capabilities that allow users to search for structures based on characteristics of the DNA, the protein, or the DNA-protein interface. Multiple criteria can be combined using different selection logic. In addition, you can search for structures with their PDB identifier, or supply a list of PDB identifiers in combination with additional criteria, which act as a filter. This search capability is unique to DNAproDB, and can be used to generate data sets, or find structures for which you do not know the PDB identifier of. The easiest way to search the database is through the search-page, where you can construct a query using a simple expandable form. The database can also be searched using a RESTful API, but requires one to be familiar with the mongoDB query syntax - this feature is intentionally undocumented, but interested users should contact us using the <a href="/cgi-bin/contact">contact page</a> for instructions.</p>
-                <legend>The Search Form</legend>
-                <p>The search form can be accessed from the <a href="/search.html">search page</a>. When first presented, the form will be empty and contain no fields. Choose from one of the criteria and you'll be presented with different fields you can fill in which correspond to the different aspects of a DNA-protein complex (protein properties, DNA properties, or DNA-protein interaction properties).</p>
-                <img src="/images/documentation/search1.png" class="img-responsive">
-                <p> Choosing one of the criteria will update the form with a panel which shows different fields corresponding to that criteria. Additionally, you may choose to add more criteria, or clear all the criteria with the "add another criteria" and "clear all criteria" buttons, remove an individual criteria using the "remove" button, and choose how different criteria are combined logically.</p>
-                <img src="/images/documentation/search2.png" class="img-responsive">
-                <p>Once chosen, any fields within a criteria which are left blank or unchecked will be ignored, so you only have to choose items which you care about. You can choose to search for structures which match any selected feature within a category, or which match all selected features. For example, if you are matching on all selected features and choose DNA properties and specify that the sequence length should be between 10 and 20 base-pairs, and also check that the DNA Conformation should be B-form, then only structures which meet BOTH requirements will be returned. However, for fields which have multiple options such as B-DNA, A-DNA, or Other under DNA Conformation, choosing multiple options will match structures which meet ANY of the selected options. So, if you chose the sequence length to be between 10 and 20 base-pairs, and checked B-DNA and A-DNA under DNA conformation, then that will return structures in which the DNA is between 10 and 20 base-pairs in length AND is either B-DNA or A-DNA like.</p>
+                <p>DNAproDB's database has powerful search capabilities that allow users to search for structures based on characteristics of the DNA, the protein, or the DNA-protein interface. Multiple criteria can be combined using different selection logic. In addition, you can search for structures with their PDB identifier or supply a list of PDB identifiers in combination with additional criteria, which act as a filter. This search capability is unique to DNAproDB and can be used to generate data sets or find structures based on structural and bio-physical features of the DNA, protein, or DNA-protein interactions present in the structure. The easiest way to search the database is through the search-page, where you can construct a query using a simple expandable form.</p>
+                
+                <legend id="search_form">The Search Form</legend>
+                <p>The search form can be accessed from the <a href="/search.html">search page</a>. When first presented, the form will be empty and contain no fields. Choose from one of the feature categories and you'll be presented with different fields you can fill in which correspond to the different aspects of a DNA-protein complex (protein properties, DNA properties, or DNA-protein interaction properties).</p>
+                <img src="/images/documentation/search1.png" class="d-block mx-auto img-thumbnail">
+                <p> Choosing one of the feature categories will update the form with a panel which shows different fields corresponding to that category. Additionally, you may choose to add more categories, or clear all the categories with the "add another category" and "clear all categories" buttons, remove an individual category using the "remove" button, and choose how different categories are combined logically.</p>
+                <img src="/images/documentation/search2.png" class="d-block mx-auto img-thumbnail">
+                <p>Once chosen, any fields within a category which are left blank or unchecked will be ignored, so you only have to choose items which you care about. You can choose to search for structures which match any selected feature within a category, or which match all selected features. For example, if you are matching on all selected features and choose DNA properties and specify that the sequence length should be between 10 and 20 base-pairs, and also check that the DNA Conformation should be B-form, then only structures which meet BOTH requirements will be returned. However, for fields which have multiple options such as B-DNA, A-DNA, or Other under DNA Conformation, choosing multiple options will match structures which meet ANY of the selected options. So, if you chose the sequence length to be between 10 and 20 base-pairs, and checked B-DNA and A-DNA under DNA conformation, then that will return structures in which the DNA is between 10 and 20 base-pairs in length AND is either B-DNA or A-DNA like.</p>
                 
                 <!--
                 <h2 id="report">The Report Page</h2>
@@ -163,7 +275,86 @@ for interface in dnaprodb_data["interfaces"]["models"][model_num]:             #
                 <h2 id="links">Links and References</h2>
                 <p>Tools, libraries and references.</p>
                 -->
-
+                
+                <legend id="search_api">Search API</legend>
+                <p>
+                    The DNAproDB database can be searched using a web API, but requires one to be familiar with both the MongoDB query syntax and the DNAproDB data file structure. DNAproDB is built using MongoDB version 3.4 (documentation for their query language is available <a href="https://docs.mongodb.com/v3.4/reference/operator/query/">here</a>). We provide options to search the database by passing a JSON query string to our API with an optional projection string, or to retrieve data for an individual entry by its PDB identifier. We also provide some convenience options such as getting the total number of entries in the database. All data is returned in JSON - either a single document or an array of documents. Note that the use of the <code>$where</code> operator in queries is forbidden - any query using this operator will be rejected. See the table below for information about using our API.
+                    
+                    <table class="table">
+                        <tr>
+                            <th valign="top"> URL </th>
+                            <td> 
+                                <b><code>/cgi-bin/request-data</code></b>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th valign="top">HTTP Method</th>
+                            <td><b><code>GET</code> | <code>POST</code></b></td>
+                        </tr>
+                        <tr>
+                            <th valign="top">URL Params</th>
+                            <td>
+                                <br>
+                                <br> <b>Querying</b>
+                                <br> <code>query=[JSON string] (required)</code>
+                                <br> example: <code>query={"protein.chains.organism": {"$regex": "homo sapiens", "$options": "i"}}</code>
+                                <br>
+                                <br> <code>projection=[JSON string] (optional)</code>
+                                <br> example: <code>projection={"structure_id":1, "protein.chains": 1}</code>
+                                <br>
+                                <br> <b>Retrieve a single entry</b>
+                                <br> <code>pdbid_id=[four character PDB identifier]</code>
+                                <br> example: <code>pdb_id=1jgg</code>
+                                <br>
+                                <br> <b>Get the number of entries</b>
+                                <br> <code>count=[boolean]</code>
+                                <br> example: <code>count=true</code>
+                                <br>
+                                <br> <b>Get last time the database was updated</b>
+                                <br> <code>last-updated=[boolean]</code>
+                                <br> example: <code>last-updated=true</code>
+                                <br>
+                                <br> <b>Get list of all PDB identifiers</b>
+                                <br> <code>pdbid-list=[boolean]</code>
+                                <br> example: <code>pdbid-list=true </code>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th valign="top">Examples</th>
+                            <td> 
+                                Here we use jQuery to make a POST request using the 'query' parameter to find all entries with a human protein chain. We use the <code>$regex</code> operator to look for protein chains where the 'organism' feature matches "homo sapiens", case-insensitive. 
+                                <br>
+                                <br>
+                                <pre>
+$.ajax({
+  url: "https://dnaprodb.usc.edu:/cgi-bin/request-data",
+  dataType: "json",
+  data : { 
+    'query': '{"protein.chains.organism": {"$regex": "homo sapiens", "$options": "i"}}',
+  },
+  type : "POST",
+  success : function(result) {
+    console.log(result);
+  }
+});
+                                </pre>
+                                Here we send a GET request with wget to retrieve the number of entries in the database.
+                                <br>
+                                <br>
+                                <pre>
+wget -O count.json https://dnaprodb.usc.edu/cgi-bin/request-data?count=1
+cat count.json
+                                </pre>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th valign="top">Notes </th>
+                            <td>
+                                The use of the <code>$where</code> operator is not allowed. Queries using this operator will be automatically rejected. When using regular expression please use the <code>{"$regex": pattern, "$options": [options]}</code> syntax. If you require to use regular expressions inside of an <code>$in</code> expression, please convert this to an a single regular expression instead. For example, rather than using <code>{"$in": [\pattern1\, \pattern2\, exact3]}</code>, convert this to <code>{"$regex": "pattern1|pattern2|^exact3$"}</code>.
+                            </td>
+                        </tr>
+                    </table>
+                </p>
             </div>
         </div>
     </div>
@@ -215,7 +406,7 @@ for interface in dnaprodb_data["interfaces"]["models"][model_num]:             #
             }).then(viewer => {
                 const node = viewer.getRootElement();
                 document.getElementById("json-viewer-schema").appendChild(node);
-                node.openAll(3);
+                node.openAll(2);
             });
         });
 

@@ -2,14 +2,12 @@
 <html lang="en">
 
 <head>
-    {% if jobready %} 
-        {% if pdb_structure %}
-            <title>Report for PDB Structure {{structure_title}}</title>
-        {% else %}
-            <title>Report for Uploaded Structure {{structure_title}}</title>
-        {% endif %}
+    {% if jobready %} {% if pdb_structure == "true" %}
+    <title>Report for PDB Structure {{structure_title}}</title>
     {% else %}
-        <title>Report Unavailable</title>
+    <title>Report for Uploaded Structure {{structure_title}}</title>
+    {% endif %} {% else %}
+    <title>Report Unavailable</title>
     {% endif %}
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -26,7 +24,8 @@
     <link rel="stylesheet" href="/css/main.css?v=1488920049">
     <link rel="stylesheet" href="/css/report.css?v=1498001111">
     <link rel="stylesheet" href="/css/big-json-viewer.css?v=1">
-
+    
+    <!-- Other stuff -->
     <link rel="apple-touch-icon" sizes="57x57" href="/fav.ico/apple-icon-57x57.png">
     <link rel="apple-touch-icon" sizes="60x60" href="/fav.ico/apple-icon-60x60.png">
     <link rel="apple-touch-icon" sizes="72x72" href="/fav.ico/apple-icon-72x72.png">
@@ -49,26 +48,29 @@
     {{nav}} {% if jobready %}
     <main class="container-fluid">
         <h3 class="text-center my-2">
-            <label class="mr-2">Structure Name: <span id="structure_name" class="ml-1 font-weight-bold"></span></label>
-            <label class="mr-2"><i class="fa fa-info-circle" onclick="glossary('model')"></i> model selection: <span id="current_model" class="ml-1 font-weight-bold"></span></label>
-            <label class="mr-2"><i class="fa fa-info-circle" onclick="glossary('dna_entities')"></i> DNA entity selection: <span id="current_dna_entity" class="ml-1 font-weight-bold"></span></label>
-            <label class="mr-2">protein chains selection: <span id="current_protein_chains" class="ml-1 font-weight-bold"></span></label>
+            <label class="mr-2">Structure Name: <span id="structure_name" class="font-weight-bold"></span></label>
+            <label class="mr-2"><i class="fa fa-info-circle" onclick="glossary('model')"></i> model selection: <span id="current_model" class="font-weight-bold"></span></label>
+            <label class="mr-2"><i class="fa fa-info-circle" onclick="glossary('dna_entities')"></i> DNA entity selection: <span id="current_dna_entity" class="font-weight-bold"></span></label>
+            <label class="mr-2">protein chains selection: <span id="current_protein_chains" class="font-weight-bold"></span></label>
         </h3>
         <div class="row">
             <!-- Left Column -->
             <div class="col-xl-5 col-lg-12" style="padding-right:20px; border-right: 1px solid rgba(0, 0, 0, 0.1);">
                 <ul class="nav nav-tabs my-2">
                     <li class="nav-item">
-                        <a class="nav-link active" data-toggle="tab" href="#viewer">3D Structure Viewer</a>
+                        <a class="nav-link active" data-toggle="tab" href="#viewer"><i class="fa fa-cubes" aria-hidden="true"></i>
+ 3D Viewer</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#interface_select">Interface Selection</a>
+                        <a class="nav-link" data-toggle="tab" href="#interface_select"><i class="fa fa-sliders" aria-hidden="true"></i> Interface Selection</a>
                     </li>
                     <li class="nav-item">
-                        <a id="chart_controls_link" class="nav-link" data-toggle="tab" href="#console">Chart Controls</a>
+                        <a id="chart_controls_link" class="nav-link" data-toggle="tab" href="#console"><i class="fa fa-cog" aria-hidden="true"></i>
+ Chart Controls</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" data-toggle="tab" href="#explorer">Data Explorer</a>
+                        <a class="nav-link" data-toggle="tab" href="#explorer"><i class="fa fa-binoculars" aria-hidden="true"></i>
+ Data Explorer</a>
                     </li>
                 </ul>
                 <div class="tab-content">
@@ -79,17 +81,35 @@
                                     <div id="viewport"></div>
                                 </div>
                             </div>
-                            <div class="form-inline justify-content-center mt-2 mb-2">
-                                <button type="button" id="ngl_controls_button" class="btn btn-sm btn-info mr-2 my-1" data-toggle="collapse" data-target="#ngl_controls">Show Controls</button>
-                                <button type="button" id="cartoon_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Hide Cartoon</button>
-                                <button type="button" id="image_export" class="btn btn-sm btn-success mr-2 my-1" >Save as Image</button>
-                                <a id="download_pdb" class="btn btn-sm btn-success my-1">Download Structure File</a>
+                            <div>
+                                <strong>Rotate:</strong> drag + left click &nbsp;
+                                <strong>Translate:</strong> drag + right click &nbsp;
+                                <strong>Zoom:</strong> scroll
                             </div>
-                            <div id="ngl_controls" class="collapse text-left mt-2">
-                                <p><strong>Rotate: </strong>drag + left click</p>
-                                <p><strong>Translate: </strong>drag + right click</p>
-                                <p><strong>Zoom: </strong>scroll wheel</p>
-                                <p>The current DNA-protein interface, as chosen by the user, is shown as opaque and colored by secondary structure. The rest of the structure is rendered transparent.</p>
+                            <div class="form-inline justify-content-center mt-2 mb-2">
+                                <div class="form-group">
+                                    <button type="button" id="cartoon_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Hide Cartoon</button>
+                                    <button type="button" id="hydrogen_toggle_button" class="btn btn-sm btn-primary mr-2 my-1">Show Hydrogens</button>
+                                </div>
+                                <div class="form-group">
+                                    <button type="button" id="image_export" class="btn btn-sm btn-success mr-2 my-1">Save as Image</button>
+                                    <a id="download_pdb" class="btn btn-sm btn-success my-1">Download Structure File</a>
+                                </div>
+                            </div>
+                            <div class="form-inline justify-content-center mt-2 mb-2">
+                                    <label class="mr-2">color by:</label>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ngl_color_option" value="residues" checked>
+                                        <label class="form-check-label">residues</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ngl_color_option" value="sse">
+                                        <label class="form-check-label">SSE</label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="ngl_color_option" value="chain">
+                                        <label class="form-check-label">chain</label>
+                                    </div>
                             </div>
                         </div>
                     </div>
@@ -110,8 +130,9 @@
                                 <select class="form-control form-control-sm mr-2" name="proteinChains" id="protein_chains_select" multiple></select>
                             </div>
                         </div>
-                        <div id="advanced_interface_options" class="collapse mt-2">
+                        <div id="advanced_interface_options" class="collapse show mt-2">
                             <div class="form-horizontal">
+                                <hr>
                                 <h4 class="text-center">Interaction Options</h4>
                                 <div class="form-row">
                                     <div class="col-sm-4 my-2 text-right">
@@ -354,8 +375,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <h4 class="text-center my-2">Component Exclusions</h4>
-                                <p>Use the checklists below to select individual residues, nucleotides or SSEs you wish to exclude from the current visualizations. Note: nucleotides will still be drawn, but any interactions with exlcuded nucleotides will be ignored, which may remove additional residues.</p>
+                                <h4 class="text-center my-2">Exclude Componenents</h4>
+                                <p>Use the lists below to select individual residues, nucleotides or SSEs you wish to exclude from the current visualizations. Note: nucleotides will still be drawn, but any interactions with exlcuded nucleotides will be ignored, this may remove additional residues.</p>
                                 <div class="form-inline justify-content-center">
                                     <div class="form-group my-1">
                                         <label class="mr-2">Nucleotides:</label>
@@ -380,7 +401,7 @@
                             </div>
                         </div>
                         <div class="form-inline justify-content-center my-2">
-                            <button type="button" id="advanced_options_button" class="btn btn-sm btn-info mr-2" data-toggle="collapse" data-target="#advanced_interface_options">show advanced options</button>
+                            <button type="button" id="advanced_options_button" class="btn btn-sm btn-info mr-2" data-toggle="collapse" data-target="#advanced_interface_options">hide advanced options</button>
                             <button class="btn btn-danger btn-sm mr-2" id="plot_button">visualize interface</button>
                         </div>
                     </div>
@@ -485,6 +506,19 @@
                                         <option value="tilt">tilt</option>
                                         <option value="twist">twist</option>
                                     </select>
+                                </div>
+                                <div class="form-inline mb-2">
+                                    <label class="mr-2" >axis limits:</label>
+                                    <div class="input-group input-group-sm" style="max-width: 200px;">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">min</span>
+                                        </div>
+                                        <input name="y-lower" type="text" class="form-control">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
+                                        </div>
+                                        <input name="y-upper" type="text" class="form-control">
+                                    </div>
                                 </div>
                                 <div class="form-check form-check-inline mb-2">
                                     <input class="form-check-input" type="checkbox" id="reverse_strands_check" value="true">
@@ -624,9 +658,34 @@
                     </div>
                     <div id="explorer" class="tab-pane fade" role="tabpanel">
                         <h4 class="text-center"><strong>Data Explorer</strong></h4>
-                        <p>Below you can explore the extracted features of this structure. Click on the items below to expand them and reveal further items. Explanations of these features are available from the <a href="/documentation.html#data-format">documentation page</a>.</p>
-                        <a id="json_download_link" class="btn btn-success mb-2">Download JSON Data</a>
-                        <div id="json_data_explorer" class="ml-4" style="overflow-x: auto;"></div>
+                        <p>Below you can explore the DNAproDB data file for this structure. Click on the items below to expand them and reveal further items. Explanations of these features are available from the <a href="/documentation.html#data-format">documentation page</a>. Click the download button to download the data file or use the select box to find and view a particular data item.
+                        </p>
+                        <div class="text-center">
+                            <label class="font-weight-bold" id="data_item_label"></label>
+                        </div>
+                        <div class="form-inline">
+                            <div class="form-group my-1">
+                                <select class="form-control form-control-sm mr-1" name="data_item" id="data_item_select">
+                                    <option value=""></option>
+                                    <option value="nuc">nucleotide</option>
+                                    <option value="res">residue</option>
+                                    <option value="int">nuc-res interaction</option>
+                                    <option value="ent">DNA entity</option>
+                                    <option value="helix">DNA helix</option>
+                                    <option value="pro_chain">protein chain</option>
+                                </select>
+                            </div>
+                            <div class="form-group my-1" id="data_item_search_group"></div>
+                            <div class="form-group my-1">
+                                <button class="btn btn-sm btn-primary mr-1" id="data_item_search_button">find <i class="fa fa-search"></i></button>
+                                <a id="json_download_link" class="btn btn-sm btn-success mr-1">download data</a>
+                            </div>
+                            <div class="form-group my-1">
+                                <span class="alert-danger" id="data_search_error"></span>
+                            </div>
+                        </div>
+                        <hr>
+                        <div id="json_data_explorer" style="overflow-x: auto;"></div>
                     </div>
                 </div>
             </div>
@@ -644,19 +703,28 @@
                     </li>
                 </ul>
                 <div class="tab-content">
+                    <h6 class="text-center my-2">
+                        <label class="mr-2">DNA moiety selection: <span id="dna_moiety_selection" class="font-weight-bold"></span></label>
+                        <label class="mr-2">protein SST selection: <span id="protein_sst_selection" class="font-weight-bold"></span></label>
+                        <label class="mr-2">interaction criteria: <span id="interaction_criteria_selection" class="font-weight-bold"></span></label>
+                    </h6>
                     <div id="lcm" class="tab-pane fade show active" role="tabpanel">
                         <div class="text-center">
                             <div id="lcm_plot" class="visualization"></div>
                         </div>
                         <div>
-                            In addition to the <a href="#chart_controls_link" onclick='$("#chart_controls_link").tab("show");'>chart controls</a> which can be accessed in the top left you can
-                            <ul>
-                                <li><strong>Click</strong> to select individual residues or nucleotides and highlight them in the 3D view (hold SHIFT for multiple selections)</li>
-                                <li><strong>Double Click</strong> on labels to re-name them</li>
-                                <li><strong>Drag</strong> components to reposition them</li>
-                                <li><strong>Scroll</strong> to zoom in or out on the plot</li>
-                                <li><strong>Hover</strong> above residues, nucleotides or interaction lines to display additional information (can be toggled off in chart controls)</li>
-                            </ul>
+                            <p>The <span class="font-italic">Residue Contact Map</span> shows individual nucleotide-residue interactions, DNA secondary structure, protein secondary structure and DNA interaction moieties. The DNA is displayed as a graph, with nucleotides being nodes and edges between them indicating backbone links, base pairing or base stacking. Different base pairing geometries are indicated via the base-pair edges, and other structural features such as backbone breaks, missing phosphates, and the DNA strand sense are represented. Protein residues are displayed as small nodes with the node shape and color representing residue secondary structur. Edges between residue and nucleotide nodes represent an interaction between the two and which DNA moiety(s) the interaction involves.
+                            </p>
+                            <p>
+                                Use the <a href="#chart_controls_link" onclick='$("#chart_controls_link").tab("show");'>chart controls</a> at the top left to modify labels, change the color scheme, rotate the plot, export it as a PNG file and more. You can also
+                                <ul>
+                                    <li><strong>Click</strong> to select individual residues or nucleotides and highlight them in the 3D view (hold SHIFT for multiple selections)</li>
+                                    <li><strong>Double Click</strong> on labels to re-name them</li>
+                                    <li><strong>Drag</strong> components to reposition them</li>
+                                    <li><strong>Scroll</strong> to zoom in or out on the plot</li>
+                                    <li><strong>Hover</strong> above residues, nucleotides or interaction lines to display additional information (can be toggled off in chart controls)</li>
+                                </ul>
+                            </p>
                         </div>
                     </div>
                     <div id="pcm" class="tab-pane fade" role="tabpanel">
@@ -664,13 +732,17 @@
                             <div id="pcm_plot" class="visualization"></div>
                         </div>
                         <div>
-                            In addition to the <a href="#chart_controls_link" onclick='$("#chart_controls_link").tab("show");'>chart controls</a> which can be accessed in the top left you can
-                            <ul>
-                                <li><strong>Click</strong> to select individual residues or SSE and highlight them in the 3D view (hold SHIFT for multiple selections)</li>
-                                <li><strong>Double Click</strong> on labels to re-name them</li>
-                                <li><strong>Hover</strong> above a SSE to display additional information</li>
-                                <li><strong>Drag</strong> text labels to reposition them.</li>
-                            </ul>
+                            <p>The <span class="font-italic">Helical Contact Map</span> plots protein secondary structural elements (SSE) interactions along the helical axis for a selected DNA helix. Interactions of SSEs with different DNA moieties are represented in concentric annuli and the position of each plotted SSE is given in helicoidal coordinates; a curvilinear coordinate system defined by the axis of a helical DNA segment.
+                            </p>
+                            <p>
+                                Use the <a href="#chart_controls_link" onclick='$("#chart_controls_link").tab("show");'>chart controls</a> at the top left to modify labels, change the color scheme, rotate the plot, export it as a PNG file and more. You can also
+                                <ul>
+                                    <li><strong>Click</strong> to select individual residues or SSE and highlight them in the 3D view (hold SHIFT for multiple selections)</li>
+                                    <li><strong>Double Click</strong> on labels to re-name them</li>
+                                    <li><strong>Hover</strong> above a SSE to display additional information</li>
+                                    <li><strong>Drag</strong> text labels to reposition them.</li>
+                                </ul>
+                            </p>
                         </div>
                     </div>
                     <div id="sop" class="tab-pane fade" role="tabpanel">
@@ -679,13 +751,16 @@
                             <div id="sop_warning"></div>
                         </div>
                         <div>
-                            In addition to the <a href="#chart_controls_link" onclick='$("#chart_controls_link").tab("show");'>chart controls</a> which can be accessed in the top left you can
-                            <ul>
-                                <li><strong>Click</strong> to select individual residues and highlight them in the 3D view (hold SHIFT for multiple selections)</li>
-                                <li><strong>Double Click</strong> on labels to re-name them</li>
-                                <li><strong>Hover</strong> above residues to display additional information</li>
-                                <li><strong>Drag</strong> text labels to reposition them.</li>
-                            </ul>
+                            <p>The <span class="font-italic">Helical Shape Plot</span> plots DNA shape parameters (such as major and minor groove width, or helical parameters) for a selected helix along the sequence of the helix. In addition, DNA-protein residue interactions are plotted showing approximately where each residue in the interface interacts along the DNA sequence and the secondary structure of that residue. Protein residue interactions can be toggled off if only DNA shape parameters are desired, or they can be displayed to indicate possible DNA shape readout, such as the presence of positively charged residues in regions of narrow minor groove width.</p>
+                            <p>
+                                Use the <a href="#chart_controls_link" onclick='$("#chart_controls_link").tab("show");'>chart controls</a> at the top left to modify labels, change the color scheme, rotate the plot, export it as a PNG file and more. You can also
+                                <ul>
+                                    <li><strong>Click</strong> to select individual residues and highlight them in the 3D view (hold SHIFT for multiple selections)</li>
+                                    <li><strong>Double Click</strong> on labels to re-name them</li>
+                                    <li><strong>Hover</strong> above residues to display additional information</li>
+                                    <li><strong>Drag</strong> text labels to reposition them.</li>
+                                </ul>
+                            </p>
                         </div>
                     </div>
                 </div>
@@ -694,11 +769,12 @@
         <hr>
         <div class="container-fluid px-5">
             <div id="citation_table_wrapper"></div>
-            <p>Current model selection: <span id="current_model2"></span></p>
+            <p>Current model selection: <strong><span id="current_model2"></span></strong></p>
             <!-- protein tables -->
             <h4 class="text-center">Protein Chain Information</h4>
             <div class="table-responsive">
                 <table class="table table-sm nw">
+                    {% if pdb_structure == "true" %}
                     <thead class="pro">
                         <th class="align-middle">Chain ID</th>
                         <th class="align-middle">A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span></th>
@@ -722,6 +798,20 @@
                         <th class="align-middle">Chain
                             <br>Segments</th>
                     </thead>
+                    {% else  %}
+                    <thead class="pro">
+                        <th class="align-middle">Chain ID</th>
+                        <th class="align-middle">A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span></th>
+                        <th class="align-middle">Sequence</th>
+                        <th class="align-middle">Sequence
+                            <br>Length</th>
+                        <th class="align-middle">Secondary
+                            <br>Structure </th>
+                        <th class="align-middle">Chain
+                            <br>Segments</th>
+                    </thead>
+                    {% endif %}
+                    
                     <tbody id="protein_chain_table">
                     </tbody>
                 </table>
@@ -858,7 +948,7 @@
         </div>
         <svg class="hidden_svg">
             <g class="label">
-                <text id="test_text">ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</text>
+                <text id="test_text">abcdefghijklmnopqrstuvwxyz0123456789</text>
             </g>
         </svg>
         <div class="card hidden_label_input" id="label_input_div">
@@ -876,8 +966,7 @@
         </div>
         <div class="tooltip card p-0"></div>
     </main>
-    {{foot}} 
-    {{option_templates}}
+    {{foot}} {{option_templates}}
 
     <!-- D3.js Code -->
     <script src="https://d3js.org/d3.v5.js"></script>
@@ -904,7 +993,7 @@
 
     <!-- NGL Viewer Library -->
     <script type="text/javascript" src="/js/ngl.js"></script>
-    
+
     <!-- KDTree Library -->
     <script type="text/javascript" src="/js/kdTree.min.js"></script>
 
@@ -918,20 +1007,34 @@
         var STRUCTURE_TITLE = "{{structure_title}}";
         var STRUCTURE_ID = "{{structure_id}}";
         var PDB_STRUCTURE = "{{pdb_structure}}" == "true";
-        
+
         $("#structure_name").text(STRUCTURE_TITLE);
     </script>
 
-    <!-- Tooltip templates -->
+    <!-- Handblebar templates -->
     {{tooltip_templates}} 
-    
     {{overview_templates}}
-
+    {% raw %}
+    <script id="data_fields_template" type="text/x-handlebars-template">
+        {{#if models}}
+            <select class="form-control form-control-sm mr-1" name="data_item_model" id="data_item_model_select">
+                {{#each models}}
+                    <option value="{{this}}">{{this}}</option>
+                {{/each}}
+            </select>
+        {{/if}}
+        <input type="text" class="form-control form-control-sm mr-1" placeholder="{{ph1}}" name={{name1}} maxlength="{{max1}}" style="{{style1}}" onfocus='$("#data_search_error").text("");'>
+        {{#if ph2}}
+            <input type="text" class="form-control form-control-sm mr-1" placeholder="{{ph2}}" name={{name2}} maxlength="{{max2}}" style="{{style2}}" onfocus='$("#data_search_error").text("");'>
+        {{/if}}
+    </script>
+    {% endraw %}
+    
     <!-- Custom Code -->
     <script src="/js/ngl_viewer_functions_nm.js" type="text/javascript "></script>
     <script src="/js/visualizations.js?v=1559942732" type="text/javascript "></script>
     <script src="/js/report.js?v=1559942751" type="text/javascript "></script>
-
+    
     {% else %}
     <div class="container">
         {{message}}
