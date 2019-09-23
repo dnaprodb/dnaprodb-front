@@ -646,7 +646,7 @@ function applyLabelFormats() {
             if(isNaN(offset)) {
                 offset = 0;
             }
-            updateResLabels(RESIDUES, format, pro_chains[i], 'residue', offset);
+            updateResLabels(RESIDUES, format, pro_chains[i], 'label', offset);
         }
     }
     
@@ -660,7 +660,7 @@ function applyLabelFormats() {
             }
         });
         if (format.length > 0) {
-            updateSSELabels(SSE, format, pro_chains[i], PLOT_DATA.model, 'residue');
+            updateSSELabels(SSE, format, pro_chains[i], PLOT_DATA.model, 'label');
         }
     }
 }
@@ -757,7 +757,7 @@ function updateSSELabels(lookup, format, chain, mi, label_type) {
             }
         }
         if (lookup[mi][id].include) {
-            updateLabelText(id, label, 'residue');
+            updateLabelText(id, label, label_type);
         } else {
             PLOT_DATA.labels[mi][id] = label;
         }
@@ -800,16 +800,16 @@ function updateLabelTransform(d) {
     return `translate(${d.x}, ${d.y}) rotate(${d.angle}) scale(${d.scale})`;
 }
 
-function updateLabelText(com_id, label, type="residue") {
+function updateLabelText(com_id, label, type="label") {
     /* 
     This function updates multiple labels corresponding to the same 
     com_id with a given label and adjusts their positions by calling
     offsetLabelText
     */
-    let selection = d3.selectAll(`.label[data-com_id="${PLOT_DATA.idMap[com_id]}"]`);
+    let selection = d3.selectAll(`.${type}[data-com_id="${PLOT_DATA.idMap[com_id]}"]`);
     // update the text
     selection.selectAll("text").text(label);
-    if(type == "residue") {
+    if(type == "label") {
         selection.each(function(d){
             d.text = label;
             d.width = label.length*PLOT_DATA.label_font.xscale;
@@ -833,10 +833,10 @@ function updateLabelText(com_id, label, type="residue") {
     
     // update the label value in PLOT_DATA.labels
     let mi = PLOT_DATA.model;
-    if (com_id in PLOT_DATA.labels[mi]) {
-        PLOT_DATA.labels[mi][com_id] = label;
-    } else {
+    if (com_id in PLOT_DATA.labels) {
         PLOT_DATA.labels[com_id] = label;
+    } else {
+        PLOT_DATA.labels[mi][com_id] = label;
     }
 }
 
@@ -850,12 +850,12 @@ function offsetLabelText(selection) {
     function dot(u, v) {
         return u[0] * v[0] + u[1] * v[1];
     }
-
+    
     function distance(u, v) {
         let d = subtractPoints(u, v);
         return Math.sqrt(dot(d, d));
     }
-
+    
     function getRectEdges(center, width, height, angle) {
         angle = angle * Math.PI / 180;
         let points = [
@@ -1044,7 +1044,7 @@ function offsetLabelText(selection) {
 
         return found ? dist : -1;
     }
-
+    
     function pointInterior(point, edges) {
         let x = point[0],
             y = point[1];
@@ -1061,7 +1061,7 @@ function offsetLabelText(selection) {
 
         return inside;
     }
-
+    
     function overlapBoundaryEdges(edges1, edges2, boundary) {
         // Find all edges from edges1 that intersect edges from edges2
         var boundaryEdgeIndices = [];
@@ -1091,22 +1091,40 @@ function offsetLabelText(selection) {
 
         return boundaryEdgeIndices;
     }
+    
+    // briefly render any non-displayed SVG elements so we can call .getBBox()
+    let divs = [];
+    if($("#lcm").css("display") == "none") {
+        divs.push($("#lcm"));
+    }
+    if($("#pcm").css("display") == "none") {
+        divs.push($("#pcm"));
+    }
+    if($("#sop").css("display") == "none") {
+        divs.push($("#sop"));
+    }
+    for(let i = 0; i < divs.length; i++) {
+        divs[i].css("visibility", "hidden");
+        divs[i].toggleClass("show");
+        divs[i].toggleClass("active");
+    }
+    
     selection.each(function (d) {
         let node;
         switch (d.node.plot_type) {
         case 'LCM':
-            node = LCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+            node = LCM.svg.select(`g[data-node_id="${d.node.node_id}"]`);
             break;
         case 'PCM':
-            node = PCM.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+            node = PCM.svg.select(`g[data-node_id="${d.node.node_id}"]`);
             break;
         case 'SOP':
-            node = SOP.svg.select(`g[data-node_id="${d.node.node_id}"] path`);
+            node = SOP.svg.select(`g[data-node_id="${d.node.node_id}"]`);
             break;
         }
         
         // get node and label bounding boxes
-        let node_box = node.node().getBoundingClientRect();
+        let node_box = node.node().getBBox(); //node.node().getBoundingClientRect();
         let node_data = node.datum();
         let pNode = [node_data.x, node_data.y];
         let pLabel = [d.x, d.y];
@@ -1115,14 +1133,14 @@ function offsetLabelText(selection) {
         T[1] /= distance(pLabel, pNode);
         let Tminus = [-T[0], -T[1]];
 
-        let nodeEdges = getRectEdges(pNode, node_box.width, node_box.height, 0);
+        let nodeEdges = getRectEdges(pNode, node_box.width+5, node_box.height, 0);
         let labelEdges = getRectEdges(pLabel, d.width * d.scale, d.height * d.scale, d.angle);
 
         // compute overlap
         let overlapBoundary = [];
         let edgesIndNode = overlapBoundaryEdges(nodeEdges, labelEdges, overlapBoundary);
         let edgesIndLabel = overlapBoundaryEdges(labelEdges, nodeEdges, overlapBoundary);
-
+        
         if (overlapBoundary.length > 2) {
             let max_distance = 0;
             for (let i = 0; i < edgesIndLabel.length; i++) {
@@ -1135,7 +1153,6 @@ function offsetLabelText(selection) {
                     max_distance = Math.max(max_distance, segmentDistance(overlapBoundary[edgesIndNode[i]], labelEdges[j], Tminus));
                 }
             }
-
             d.x += max_distance * T[0];
             d.y += max_distance * T[1];
         } else {
@@ -1161,6 +1178,13 @@ function offsetLabelText(selection) {
             d.y -= min_distance * T[1];
         }
     });
+    
+    // reset any divs which were hiddne previously
+    for(let i = 0; i < divs.length; i++) {
+        divs[i].css("visibility", "visible");
+        divs[i].toggleClass("show");
+        divs[i].toggleClass("active");
+    }
 }
 
 function placeLabelsForce(nodes, labels, D, g, opts={}) {

@@ -4,6 +4,7 @@
 # dnaprodb stuff
 /htdocs/data
 /htdocs/uploads
+/htdocs/test.html
 rsync.exclude
 run_rsync.sh
 .sensitive.json

@@ -30,20 +30,8 @@
 
 <!-- Labels Format Specifier Input -->
 <script id="labels_residue_format_input" type="text/x-handlebars-template">
-    <!--
-    <select class="form-control form-control-sm mx-2" data-chain="{{chain}}" data-fnumber="{{number}}">
-        <option value="blank" {{s1}} data-description="ignored field" data-placeholder=""></option>
-        <option value="name_natural" {{s2}} data-description="full name, first letter uppercase"  data-placeholder="Name">Name</option>
-        <option value="name_upper" {{s3}} data-description="full name, all uppercase" data-placeholder="NAME">NAME</option>
-        <option value="name_lower" {{s4}} data-description="full name, all lowercase" data-placeholder="name">name</option>
-        <option value="name_short" {{s5}} data-description="single letter name"  data-placeholder="Name(1)">Name(1)</option>
-        <option value="chain" {{s6}} data-description="chain identifier" data-placeholder="chain">chain</option>
-        <option value="number" {{s7}} data-description="residue number plus offset if given" data-placeholder="residue number">residue number</option>
-        <option value="ins" {{s8}} data-description="residue insertion code" data-placeholder="insertion code">insertion code</option>
-    </select>
-    -->
     <div class="dropdown">
-        <button class="btn dropdown-toggle form-control btn-outline-dark" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-value={{default_value}} data-chain={{chain}}>
+        <button class="btn dropdown-toggle form-control btn-outline-dark" type="button" data-toggle="dropdown" data-value="{{default_value}}" data-chain="{{chain}}">
             {{default_text}}
         </button>
         <div class="dropdown-menu">
@@ -60,17 +48,8 @@
 </script>
 
 <script id="labels_sse_format_input" type="text/x-handlebars-template">
-    <!--
-    <select class="form-control form-control-sm mr-2" data-chain="{{chain}}" data-fnumber="{{number}}">
-        <option value="blank"></option>
-        <option value="secondary_structure">secondary structure</option>
-        <option value="number">SSE number</option>
-        <option value="chain">chain ID</option>
-        <option value="range">residue range</option>
-    </select>
-    -->
     <div class="dropdown">
-        <button class="btn dropdown-toggle form-control btn-outline-dark" type="button" id="dropdownMenuButton" data-toggle="dropdown" data-value={{default}} data-chain={{chain}}>
+        <button class="btn dropdown-toggle form-control btn-outline-dark" type="button" data-toggle="dropdown" data-value="{{default_value}}" data-chain="{{chain}}">
             {{default_text}}
         </button>
         <div class="dropdown-menu">

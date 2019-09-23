@@ -682,13 +682,9 @@ function makeLabelFormatInputs(dna_chains, pro_chains) {
                 number: 3,
                 chain: '_',
                 default_value: "blank"
-            }/*,
-            {
-                number: 4,
-                chain: '_'
-            }*/
+            }
         ],
-        text: "All chains format:",
+        text: "All chains:",
         chain: '_'
     }));
     $("#nucleotide_label_rows").append("<hr>");
@@ -712,13 +708,9 @@ function makeLabelFormatInputs(dna_chains, pro_chains) {
                 chain: '_',
                 default_text: "chain",
                 default_value: "chain"
-            }/*,
-            {
-                number: 4,
-                chain: '_'
-            }*/
+            }
         ],
-        text: "All chains format:",
+        text: "All chains:",
         chain: '_'
     }));
     $("#residue_label_rows").append("<hr>");
@@ -742,13 +734,9 @@ function makeLabelFormatInputs(dna_chains, pro_chains) {
                 chain: '_',
                 default_text: "number",
                 default_value: "number"
-            }/*,
-            {
-                number: 4,
-                chain: '_'
-            }*/
+            }
         ],
-        text: "All chains format:",
+        text: "All chains:",
         chain: '_'
     }));
     $("#sse_label_rows").append("<hr>");
@@ -771,13 +759,9 @@ function makeLabelFormatInputs(dna_chains, pro_chains) {
                     number: 3,
                     chain: dna_chains[i],
                     default_value: "blank"
-                }/*,
-                {
-                    number: 4,
-                    chain: dna_chains[i]
-                }*/
+                }
             ],
-            text: `Chain ${dna_chains[i]} format:`,
+            text: `Chain ${dna_chains[i]}:`,
             chain: dna_chains[i]
         }));
     }
@@ -799,13 +783,9 @@ function makeLabelFormatInputs(dna_chains, pro_chains) {
                     number: 3,
                     chain: pro_chains[i],
                     default_value: "blank"
-                }/*,
-                {
-                    number: 4,
-                    chain: pro_chains[i]
-                }*/
+                }
             ],
-            text: `Chain ${pro_chains[i]} format:`,
+            text: `Chain ${pro_chains[i]}:`,
             chain: pro_chains[i]
         }));
     }
@@ -827,13 +807,9 @@ function makeLabelFormatInputs(dna_chains, pro_chains) {
                     number: 3,
                     chain: pro_chains[i],
                     default_value: "blank"
-                }/*,
-                {
-                    number: 4,
-                    chain: pro_chains[i]
-                }*/
+                }
             ],
-            text: `Chain ${pro_chains[i]} format:`,
+            text: `Chain ${pro_chains[i]}:`,
             chain: pro_chains[i]
         }));
     }
