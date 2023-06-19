@@ -347,7 +347,7 @@ else:
             'method': r['meta_data']['citation_data']['exp_method'],
             'uniprot_name': '<br>'.join(names),
             'organism': ', '.join(organisms),
-            'thumbnail_url': "/data/{}/{}_thumb.png".format(r["structure_id"][-1], r["structure_id"])
+            'thumbnail_url': "https://cdn.rcsb.org/images/structures/{}_assembly-1.jpeg".format(r["structure_id"])
         })
         pdbids.append(r["structure_id"])
     printOutput({"table": makeTable(resultObjects), "pdbids": pdbids, "error": False}, JSON=True)
