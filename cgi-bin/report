@@ -54,7 +54,7 @@ data = cgi.FieldStorage()
 
 if("pdbid" in data):
     pdbid = data.getvalue("pdbid")
-    pdbid = re.sub(r"\W+", pdbid) # prevent XSS 
+    pdbid = re.sub(r"\W+", "", pdbid) # prevent XSS 
     db = data.getvalue("db", "dnaprodb2")
     collection = data.getvalue("collection", "dna-protein")
     context = {
@@ -72,9 +72,9 @@ if("pdbid" in data):
     }
 elif("jobid" in data):
     jobid = data.getvalue("jobid")
-    jobid = re.sub(r"\W+", jobid) # prevent XSS 
+    jobid = re.sub(r"\W+", "", jobid) # prevent XSS 
     title = data.getvalue("title", jobid)
-    title = re.sub(r"\W+", title) # prevent XSS 
+    title = re.sub(r"\W+", "", title) # prevent XSS 
     if(os.access("{}/{}.pdb".format(UPLOAD_PATH, jobid), os.R_OK) and os.access("{}/{}.json".format(UPLOAD_PATH, jobid), os.R_OK)):
         with open("{}/{}.json".format(UPLOAD_PATH, jobid)) as JSON_FILE:
             DATA = json.load(JSON_FILE)
