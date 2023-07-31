@@ -1838,8 +1838,29 @@ function makeSOP(helix, shape_name, mi, ent_id) {
         .translateExtent([[0, 0], [SOP.width, SOP.height]])
         .on("zoom", function () {
             gt.attr("transform", d3.event.transform);
-        });
+        })
+        // .on("start", zoomStarted);
+        // .on("zoom", function () {
+        //     console.log(SOP.width);
+        //     console.log(SOP.height);
+        //     var transform = d3.event.transform;
+        //     var x = Math.min(0, Math.max(transform.x, SOP.width - SOP.width * transform.k));
+        //     var y = Math.min(0, Math.max(transform.y, SOP.height - SOP.height * transform.k));
+        //     gt.attr("transform", "translate(" + x + "," + y + ") scale(" + transform.k + ")");
+        // });
     zoom_handler(SOP.svg);
+    
+    // //logic to reset pan
+    // var initialTransform;
+    // function zoomStarted() {
+    //     initialTransform = d3.event.transform;
+    // }
+    // d3.select("#resetPanButton").on("click", resetPan);
+    // function resetPan() {
+    //     gt.transition().duration(500)
+    //       .call(zoom_handler.transform, initialTransform); // Reset the translation to its initial value
+    //   } 
+
     $("#sop_residues_button").text("hide residues");
     $("#sop_grid_button").text("hide grid");
     $("#sop_legend_button").text("hide legend");
@@ -3048,13 +3069,33 @@ function makeLCM(mi, dna_entity_id, interfaces) {
     // add zoom capabilities
     var zoom_handler = d3.zoom()
         .scaleExtent([1/4, 3])
+        // .wheelDelta(function(){
+        //     return -Math.sign(d3.event.deltaY)*0.1;
+        // })
         .wheelDelta(function(){
-            return -Math.sign(d3.event.deltaY)*0.1;
+            return null;
         })
         .on("zoom", function () {
             gt.attr("transform", d3.event.transform);
         });
+        
     zoom_handler(svg);
+    d3.select("#zoomInButton").on("click", zoomIn);
+    d3.select("#zoomOutButton").on("click", zoomOut);
+    d3.select("#resetZoomButton").on("click", resetZoom);
+    function zoomIn() {
+        svg.transition().duration(500)
+        .call(zoom_handler.scaleBy, 1.2); // Increase the scale by 20%
+        console.log("yo!");
+    }
+    function zoomOut() {
+        svg.transition().duration(500)
+        .call(zoom_handler.scaleBy, 0.8); // Decrease the scale by 20%
+    }
+    function resetZoom() {
+        svg.transition().duration(500)
+        .call(zoom_handler.transform, d3.zoomIdentity); // Reset zoom
+    }
 }
 
 function makeLCMLegend() {

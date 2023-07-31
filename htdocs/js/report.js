@@ -22,6 +22,8 @@ Dependencies:
     ngl_viewer.js
 */
 
+
+
 // function to create glossary window
 function glossary(id) {
     var opts = 'toolbar=no,location=no,status=no,menubar=no,scrollbars=yes,resizable=yes,height=400,width=800';
@@ -50,7 +52,8 @@ function makeCitationTable() {
 
         var authors;
         if (DATA["meta_data"]["citation_data"]["authors"].constructor === Array) {
-            authors = DATA["meta_data"]["citation_data"]["authors"].join('<br>');
+            //changing to join on comma, so easier to read
+            authors = DATA["meta_data"]["citation_data"]["authors"].join(', ');
         } else {
             authors = DATA["meta_data"]["citation_data"]["authors"];
         }
@@ -64,6 +67,18 @@ function makeCitationTable() {
         }));
     }
 }
+
+
+function initChainTable() {
+    var chains = DATA['protein']['chains'];
+    for (let i = 1; i < chains.length; i++) {
+        cur_chain_id = String(chains[i]["id"]);
+        cur_chain_text = "chain_table_" + cur_chain_id;
+        var chainTable = document.getElementById(cur_chain_text);
+        chainTable.style.display = "none";
+    }
+}
+
 
 function makeOverviewTable(mi) {
     /* Protein overview Tables */
@@ -160,6 +175,7 @@ function makeOverviewTable(mi) {
         hcount = Math.round(100 * hcount / seq.length);
         scount = Math.round(100 * scount / seq.length);
         if (PDB_STRUCTURE) {
+            // Now will build a table for each chain
             $("#protein_chain_table").append(HB_TEMPLATES.pro_chain_table_row({
                 chain_id: chains[i]["id"],
                 au_id: chains[i]["au_chain_id"],
@@ -177,6 +193,9 @@ function makeOverviewTable(mi) {
                 length: seq.length,
                 segments: segments[chains[i]["id"]].map(x => x["id"]).join(', ')
             }));
+            $("#selectBox").append(HB_TEMPLATES.select_chain_box_row({
+                chain_id: chains[i]["id"]
+            }));
         } else {
             $("#protein_chain_table").append(HB_TEMPLATES.pro_chain_table_row({
                 chain_id: chains[i]["id"],
@@ -185,6 +204,9 @@ function makeOverviewTable(mi) {
                 ss: `${hcount}% Helix, ${scount}% Strand`,
                 length: seq.length,
                 segments: segments[chains[i]["id"]].map(x => x["id"]).join(', ')
+            }));
+            $("#selectBox").append(HB_TEMPLATES.select_chain_box_row({
+                chain_id: chains[i]["id"]
             }));
         }
     }
@@ -298,6 +320,9 @@ function makeOverviewTable(mi) {
             }));
         }
     }
+
+    // only show first chain in table
+    initChainTable();
 }
 
 // makes the DNA entity select
@@ -1321,8 +1346,10 @@ $(document).ready(function(){
     };
     if(PDB_STRUCTURE) {
         HB_TEMPLATES.pro_chain_table_row = Handlebars.compile($("#protein_chain_table_pdb").html());
+        HB_TEMPLATES.select_chain_box_row = Handlebars.compile($("#select_chain_box").html());
     } else {
         HB_TEMPLATES.pro_chain_table_row = Handlebars.compile($("#protein_chain_table_upload").html());
+        HB_TEMPLATES.select_chain_box_row = Handlebars.compile($("#select_chain_box").html());
     }
     Handlebars.registerPartial('resFieldPartial', $("#labels_residue_format_input").html());
     Handlebars.registerPartial('sseFieldPartial', $("#labels_sse_format_input").html());
@@ -1382,6 +1409,21 @@ $(document).ready(function(){
             $(this).text("Hide Hydrogens");
             hydrogen_toggle();
         }
+    });
+
+    $("#selectBox").change(function(){
+        var chainText = $(this).find(":selected").val();
+        var chains = DATA['protein']['chains'];
+        //set all chain Tables to  hidden
+        for (let i = 0; i < chains.length; i++) {
+            cur_chain_id = String(chains[i]["id"]);
+            cur_chain_text = "chain_table_" + cur_chain_id;
+            var chainTable = document.getElementById(cur_chain_text);
+            chainTable.style.display = "none";
+        }
+        //show selected chain table
+        var chainTable = document.getElementById(chainText);
+        chainTable.style.display = "block";
     });
 
     $("#download_pdb").prop("href", PDB_URL).prop("download", `${STRUCTURE_ID}.pdb`);
@@ -1445,14 +1487,17 @@ $(document).ready(function(){
     /* Set up chart controls */
     $("#lcm_link").click(function () {
         $("#lcm_console_link").tab("show");
+        $("#zoom_buttons").show();
     });
     
     $("#pcm_link").click(function () {
         $("#pcm_console_link").tab("show");
+        $("#zoom_buttons").hide();
     });
     
     $("#sop_link").click(function () {
         $("#sop_console_link").tab("show");
+        $("#zoom_buttons").hide();
     });
     
     $("#tooltip_on_button").change(function () { // bind a function to the change event
@@ -1926,6 +1971,8 @@ $(document).ready(function(){
         selection.attr("transform", updateLabelTransform);
 
     });
+
+
     
     /* Asynchronously request DNAproDB data */
     $.ajaxSetup({
