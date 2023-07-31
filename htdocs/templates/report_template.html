@@ -405,187 +405,195 @@
                             <button class="btn btn-danger btn-sm mr-2" id="plot_button">visualize interface</button>
                         </div>
                     </div>
+                    <!-- beginning of console -->
                     <div id="console" class="tab-pane fade" role="tabpanel">
-                        <ul class="nav nav-tabs d-none">
-                            <li class="nav-item">
-                                <a id="lcm_console_link" class="nav-link" data-toggle="tab" href="#lcm_console" role="tab"></a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="pcm_console_link" class="nav-link" data-toggle="tab" href="#pcm_console" role="tab"></a>
-                            </li>
-                            <li class="nav-item">
-                                <a id="sop_console_link" class="nav-link" data-toggle="tab" href="#sop_console" role="tab"></a>
-                            </li>
-                        </ul>
-                        <div class="tab-content">
-                            <div id="lcm_console" class="tab-pane fade active show">
-                                <h4 class="text-center"><strong>Residue Contact Map Controls</strong></h4>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">layout type:</label>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="layout_type" value="radial" checked>
-                                        <label class="form-check-label">radial</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="layout_type" value="circular">
-                                        <label class="form-check-label">circular</label>
-                                    </div>
-                                    <button class="btn btn-danger btn-sm ml-2" id="lcm_layout_button" style="vertical-align:middle;">update</button>
-                                </div>
-                                <hr>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">force-directed layout:</label>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" id="lcm_on_button" type="radio" name="toggle" value="on" checked>
-                                        <label class="form-check-label">on</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" id="lcm_off_button" type="radio" name="toggle" value="off">
-                                        <label class="form-check-label">off</label>
-                                    </div>
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">indicate hydrogen bonds:</label>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" value="yes" name="show_hbonds">
-                                        <label class="form-check-label">yes</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" value="no" name="show_hbonds" checked>
-                                        <label class="form-check-label">no</label>
-                                    </div>
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">rotate plot:</label>
-                                    <input id="lcm_plot_rotation_slider" type="range" min="-180" max="180" value="0" step="5" />
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">rotate labels:</label>
-                                    <input id="lcm_label_rotation_slider" type="range" min="-180" max="180" value="0" step="5" />
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">scale labels:</label>
-                                    <input id="lcm_label_scale_slider" type="range" min="0.3" max="3.0" value="1.0" step="0.1" />
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_reflectX_button" type="button">reflect X</button>
-                                    <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_reflectY_button" type="button">reflect Y</button>
-                                    <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_legend_button" type="button">hide legend</button>
-                                    <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_grid_button" type="button">show grid</button>
-                                    <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_residues_button" type="button">hide residues</button>
-                                    <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_selected_button" type="button">hide selected components</button>
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <button class="btn btn-success btn-sm mr-2" id="lcm_save_button" type="button">save as image</button>
-                                    <button class="btn btn-danger btn-sm mr-2" id="lcm_reset_button" type="button">reset</button>
-                                </div>
-                            </div>
-                            <div id="sop_console" class="tab-pane fade">
-                                <h4 class="text-center"><strong>Shape Overlay Plot Controls</strong></h4>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2" for="#helix_select">select helix:</label>
-                                    <select class="form-control form-control-sm mr-2" name="sop_helix_selection" id="sop_helix_select"></select>
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2" for="#shape_parameter_select">select shape parameter:</label>
-                                    <select class="form-control form-control-sm mr-2" name="shape_parameter" id="shape_parameter_select">
-                                        <option value="minor_groove_3dna" selected>min. grv. width (3dna)</option>
-                                        <option value="major_groove_3dna">maj. grv. width (3dna)</option>
-                                        <option value="minor_groove_curves">min. grv. width (curves)</option>
-                                        <option value="major_groove_curves">maj. grv. width (curves)</option>
-                                        <option value="buckle">buckle</option>
-                                        <option value="opening">opening</option>
-                                        <option value="propeller">propeller</option>
-                                        <option value="rise">rise</option>
-                                        <option value="roll">roll</option>
-                                        <option value="shear">shear</option>
-                                        <option value="shift">shift</option>
-                                        <option value="slide">slide</option>
-                                        <option value="stagger">stagger</option>
-                                        <option value="stretch">stretch</option>
-                                        <option value="tilt">tilt</option>
-                                        <option value="twist">twist</option>
-                                    </select>
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2" >axis limits:</label>
-                                    <div class="input-group input-group-sm" style="max-width: 200px;">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">min</span>
-                                        </div>
-                                        <input name="y-lower" type="text" class="form-control">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
-                                        </div>
-                                        <input name="y-upper" type="text" class="form-control">
-                                    </div>
-                                </div>
-                                <div class="form-check form-check-inline mb-2">
-                                    <input class="form-check-input" type="checkbox" id="reverse_strands_check" value="true">
-                                    <label class="form-check-label" for="reverseStrandsCheck">reverse sequence</label>
-                                    <button class="btn btn-danger btn-sm ml-2" id="sop_plot_button" style="vertical-align:middle;">update</button>
-                                </div>
-                                <hr>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">scale labels:</label>
-                                    <input id="sop_label_scale_slider" type="range" min="0.7" max="3.0" value="1.0" step="0.1" />
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <button class="btn btn-primary btn-sm mr-2" id="flip_strands_button" type="button">flip strands</button>
-                                    <button class="btn btn-primary btn-sm mr-2" id="sop_legend_button" type="button">hide legend</button>
-                                    <button class="btn btn-primary btn-sm mr-2" id="sop_grid_button" type="button">hide grid</button>
-                                    <button class="btn btn-primary btn-sm mr-2" id="sop_residues_button" type="button">hide residues</button>
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <button class="btn btn-success btn-sm mr-2" id="sop_save_button" type="button">save as image</button>
-                                </div>
-                            </div>
-                            <div id="pcm_console" class="tab-pane fade">
-                                <h4 class="text-center"><strong>Helical Contact Map Controls</strong></h4>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2" for="#helix_select">select a helix:</label>
-                                    <select class="form-control form-control-sm mr-2" name="pcm_helix_selection" id="pcm_helix_select"></select>
-                                    <div class="form-check form-check-inline">
-                                        <button class="btn btn-danger btn-sm ml-2" id="pcm_plot_button" style="vertical-align:middle;">update</button>
-                                    </div>
-                                </div>
-                                <hr>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">rotate plot:</label>
-                                    <input id="pcm_rotation_slider" type="range" min="-180" max="180" value="0" step="10" />
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <label class="mr-2">scale labels:</label>
-                                    <input id="pcm_label_scale_slider" type="range" min="0.7" max="3.0" value="1.0" step="0.1" />
-                                </div>
-                                <div class="form-inline mb-2">
-                                    <button class="btn btn-primary btn-sm mr-2" id="pcm_legend_button" type="button">hide legend</button>
-                                    <button class="btn btn-primary btn-sm mr-2" id="pcm_grid_button" type="button">hide grid</button>
-                                    <button class="btn btn-success btn-sm mr-2" id="pcm_save_button" type="button">save as image</button>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="form-inline mb-3">
-                            <label class="mr-2">toggle tooltips:</label>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" id="tooltip_on_button" type="radio" name="tooltip_toggle" value="on" checked>
-                                <label class="form-check-label">on</label>
-                            </div>
-                            <div class="form-check form-check-inline">
-                                <input class="form-check-input" id="tooltip_off_button" type="radio" name="tooltip_toggle" value="off">
-                                <label class="form-check-label">off</label>
-                            </div>
-                        </div>
                         <ul class="nav nav-tabs" style="margin-bottom:5px;margin-top:10px;">
                             <li class="nav-item">
-                                <a class="nav-link active" data-toggle="tab" href="#label_opts">Label Options</a>
+                                <a class="nav-link active" data-toggle="tab" href="#lcm_console_controls">Controls</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" data-toggle="tab" href="#label_opts">Label Options</a>
                             </li>
                             <li class="nav-item">
                                 <a class="nav-link" data-toggle="tab" href="#color_opts">Color Options</a>
                             </li>
                         </ul>
                         <div class="tab-content">
-                            <div id="label_opts" class="tab-pane fade active show">
+                            <div id="lcm_console_controls" class="tab-pane fade active show">
+                                <ul class="nav nav-tabs d-none">
+                                    <li class="nav-item">
+                                        <a id="lcm_console_link" class="nav-link" data-toggle="tab" href="#lcm_console" role="tab"></a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a id="pcm_console_link" class="nav-link" data-toggle="tab" href="#pcm_console" role="tab"></a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a id="sop_console_link" class="nav-link" data-toggle="tab" href="#sop_console" role="tab"></a>
+                                    </li>
+                                </ul>
+                                <div class="tab-content">
+                                        <div id="lcm_console" class="tab-pane fade active show">
+                                            <h4 class="text-center" id="residue_map_controls_header"><strong>Residue Contact Map Controls</strong></h4>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">layout type:</label>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="layout_type" value="radial" checked>
+                                                    <label class="form-check-label">radial</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" name="layout_type" value="circular">
+                                                    <label class="form-check-label">circular</label>
+                                                </div>
+                                                <button class="btn btn-danger btn-sm ml-2" id="lcm_layout_button" style="vertical-align:middle;">update</button>
+                                            </div>
+                                            <hr>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">force-directed layout:</label>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" id="lcm_on_button" type="radio" name="toggle" value="on" checked>
+                                                    <label class="form-check-label">on</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" id="lcm_off_button" type="radio" name="toggle" value="off">
+                                                    <label class="form-check-label">off</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">indicate hydrogen bonds:</label>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" value="yes" name="show_hbonds">
+                                                    <label class="form-check-label">yes</label>
+                                                </div>
+                                                <div class="form-check form-check-inline">
+                                                    <input class="form-check-input" type="radio" value="no" name="show_hbonds" checked>
+                                                    <label class="form-check-label">no</label>
+                                                </div>
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">rotate plot:</label>
+                                                <input id="lcm_plot_rotation_slider" type="range" min="-180" max="180" value="0" step="5" />
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">rotate labels:</label>
+                                                <input id="lcm_label_rotation_slider" type="range" min="-180" max="180" value="0" step="5" />
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">scale labels:</label>
+                                                <input id="lcm_label_scale_slider" type="range" min="0.3" max="3.0" value="1.0" step="0.1" />
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_reflectX_button" type="button">reflect X</button>
+                                                <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_reflectY_button" type="button">reflect Y</button>
+                                                <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_legend_button" type="button">hide legend</button>
+                                                <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_grid_button" type="button">show grid</button>
+                                                <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_residues_button" type="button">hide residues</button>
+                                                <button class="btn btn-primary btn-sm mr-2 my-1" id="lcm_selected_button" type="button">hide selected components</button>
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <button class="btn btn-success btn-sm mr-2" id="lcm_save_button" type="button">save as image</button>
+                                                <button class="btn btn-danger btn-sm mr-2" id="lcm_reset_button" type="button">reset</button>
+                                            </div>
+                                        </div>
+                                        <div id="sop_console" class="tab-pane fade">
+                                            <h4 class="text-center"><strong>Shape Overlay Plot Controls</strong></h4>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2" for="#helix_select">select helix:</label>
+                                                <select class="form-control form-control-sm mr-2" name="sop_helix_selection" id="sop_helix_select"></select>
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2" for="#shape_parameter_select">select shape parameter:</label>
+                                                <select class="form-control form-control-sm mr-2" name="shape_parameter" id="shape_parameter_select">
+                                                    <option value="minor_groove_3dna" selected>min. grv. width (3dna)</option>
+                                                    <option value="major_groove_3dna">maj. grv. width (3dna)</option>
+                                                    <option value="minor_groove_curves">min. grv. width (curves)</option>
+                                                    <option value="major_groove_curves">maj. grv. width (curves)</option>
+                                                    <option value="buckle">buckle</option>
+                                                    <option value="opening">opening</option>
+                                                    <option value="propeller">propeller</option>
+                                                    <option value="rise">rise</option>
+                                                    <option value="roll">roll</option>
+                                                    <option value="shear">shear</option>
+                                                    <option value="shift">shift</option>
+                                                    <option value="slide">slide</option>
+                                                    <option value="stagger">stagger</option>
+                                                    <option value="stretch">stretch</option>
+                                                    <option value="tilt">tilt</option>
+                                                    <option value="twist">twist</option>
+                                                </select>
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2" >axis limits:</label>
+                                                <div class="input-group input-group-sm" style="max-width: 200px;">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text">min</span>
+                                                    </div>
+                                                    <input name="y-lower" type="text" class="form-control">
+                                                    <div class="input-group-prepend">
+                                                        <span class="input-group-text" style="border-left: 0; border-right: 0;">max</span>
+                                                    </div>
+                                                    <input name="y-upper" type="text" class="form-control">
+                                                </div>
+                                            </div>
+                                            <div class="form-check form-check-inline mb-2">
+                                                <input class="form-check-input" type="checkbox" id="reverse_strands_check" value="true">
+                                                <label class="form-check-label" for="reverseStrandsCheck">reverse sequence</label>
+                                                <button class="btn btn-danger btn-sm ml-2" id="sop_plot_button" style="vertical-align:middle;">update</button>
+                                            </div>
+                                            <hr>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">scale labels:</label>
+                                                <input id="sop_label_scale_slider" type="range" min="0.7" max="3.0" value="1.0" step="0.1" />
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <button class="btn btn-primary btn-sm mr-2" id="flip_strands_button" type="button">flip strands</button>
+                                                <button class="btn btn-primary btn-sm mr-2" id="sop_legend_button" type="button">hide legend</button>
+                                                <button class="btn btn-primary btn-sm mr-2" id="sop_grid_button" type="button">hide grid</button>
+                                                <button class="btn btn-primary btn-sm mr-2" id="sop_residues_button" type="button">hide residues</button>
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <button class="btn btn-success btn-sm mr-2" id="sop_save_button" type="button">save as image</button>
+                                            </div>
+                                        </div>
+                                        <div id="pcm_console" class="tab-pane fade">
+                                            <h4 class="text-center"><strong>Helical Contact Map Controls</strong></h4>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2" for="#helix_select">select a helix:</label>
+                                                <select class="form-control form-control-sm mr-2" name="pcm_helix_selection" id="pcm_helix_select"></select>
+                                                <div class="form-check form-check-inline">
+                                                    <button class="btn btn-danger btn-sm ml-2" id="pcm_plot_button" style="vertical-align:middle;">update</button>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">rotate plot:</label>
+                                                <input id="pcm_rotation_slider" type="range" min="-180" max="180" value="0" step="10" />
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <label class="mr-2">scale labels:</label>
+                                                <input id="pcm_label_scale_slider" type="range" min="0.7" max="3.0" value="1.0" step="0.1" />
+                                            </div>
+                                            <div class="form-inline mb-2">
+                                                <button class="btn btn-primary btn-sm mr-2" id="pcm_legend_button" type="button">hide legend</button>
+                                                <button class="btn btn-primary btn-sm mr-2" id="pcm_grid_button" type="button">hide grid</button>
+                                                <button class="btn btn-success btn-sm mr-2" id="pcm_save_button" type="button">save as image</button>
+                                            </div>
+                                        </div>
+                                        <div class="form-inline mb-3">
+                                            <label class="mr-2">toggle tooltips:</label>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" id="tooltip_on_button" type="radio" name="tooltip_toggle" value="on" checked>
+                                                <label class="form-check-label">on</label>
+                                            </div>
+                                            <div class="form-check form-check-inline">
+                                                <input class="form-check-input" id="tooltip_off_button" type="radio" name="tooltip_toggle" value="off">
+                                                <label class="form-check-label">off</label>
+                                            </div>
+                                        </div>
+                                    <!-- To here -->
+                                    <!-- To here -->
+                                </div>
+                            </div>
+                            <div id="label_opts" class="tab-pane fade">
                                 <!-- Labeling options -->
                                 <h4 class="text-center">Customize Labels</h4>
                                 <p>You can apply custom label formats to individual chains below, or to all DNA or Protein chains. Blank fields are ignored. To change the labels of individual nucleotides, residues or SSEs, simply double-click a label in the visualization charts.</p>
@@ -656,6 +664,8 @@
                             </div>
                         </div>
                     </div>
+                    <!-- end of console -->
+
                     <div id="explorer" class="tab-pane fade" role="tabpanel">
                         <h4 class="text-center"><strong>Data Explorer</strong></h4>
                         <p>Below you can explore the DNAproDB data file for this structure. Click on the items below to expand them and reveal further items. Explanations of these features are available from the <a href="/documentation.html#data-format">documentation page</a>. Click the download button to download the data file or use the select box to find and view a particular data item.
@@ -708,6 +718,13 @@
                         <label class="mr-2">protein SST selection: <span id="protein_sst_selection" class="font-weight-bold"></span></label>
                         <label class="mr-2">interaction criteria: <span id="interaction_criteria_selection" class="font-weight-bold"></span></label>
                     </h6>
+                    <!-- Zoom Controls for LCM-->
+                    <div class="form-inline mb-2" id="zoom_buttons">
+                        <button class="btn btn-primary btn-sm mr-2 my-1" id="zoomInButton" type="button">Zoom In</button>
+                        <button class="btn btn-primary btn-sm mr-2 my-1" id="zoomOutButton" type="button">Zoom Out</button>
+                        <button class="btn btn-primary btn-sm mr-2 my-1" id="resetZoomButton" type="button">Reset</button>
+                    </div>
+                    <!-- End Zoom Controls -->
                     <div id="lcm" class="tab-pane fade show active" role="tabpanel">
                         <div class="text-center">
                             <div id="lcm_plot" class="visualization"></div>
@@ -767,61 +784,61 @@
             </div>
         </div>
         <hr>
+        <h3 class="text-center" style="margin-bottom: 1em;">Information</h3>
         <div class="container-fluid px-5">
-            <div id="citation_table_wrapper"></div>
-            <p>Current model selection: <strong><span id="current_model2"></span></strong></p>
+            <!-- TODO -->
+            <span class="border-bottom-0">
+            <ul id="info-nav" class="nav nav-tabs my-2 justify-content-center">
+                    <li class="nav-item">
+                        <a class="nav-link active" data-toggle="tab"
+                                href="#citation_table_wrapper"><i class="fa" aria-hidden="true"></i>
+ Structure Citation</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#protein_table_wrapper"><i
+                                        class="fa" aria-hidden="true"></i>Protein</a>
+                    </li>
+                    <li class="nav-item">
+                        <a id="chart_controls_link" class="nav-link" data-toggle="tab"
+                                href="#dna_table_wrapper"><i class="fa" aria-hidden="true"></i>
+DNA</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" data-toggle="tab" href="#interface_table_wrapper"><i class="fa" aria-hidden="true"></i>
+Interface</a>
+                    </li>
+                </ul>
+            </span>
+            <div class="tab-content">
+            <div id="citation_table_wrapper"  class="tab-pane fade active show" role="tabpanel"></div>
             <!-- protein tables -->
-            <h4 class="text-center">Protein Chain Information</h4>
-            <div class="table-responsive">
-                <table class="table table-sm nw">
-                    {% if pdb_structure == "true" %}
-                    <thead class="pro">
-                        <th class="align-middle">Chain ID</th>
-                        <th class="align-middle">A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span></th>
-                        <th class="align-middle">Uniprot ID(s)</th>
-                        <th class="align-middle">CATH ID(s)</th>
-                        <th class="align-middle">Molecular
-                            <br>Function</th>
-                        <th class="align-middle">Biological
-                            <br>Process</th>
-                        <th class="align-middle">Cellular
-                            <br>Component</th>
-                        <th class="align-middle">Protein
-                            <br>Name(s)</th>
-                        <th class="align-middle">Source
-                            <br>Organism</th>
-                        <th class="align-middle">Sequence</th>
-                        <th class="align-middle">Sequence
-                            <br>Length</th>
-                        <th class="align-middle">Secondary
-                            <br>Structure </th>
-                        <th class="align-middle">Chain
-                            <br>Segments</th>
-                    </thead>
-                    {% else  %}
-                    <thead class="pro">
-                        <th class="align-middle">Chain ID</th>
-                        <th class="align-middle">A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span></th>
-                        <th class="align-middle">Sequence</th>
-                        <th class="align-middle">Sequence
-                            <br>Length</th>
-                        <th class="align-middle">Secondary
-                            <br>Structure </th>
-                        <th class="align-middle">Chain
-                            <br>Segments</th>
-                    </thead>
-                    {% endif %}
-                    
-                    <tbody id="protein_chain_table">
-                    </tbody>
-                </table>
+            <div id="protein_table_wrapper" class="tab-pane fade" role="tabpanel">
+            <p>Current model selection: <strong><span id="current_model2"></span></strong></p>
+            <h4 id="protein_section_header" class="text-center">Protein Chain Information</h4>
+            <div class="form-group w-25 noscroll-center">
+                <label id="protein_chain_label" class="font-weight-bold">Select Chain:</label>
+                <select class ="form-control" id="selectBox" name="selectBox">
+               </select>
             </div>
+            <!-- <div class="form-group">
+                <label class="font-weight-bold">Subject</label>
+                <select name="subject" class="form-control">
+                    <option value="" disabled selected>Choose One:</option>
+                    <option value="question">Question</option>
+                    <option value="request">Feature Request</option>
+                    <option value="bug">Bug</option>
+                    <option value="feedback">Feedback</option>
+                    <option value="other">Other</option>
+                </select>
+            </div> -->
+            <div id="protein_chain_table"></div>
             <div class="row">
                 <div class="col-sm-6">
                     <!-- chain segment table -->
+                    <br/>
                     <h4 class="text-center"><i class="fa fa-info-circle" onclick="glossary('protein_chain_segments')"></i> Protein Chain Segments</h4>
-                    <div class="table-responsive">
-                        <table class="table table-sm nw">
+                    <div class="table-responsive table-hover">
+                        <table id="protein_chain_segments_table" class="table table-sm">
                             <thead class="pro">
                                 <th class="align-middle">Segment ID</th>
                                 <th class="align-middle">Length</th>
@@ -837,9 +854,10 @@
                 </div>
                 <div class="col-sm-6">
                     <!-- entity table -->
+                    <br/>
                     <h4 class="text-center"><i class="fa fa-info-circle" onclick="glossary('protein_entities')"></i> Protein Entities</h4>
-                    <div class="table-responsive">
-                        <table class="table table-sm nw">
+                    <div class="table-responsive table-hover">
+                        <table id="protein_entities_table" class="table table-sm">
                             <thead class="pro">
                                 <th class="align-middle">Entity ID</th>
                                 <th class="align-middle"># Residues</th>
@@ -853,10 +871,12 @@
                     </div>
                 </div>
             </div>
-            <hr>
+            </div>
+            <!-- hr -->
             <!-- dna tables -->
-            <h4 class="text-center"><i class="fa fa-info-circle" onclick="glossary('dna_entities')"></i> DNA Entities</h4>
-            <div class="table-responsive">
+            <div id="dna_table_wrapper" class="tab-pane fade" role="tabpanel">
+            <h4 id="dna_entities_header" class="text-center"><i class="fa fa-info-circle" onclick="glossary('dna_entities')"></i> DNA Entities</h4>
+            <div class="table-responsive table-hover">
                 <table id="dna_overview_table" class="table table-sm nw">
                     <thead class="dna">
                         <th class="align-middle">Entity ID</th>
@@ -873,7 +893,7 @@
                 </table>
             </div>
             <h4 class="text-center"><i class="fa fa-info-circle" onclick="glossary('dna_strand')"></i> DNA Strands</h4>
-            <div class="table-responsive">
+            <div class="table-responsive table-hover">
                 <table id="dna_overview_table" class="table table-sm nw">
                     <thead class="dna">
                         <th class="align-middle">Parent
@@ -892,7 +912,7 @@
             </div>
             <div id="dna_helix_table_wrapper">
                 <h4 class="text-center">DNA Helices</h4>
-                <div class="table-responsive">
+                <div class="table-responsive table-hover">
                     <table id="dna_overview_table" class="table table-sm nw">
                         <thead class="dna">
                             <th class="align-middle">Parent
@@ -919,10 +939,12 @@
                     </table>
                 </div>
             </div>
-            <hr>
+            <!-- hr -->
+            </div>
             <!-- interface tables -->
-            <h4 class="text-center">DNA-protein Interfaces</h4>
-            <div class="table-responsive">
+            <div id="interface_table_wrapper" class="tab-pane fade" role="tabpanel">
+            <h4 id="interface_header" class="text-center">DNA-protein Interfaces</h4>
+            <div class="table-responsive table-hover">
                 <table id="interface_overview_table" class="table table-sm nw">
                     <thead class="int">
                         <th class="align-middle">DNA Entity ID</th>
@@ -944,6 +966,7 @@
                     <tbody id="interfaces_table">
                     </tbody>
                 </table>
+            </div>
             </div>
         </div>
         <svg class="hidden_svg">

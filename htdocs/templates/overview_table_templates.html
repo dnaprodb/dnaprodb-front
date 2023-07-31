@@ -1,6 +1,5 @@
 <style>
     .scroll-x {
-        max-width: 250px;
         overflow-x: auto;
         scrollbar-width: thin;
     }
@@ -35,7 +34,18 @@
     .int {
         background-color: #34DDDD;
     }
-    
+
+    .noscroll-center{
+        max-width: 75%;
+        margin: 0 auto;
+    }
+
+    .noscroll-center td{
+        word-wrap: break-word;
+        white-space: normal;
+        overflow-wrap: break-word;
+    }
+
     /*
     div.resize:hover {
         max-width: none;
@@ -56,7 +66,7 @@
 </style>
 
 <!-- Protein Table Row Template -->
-<script id="protein_chain_table_pdb" type="text/x-handlebars-template">
+<script id="protein_chain_table_pdb_old" type="text/x-handlebars-template">
     <tr>
         <td>{{chain_id}}</td>
         <td>{{au_id}}</td>
@@ -73,17 +83,56 @@
         <td><div class="scroll-y">{{{segments}}}</div></td>
     </tr>
 </script>
-                  
+
+<!-- Add each protein chain to select box, to select chain for viewing-->
+<script id="select_chain_box" type="text/x-handlebars-template">
+    <option value="chain_table_{{chain_id}}">Chain {{chain_id}}</option>
+</script>
+
+<!-- Change this to original and create new one to generate table? -->
+<script id="protein_chain_table_pdb" type="text/x-handlebars-template">
+    <div id="chain_table_{{chain_id}}">
+        <table class="table table-sm table-hover noscroll-center">
+            <!-- <thead class="pro"> -->
+            <thead>  
+                <th colspan="2">Chain {{chain_id}}</th>
+            </thead>
+            <tbody>
+                <tr><td>A.U. ID</td><td>{{au_id}}</td></tr>
+                <tr><td>Uniprot ID(s)</td><td>{{{uniprot}}}</td></tr>
+                <tr><td>CATH ID(s)</td><td>{{{cath}}}</td></tr>
+                <tr><td>Protein Name(s)</td><td>{{{names}}}</td></tr>
+                <tr><td>Source Organism</td><td>{{organism}}</td></tr>
+                <tr><td>Sequence</td><td style="word-wrap: anywhere; overflow-wrap: anywhere;"><div class="mono">{{{sequence}}}</div></td></tr>
+                <tr><td>Sequence Length</td><td>{{length}}</td></tr>
+                <tr><td>Secondary Structure</td><td>{{{ss}}}</td></tr>
+                <tr><td>Chain Segments</td><td>{{{segments}}}</td></tr>
+                <tr><td>Molecular Function</td><td><div class="scrollable-cell">{{{go_function}}}</div></td></tr>
+                <tr><td>Biological Process</td><td><div class="scrollable-cell">{{{go_process}}}</div></td></tr>
+                <tr><td>Cellular Component</td><td><div class="scrollable-cell">{{{go_component}}}</div></td></tr>
+            </tbody>
+        </table>
+    </div>
+</script>
+
 
 <script id="protein_chain_table_upload" type="text/x-handlebars-template">
-    <tr>
-        <td>{{chain_id}}</td>
-        <td>{{au_id}}</td>
-        <td><div class="scroll-x mono">{{{sequence}}}</div></td>
-        <td>{{length}}</td>
-        <td>{{{ss}}}</td>
-        <td><div class="scroll-y">{{{segments}}}</div></td>
-    </tr>
+    <div id="chain_table_{{chain_id}}">
+        <table class="table table-sm table-hover noscroll-center">
+            <!-- <thead class="pro"> -->
+            <thead>  
+                <th colspan="2">Chain {{chain_id}}</th>
+            </thead>
+            <tbody>
+                <tr><td>A.U. ID <span class="glyphicon glyphicon-question-sign glossary" title="Asymmetric Unit Chain Id" data-toggle="popover" data-trigger="hover" data-content="The chain id of the parent chain in the asymmetric unit (AU). Often, chains contained in the biological assembly are generated from some symmetry operation on the asymmetric unit. In order to conform to the PDB standard, each chain must be assigned a unique single character identifier in the structure. New chains generated from symmetry operations are assigned an arbitarty identifier, and this field specifies which chain in the AU the child chain was generated from. If the Chain Id and AU Id are the same, then the coordinates are those in the AU."></span>
+                </td><td>{{au_id}}</td></tr>
+                <tr><td>Sequence</td><td style="word-wrap: anywhere; overflow-wrap: anywhere;"><div class="mono">{{{sequence}}}</div></td></tr>
+                <tr><td>Sequence Length</td><td>{{length}}</td></tr>
+                <tr><td>Secondary Structure</td><td>{{{ss}}}</td></tr>
+                <tr><td>Chain Segments</td><td>{{{segments}}}</td></tr>
+            </tbody>
+        </table>
+    </div>
 </script>
 
 <script id="protein_segment_table_row" type="text/x-handlebars-template">
@@ -192,6 +241,27 @@
 
 <!-- Citation Table Row Template -->
 <script id="citation_table" type="text/x-handlebars-template">
+    <div>
+        <table class="table table-sm table-hover noscroll-center">
+            <thead>
+                <th colspan="2">Structure Citation</th>
+            </thead>
+            <tbody>
+                <tr><td>Title</td><td>{{title}}</td></tr>
+                <tr><td>Year</td><td>{{year}}</td></tr>
+                <tr><td>Authors</td><td>{{{authors}}}</td></tr>
+                <tr><td>DOI</td><td>{{{doi}}}</td></tr>
+                <tr><td>PubMed</td><td>{{{pubmed}}}</td></tr>
+                <tr><td>RCSB PDB</td><td><a href="http://www.rcsb.org/pdb/explore/explore.do?structureId={{pdbid}}">{{pdbid}}</a></td></tr>
+                <tr><td>NDB</td><td><a href="http://ndbserver.rutgers.edu/service/ndb/atlas/summary?searchTarget={{pdbid}}">{{pdbid}}</a></td></tr>
+            </tbody>
+        </table>
+    </div>
+    <hr>
+</script>
+
+<!-- Old Citation Table Row Template -->
+<!-- <script id="citation_table__old" type="text/x-handlebars-template">
     <div class="table-responsive">
         <h4 class="text-center">Structure Citation</h4>
         <table class="table table-sm nw">
@@ -218,4 +288,4 @@
         </table>
     </div>
     <hr>
-</script>
+</script> -->
