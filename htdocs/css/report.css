@@ -88,3 +88,66 @@ input[type=color]:disabled {
 .SumoSelect .select-all {
   display: table-cell;
 }
+
+#dna_overview_table th {
+    background-color: #dddddd;
+}
+
+#protein_chain_table th {
+    background-color: #dddddd;
+    text-align: center;
+}
+
+#citation_table_wrapper th {
+    background-color: #dddddd;
+    text-align: center;
+}
+
+#interface_overview_table th {
+    background-color: #dddddd;
+}
+
+#protein_entities_table th {
+    background-color: #dddddd;
+}
+
+#protein_chain_segments_table th {
+    background-color: #dddddd;
+}
+
+#interface_header {
+    margin-top: 1rem;
+}
+
+#dna_entities_header {
+    margin-top: 1rem;
+}
+
+#selectBox {
+    margin-bottom: 1rem;
+}
+
+#protein_section_header {
+    margin-bottom: 1rem;
+}
+
+#residue_map_controls_header {
+    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+}
+
+.scrollable-cell {
+    max-height: 9rem !important;
+    overflow-y: auto !important; /* Enable vertical scrolling */
+  }
+
+.scrollable-cell::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 7px;
+}
+
+.scrollable-cell::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, .5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, .5);
+  }
