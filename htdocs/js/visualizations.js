@@ -968,7 +968,7 @@ function offsetLabelText(selection) {
                 return [d, s];
             } else if (u[1] != 0 && (C2[0] - u[0] * C2[1] / u[1]) != 0) {
                 s = (x1 - A2[0] + (A2[1] - y1) * u[0] / u[1]) / (C2[0] - C2[1] * u[0] / u[1]);
-                d = (A2[1] + s * C2[1] - ay) / u[1];
+                d = (A2[1] + s * C2[1] - y1) / u[1];
 
                 return [d, s];
             } else {
